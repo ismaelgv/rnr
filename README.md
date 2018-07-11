@@ -1,7 +1,6 @@
 # RnR [![Build Status](https://travis-ci.org/ChuckDaniels87/rnr.svg?branch=master)](https://travis-ci.org/ChuckDaniels87/rnr)
 `rnr` is a command-line tool to batch rename files for ANSI terminals.
 
-
 # Options
 ```
 USAGE:
@@ -32,3 +31,8 @@ ARGS:
 * If max depth is not provided to recursive mode, it is assumed *infite*.
 * Do not generate backups.
 * Output is *always colored*. [TODO: *no color mode / silent mode*]
+
+# Screenshots
+
+![screenshot_1](https://user-images.githubusercontent.com/8478202/42589754-5ac244ec-8542-11e8-9b1a-8c0d8d0419bf.png)
+![screenshot_1](https://user-images.githubusercontent.com/8478202/42589674-110570f4-8542-11e8-9b10-7ff21b1cd4ce.png)
