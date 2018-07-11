@@ -2,6 +2,7 @@
 use ansi_term::Colour::*;
 use clap::{App, Arg};
 use regex::Regex;
+use std::ffi::{OsStr, OsString};
 use std::process;
 use std::sync::Arc;
 
@@ -94,12 +95,14 @@ fn config_app<'a>() -> App<'a, 'a> {
             Arg::with_name("EXPRESSION")
                 .help("Expression to match (can be a regex)")
                 .required(true)
+                .validator_os(is_valid_string)
                 .index(1),
         )
         .arg(
             Arg::with_name("REPLACEMENT")
                 .help("Expression replacement")
                 .required(true)
+                .validator_os(is_valid_string)
                 .index(2),
         )
         .arg(
@@ -107,6 +110,7 @@ fn config_app<'a>() -> App<'a, 'a> {
                 .help("Target files")
                 .required_unless("recursive")
                 .conflicts_with("recursive")
+                .validator_os(is_valid_string)
                 .multiple(true),
         )
         .arg(
@@ -133,6 +137,7 @@ fn config_app<'a>() -> App<'a, 'a> {
                 .long("recursive")
                 .short("r")
                 .value_name("PATH")
+                .validator_os(is_valid_string)
                 .help("Recursive mode"),
         )
         .arg(
@@ -148,10 +153,19 @@ fn config_app<'a>() -> App<'a, 'a> {
 }
 
 #[allow(clippy)]
+/// Check if the input provided is valid unsigned integer
 fn is_integer(arg_value: String) -> Result<(), String> {
     match arg_value.parse::<usize>() {
         Ok(_) => Ok(()),
         Err(_) => Err("Value provided is not an integer".to_string()),
+    }
+}
+
+/// Check if the input provided is valid UTF-8
+fn is_valid_string(os_str: &OsStr) -> Result<(), OsString> {
+    match os_str.to_str() {
+        Some(_) => Ok(()),
+        None => Err(OsString::from("Value provided is not a valid UTF-8 string")),
     }
 }
 
