@@ -1,4 +1,4 @@
-# Description
+# RnR
 `rnr` is a command-line tool to batch rename files for ANSI terminals.
 
 # Options
@@ -24,8 +24,10 @@ ARGS:
 
 ```
 
-## Defaults
+## Default behavior
 * Dry-run by default.
+* Accept a list of files as arguments.
+* Accept a regex to generate matches.
 * If max depth is not provided to recursive mode, it is assumed infite.
-* No backups.
+* Do not generate backups.
 * Output is always colored. [TODO: no color mode / silent mode]
