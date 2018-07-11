@@ -5,6 +5,9 @@ use regex::Regex;
 use std::process;
 use std::sync::Arc;
 
+/// This module is defined Config struct to carry application configuration. This struct is created
+/// from the parsed arguments from command-line input using `clap`. Only UTF-8 valid arguments are
+/// considered.
 pub struct Config {
     pub expression: Regex,
     pub replacement: String,
@@ -50,7 +53,7 @@ fn parse_arguments() -> Config {
     let mut file_args: Option<Vec<String>> = None;
     let mut recursive = RecursiveMode {
         active: false,
-        path: "./".to_string(),
+        path: "".to_string(),
         max_depth: None,
     };
     if matches.is_present("recursive") {

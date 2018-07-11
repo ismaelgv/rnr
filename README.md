@@ -1,6 +1,20 @@
 # RnR [![Build Status](https://travis-ci.org/ChuckDaniels87/rnr.svg?branch=master)](https://travis-ci.org/ChuckDaniels87/rnr)
 `rnr` is a command-line tool to batch rename files for ANSI terminals.
 
+# Install
+*RnR* is written in Rust. At this moment, you will need Cargo to
+build/install this application.
+
+### From source
+```sh
+git clone https://github.com/ChuckDaniels87/rnr .
+cargo install
+```
+### From Crates.io
+```sh
+cargo install rnr
+```
+
 # Options
 ```
 USAGE:
@@ -26,13 +40,16 @@ ARGS:
 
 ## Default behavior
 * *Dry-run* by default.
-* Accept multiple files as arguments.
-* Accept a **regex** to generate matches.
+* Only **UTF-8 valid** input arguments and filenames.
+* Works on files and symlinks (ignores directories).
+* Accepts multiple files as arguments.
+* Accepts a **regex** to generate matches. These expressions have same
+  limitations of `regex` crate.
 * If max depth is not provided to recursive mode, it is assumed *infite*.
-* Do not generate backups.
+* Does not generate backups.
 * Output is *always colored*. [TODO: *no color mode / silent mode*]
 
 # Screenshots
 
 ![screenshot_1](https://user-images.githubusercontent.com/8478202/42589754-5ac244ec-8542-11e8-9b1a-8c0d8d0419bf.png)
-![screenshot_1](https://user-images.githubusercontent.com/8478202/42589674-110570f4-8542-11e8-9b10-7ff21b1cd4ce.png)
+![screenshot_2](https://user-images.githubusercontent.com/8478202/42589674-110570f4-8542-11e8-9b10-7ff21b1cd4ce.png)
