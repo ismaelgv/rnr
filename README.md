@@ -1,5 +1,6 @@
-# RnR
+# RnR [![Build Status](https://travis-ci.org/ChuckDaniels87/rnr.svg?branch=master)](https://travis-ci.org/ChuckDaniels87/rnr)
 `rnr` is a command-line tool to batch rename files for ANSI terminals.
+
 
 # Options
 ```
