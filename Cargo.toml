@@ -1,6 +1,6 @@
 [package]
 name = "rnr"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["Ismael González Valverde <ismgonval@gmail.com>"]
 description = "rnr is a command-line tool to batch rename files for ANSI terminals"
 categories = ["command-line-utilities"]
