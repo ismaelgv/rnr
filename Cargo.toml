@@ -1,0 +1,11 @@
+[package]
+name = "rnr"
+version = "0.1.0"
+authors = ["Ismael González <ismgonval@gmail.com>"]
+
+[dependencies]
+ansi_term = "0.11"
+clap = "~2.32"
+regex = "1"
+walkdir= "2"
+tempfile = "3"
