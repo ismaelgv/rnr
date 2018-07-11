@@ -26,9 +26,9 @@ ARGS:
 ```
 
 ## Default behavior
-* Dry-run by default.
-* Accept a list of files as arguments.
-* Accept a regex to generate matches.
-* If max depth is not provided to recursive mode, it is assumed infite.
+* *Dry-run* by default.
+* Accept multiple files as arguments.
+* Accept a **regex** to generate matches.
+* If max depth is not provided to recursive mode, it is assumed *infite*.
 * Do not generate backups.
-* Output is always colored. [TODO: no color mode / silent mode]
+* Output is *always colored*. [TODO: *no color mode / silent mode*]
