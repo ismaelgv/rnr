@@ -13,8 +13,7 @@ pub struct Config {
     pub replacement: String,
     pub force: bool,
     pub backup: bool,
-    pub recursive: RecursiveMode,
-    pub file_args: Option<Vec<String>>,
+    pub mode: RunMode,
 }
 
 impl Config {
@@ -24,10 +23,12 @@ impl Config {
     }
 }
 
-pub struct RecursiveMode {
-    pub active: bool,
-    pub path: String,
-    pub max_depth: Option<usize>,
+pub enum RunMode {
+    FileList(Vec<String>),
+    Recursive {
+        path: String,
+        max_depth: Option<usize>,
+    },
 }
 
 /// Parse arguments and do some checking.
@@ -50,40 +51,36 @@ fn parse_arguments() -> Config {
     let replacement = String::from(matches.value_of("REPLACEMENT").unwrap());
 
     // Detect normal or recursive mode and set properly set its parameters
-    let mut file_args: Option<Vec<String>> = None;
-    let mut recursive = RecursiveMode {
-        active: false,
-        path: "".to_string(),
-        max_depth: None,
-    };
-    if matches.is_present("recursive") {
-        recursive.active = true;
-        recursive.path = matches.value_of("recursive").unwrap().to_string();
-        if matches.is_present("max-depth") {
-            let max_depth = matches
-                .value_of("max-depth")
-                .unwrap()
-                .parse::<usize>()
-                .unwrap();
-            recursive.max_depth = Some(max_depth);
-        }
+    let mode = if matches.is_present("recursive") {
+        let path = matches.value_of("recursive").unwrap().to_string();
+        let max_depth = if matches.is_present("max-depth") {
+            Some(
+                matches
+                    .value_of("max-depth")
+                    .unwrap()
+                    .parse::<usize>()
+                    .unwrap(),
+            )
+        } else {
+            None
+        };
+        RunMode::Recursive { path, max_depth }
     } else {
-        file_args = Some(
+        RunMode::FileList(
             matches
                 .values_of("FILE(S)")
                 .unwrap()
                 .map(String::from)
                 .collect(),
         )
-    }
+    };
 
     Config {
         expression,
         replacement,
         force: matches.is_present("force"),
         backup: matches.is_present("backup"),
-        recursive,
-        file_args,
+        mode,
     }
 }
 

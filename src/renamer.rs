@@ -1,5 +1,6 @@
 use ansi_term::Colour::*;
 use args::Config;
+use args::RunMode;
 use std::fs;
 use std::path::Path;
 use std::process;
@@ -123,11 +124,11 @@ impl Renamer {
 
 /// Return a list of files for the given configuration.
 fn get_files(config: &Config) -> Vec<String> {
-    if config.recursive.active {
+    match &config.mode {
+        RunMode::Recursive { path, max_depth } => {
         // Get recursive list of files walking directories
-        let path = &config.recursive.path;
-        let walkdir = match config.recursive.max_depth {
-            Some(max_depth) => WalkDir::new(path).max_depth(max_depth),
+        let walkdir = match max_depth {
+            Some(max_depth) => WalkDir::new(path).max_depth(*max_depth),
             None => WalkDir::new(path),
         };
         walkdir
@@ -145,9 +146,9 @@ fn get_files(config: &Config) -> Vec<String> {
                 }
             })
             .collect()
-    } else {
-        // Get file list directly from argument list
-        config.file_args.clone().unwrap()
+    },
+        RunMode::FileList(file_list) =>
+        file_list.clone()
     }
 }
 
@@ -186,12 +187,7 @@ mod test {
             replacement: "passed".to_string(),
             force: true,
             backup: true,
-            recursive: RecursiveMode {
-                active: false,
-                path: "./".to_string(),
-                max_depth: None,
-            },
-            file_args: Some(mock_files),
+            mode: RunMode::FileList(mock_files),
         };
 
         // Run renamer
