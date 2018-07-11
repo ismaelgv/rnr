@@ -4,6 +4,8 @@ version = "0.1.0"
 authors = ["Ismael González Valverde <ismgonval@gmail.com>"]
 description = "rnr is a command-line tool to batch rename files for ANSI terminals"
 license = "MIT"
+homepage = "https://github.com/ChuckDaniels87/rnr"
+repository = "https://github.com/ChuckDaniels87/rnr"
 
 [dependencies]
 ansi_term = "0.11"
