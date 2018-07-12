@@ -1,4 +1,7 @@
-# RnR [![Build Status](https://travis-ci.org/ChuckDaniels87/rnr.svg?branch=master)](https://travis-ci.org/ChuckDaniels87/rnr)
+# RnR
+[![Build Status](https://travis-ci.org/ChuckDaniels87/rnr.svg?branch=master)](https://travis-ci.org/ChuckDaniels87/rnr) [![Crates.io](https://img.shields.io/crates/v/rnr.svg)](https://crates.io/crates/rnr)
+[![License](https://img.shields.io/crates/l/rnr.svg)](https://github.com/ChuckDaniels87/rnr/blob/master/LICENSE)
+
 `rnr` is a command-line tool to batch rename files for ANSI terminals.
 
 # Install
