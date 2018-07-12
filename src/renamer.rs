@@ -42,7 +42,7 @@ impl Renamer {
                     Ok(_) => true,
                     Err(_) => {
                         eprintln!(
-                            "{}File '{}' is not accesible",
+                            "{}File '{}' is not accessible",
                             Yellow.paint("Warn: "),
                             Yellow.paint(file.as_str())
                         );

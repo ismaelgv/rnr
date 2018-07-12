@@ -52,8 +52,5 @@ ARGS:
 * Does not generate backups.
 * Output is *always colored*. [TODO: *no color mode / silent mode*]
 
-# Screenshots
-
-![screenshot_1](https://user-images.githubusercontent.com/8478202/42589754-5ac244ec-8542-11e8-9b1a-8c0d8d0419bf.png)
-![screenshot_2](https://user-images.githubusercontent.com/8478202/42589674-110570f4-8542-11e8-9b10-7ff21b1cd4ce.png)
-![screenshot_3](https://user-images.githubusercontent.com/8478202/42635236-cce075be-85e5-11e8-94c5-ec6c6c1e92cb.png)
+# Demo
+[![Demo](https://cdn.rawgit.com/ChuckDaniels87/b0607fdaa44c6201cde398b6a9e23e4e/raw/000cf837d4248527272893513f605a8702bdbca8/rnr-demo.svg)](https://cdn.rawgit.com/ChuckDaniels87/b0607fdaa44c6201cde398b6a9e23e4e/raw/000cf837d4248527272893513f605a8702bdbca8/rnr-demo.svg)
