@@ -81,7 +81,7 @@ impl Renamer {
             );
         } else if self.config.force {
             if self.config.backup {
-                self.backup(file);
+                create_backup(file);
             }
 
             if fs::rename(&file, &target).is_err() {
@@ -98,28 +98,6 @@ impl Renamer {
         }
     }
 
-    /// Create a backup of the file
-    fn backup(&self, file: &str) {
-        let backup_name = format!("{}.bk", file);
-        let mut backup = backup_name.clone();
-        let mut backup_index = 0;
-
-        while Path::new(&backup).exists() {
-            backup_index += 1;
-            backup = format!("{}.{}", backup_name, backup_index);
-        }
-
-        println!(
-            "{} Creating a backup - {}",
-            Blue.paint("Info: "),
-            Blue.paint(format!("{} -> {}", file, backup))
-        );
-
-        if fs::copy(file, backup).is_err() {
-            eprintln!("{}File backup failed.", Red.paint("Error: "));
-            process::exit(1);
-        }
-    }
 }
 
 /// Return a list of files for the given configuration.
@@ -152,6 +130,36 @@ fn get_files(config: &Config) -> Vec<String> {
     }
 }
 
+/// Generate a non-existing name adding numbers to the end of the file. It also supports adding a
+/// suffix to the original name.
+fn get_unique_filename(file: &str, suffix: &str) -> String {
+    let base_name = format!("{}{}", file,  suffix);
+    let mut unique_name = base_name.clone();
+    let mut index = 0;
+
+    while Path::new(&unique_name).exists() {
+        index += 1;
+        unique_name = format!("{}.{}", base_name, index);
+    }
+
+    unique_name.to_string()
+}
+
+/// Create a backup of the file
+fn create_backup(file: &str) {
+    let backup = get_unique_filename(file, ".bk");
+    println!(
+        "{} Creating a backup - {}",
+        Blue.paint("Info: "),
+        Blue.paint(format!("{} -> {}", file, backup))
+    );
+
+    if fs::copy(file, backup).is_err() {
+        eprintln!("{}File backup failed.", Red.paint("Error: "));
+        process::exit(1);
+    }
+}
+
 #[cfg(test)]
 mod test {
     extern crate tempfile;
@@ -163,11 +171,18 @@ mod test {
     use std::path::Path;
     use std::sync::Arc;
 
-    #[test]
-    fn renamer_test() {
-        // Create and set a new temporal directory
+    /// Create and set a new temporal directory
+    fn set_temp_directory() -> tempfile::TempDir {
         let tempdir = tempfile::tempdir().expect("Error creating temp directory");
         env::set_current_dir(&tempdir).expect("Error changing to temp directory");
+        println!("Running test in '{:?}'", tempdir);
+
+        tempdir
+    }
+
+    #[test]
+    fn renamer_test() {
+        let _tempdir = set_temp_directory();
 
         // Generate a mock configuration
         let mock_files: Vec<String> = vec![
@@ -201,5 +216,25 @@ mod test {
         assert!(Path::new("test_file_1.txt.bk").exists());
         assert!(Path::new("mock_dir/test_file_1.txt.bk").exists());
         assert!(Path::new("mock_dir/test_file_2.txt.bk").exists());
+    }
+
+    #[test]
+    fn backup_test() {
+        let _tempdir = set_temp_directory();
+
+        let mock_files: Vec<String> = vec![
+            "test_file_1.txt".to_string(),
+            "test_file_2.txt".to_string(),
+            "test_file_3.txt".to_string(),
+        ];
+
+        for file in &mock_files {
+            fs::File::create(file).expect("Error creating mock file...");
+            super::create_backup(file);
+        }
+
+        assert!(Path::new("test_file_1.txt.bk").exists());
+        assert!(Path::new("test_file_2.txt.bk").exists());
+        assert!(Path::new("test_file_3.txt.bk").exists());
     }
 }
