@@ -97,43 +97,41 @@ impl Renamer {
             println!("{} -> {}", Blue.paint(file), Green.paint(target),);
         }
     }
-
 }
 
 /// Return a list of files for the given configuration.
 fn get_files(config: &Config) -> Vec<String> {
     match &config.mode {
         RunMode::Recursive { path, max_depth } => {
-        // Get recursive list of files walking directories
-        let walkdir = match max_depth {
-            Some(max_depth) => WalkDir::new(path).max_depth(*max_depth),
-            None => WalkDir::new(path),
-        };
-        walkdir
-            .into_iter()
-            .filter_map(|e| e.ok())
-            .filter_map(|x| match x.path().to_str() {
-                Some(s) => Some(s.to_string()),
-                None => {
-                    eprintln!(
-                        "{}File '{}' contains invalid characters",
-                        Yellow.paint("Warn: "),
-                        Yellow.paint(x.path().to_string_lossy())
-                    );
-                    None
-                }
-            })
-            .collect()
-    },
-        RunMode::FileList(file_list) =>
-        file_list.clone()
+            // Get recursive list of files walking directories
+            let walkdir = match max_depth {
+                Some(max_depth) => WalkDir::new(path).max_depth(*max_depth),
+                None => WalkDir::new(path),
+            };
+            walkdir
+                .into_iter()
+                .filter_map(|e| e.ok())
+                .filter_map(|x| match x.path().to_str() {
+                    Some(s) => Some(s.to_string()),
+                    None => {
+                        eprintln!(
+                            "{}File '{}' contains invalid characters",
+                            Yellow.paint("Warn: "),
+                            Yellow.paint(x.path().to_string_lossy())
+                        );
+                        None
+                    }
+                })
+                .collect()
+        }
+        RunMode::FileList(file_list) => file_list.clone(),
     }
 }
 
 /// Generate a non-existing name adding numbers to the end of the file. It also supports adding a
 /// suffix to the original name.
 fn get_unique_filename(file: &str, suffix: &str) -> String {
-    let base_name = format!("{}{}", file,  suffix);
+    let base_name = format!("{}{}", file, suffix);
     let mut unique_name = base_name.clone();
     let mut index = 0;
 
@@ -163,37 +161,44 @@ fn create_backup(file: &str) {
 #[cfg(test)]
 mod test {
     extern crate tempfile;
-    use super::Renamer;
-    use args::*;
+    use super::*;
     use regex::Regex;
-    use std::env;
     use std::fs;
     use std::path::Path;
     use std::sync::Arc;
 
-    /// Create and set a new temporal directory
-    fn set_temp_directory() -> tempfile::TempDir {
-        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
-        env::set_current_dir(&tempdir).expect("Error changing to temp directory");
-        println!("Running test in '{:?}'", tempdir);
-
-        tempdir
-    }
-
     #[test]
     fn renamer_test() {
-        let _tempdir = set_temp_directory();
+        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
+        println!("Running test in '{:?}'", tempdir);
+        let temp_path = tempdir.path().to_str().unwrap();
 
-        // Generate a mock configuration
+        // Generate a mock directory tree and files
+        //
+        // - temp_path
+        //     |
+        //     - test_file_1.txt
+        //     |
+        //     - test_file_2.txt
+        //     |
+        //     - mock_dir
+        //         |
+        //         - test_file_1.txt
+        //         |
+        //         - test_file_2.txt
+        //
+        let mock_dir = format!("{}/mock_dir", temp_path);
         let mock_files: Vec<String> = vec![
-            "test_file_1.txt".to_string(),
-            "mock_dir/test_file_1.txt".to_string(),
-            "mock_dir/test_file_2.txt".to_string(),
+            format!("{}/test_file_1.txt", temp_path),
+            format!("{}/test_file_2.txt", temp_path),
+            format!("{}/test_file_1.txt", mock_dir),
+            format!("{}/test_file_2.txt", mock_dir),
         ];
-        // Generate files
-        fs::create_dir("mock_dir").expect("Error creating mock directory...");
+
+        // Create directory tree and files in the filesystem
+        fs::create_dir(&mock_dir).expect("Error creating mock directory...");
         for file in &mock_files {
-            fs::File::create(file).expect("Error creating mock file...");
+            fs::File::create(&file).expect("Error creating mock file...");
         }
 
         // Create config
@@ -209,32 +214,60 @@ mod test {
         let mut renamer = Renamer::new(&Arc::new(mock_config));
         renamer.process();
 
-        assert!(Path::new("passed_file_1.txt").exists());
-        assert!(Path::new("mock_dir/passed_file_1.txt").exists());
-        assert!(Path::new("mock_dir/passed_file_2.txt").exists());
+        // Check renamed files
+        assert!(Path::new(&format!("{}/passed_file_1.txt", temp_path)).exists());
+        assert!(Path::new(&format!("{}/passed_file_2.txt", temp_path)).exists());
+        assert!(Path::new(&format!("{}/passed_file_1.txt", mock_dir)).exists());
+        assert!(Path::new(&format!("{}/passed_file_2.txt", mock_dir)).exists());
 
-        assert!(Path::new("test_file_1.txt.bk").exists());
-        assert!(Path::new("mock_dir/test_file_1.txt.bk").exists());
-        assert!(Path::new("mock_dir/test_file_2.txt.bk").exists());
+        // Check backup files
+        assert!(Path::new(&format!("{}/test_file_1.txt.bk", temp_path)).exists());
+        assert!(Path::new(&format!("{}/test_file_2.txt.bk", temp_path)).exists());
+        assert!(Path::new(&format!("{}/test_file_1.txt.bk", mock_dir)).exists());
+        assert!(Path::new(&format!("{}/test_file_2.txt.bk", mock_dir)).exists());
     }
 
     #[test]
     fn backup_test() {
-        let _tempdir = set_temp_directory();
+        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
+        println!("Running test in '{:?}'", tempdir);
+        let temp_path = tempdir.path().to_str().unwrap();
 
         let mock_files: Vec<String> = vec![
-            "test_file_1.txt".to_string(),
-            "test_file_2.txt".to_string(),
-            "test_file_3.txt".to_string(),
+            format!("{}/test_file_1.txt", temp_path),
+            format!("{}/test_file_2.txt", temp_path),
+            format!("{}/test_file_3.txt", temp_path),
         ];
 
         for file in &mock_files {
-            fs::File::create(file).expect("Error creating mock file...");
-            super::create_backup(file);
+            fs::File::create(&file).expect("Error creating mock file...");
+            create_backup(&file);
         }
 
-        assert!(Path::new("test_file_1.txt.bk").exists());
-        assert!(Path::new("test_file_2.txt.bk").exists());
-        assert!(Path::new("test_file_3.txt.bk").exists());
+        assert!(Path::new(&format!("{}/test_file_1.txt.bk", temp_path)).exists());
+        assert!(Path::new(&format!("{}/test_file_2.txt.bk", temp_path)).exists());
+        assert!(Path::new(&format!("{}/test_file_3.txt.bk", temp_path)).exists());
+    }
+
+    #[test]
+    fn unique_name_test() {
+        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
+        println!("Running test in '{:?}'", tempdir);
+        let temp_path = tempdir.path().to_str().unwrap();
+
+        let mock_files: Vec<String> = vec![
+            format!("{}/test_file_1", temp_path),
+            format!("{}/test_file_1.1", temp_path),
+            format!("{}/test_file_1.2", temp_path),
+        ];
+
+        for file in &mock_files {
+            fs::File::create(&file).expect("Error creating mock file...");
+        }
+
+        assert_eq!(
+            get_unique_filename(&mock_files[0], ""),
+            format!("{}/test_file_1.3", temp_path)
+        );
     }
 }
