@@ -270,4 +270,130 @@ mod test {
             format!("{}/test_file_1.3", temp_path)
         );
     }
+
+    #[test]
+    fn get_files_args_test() {
+        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
+        println!("Running test in '{:?}'", tempdir);
+        let temp_path = tempdir.path().to_str().unwrap();
+
+        let mock_files: Vec<String> = vec![
+            format!("{}/test_file_1.txt", temp_path),
+            format!("{}/test_file_2.txt", temp_path),
+            format!("{}/test_file_3.txt", temp_path),
+        ];
+
+        for file in &mock_files {
+            fs::File::create(&file).expect("Error creating mock file...");
+        }
+
+        let mock_config = Config {
+            expression: Regex::new("test").unwrap(),
+            replacement: "passed".to_string(),
+            force: false,
+            backup: false,
+            mode: RunMode::FileList(mock_files),
+        };
+
+        let files = get_files(&mock_config);
+        assert!(files.contains(&format!("{}/test_file_1.txt", temp_path)));
+        assert!(files.contains(&format!("{}/test_file_2.txt", temp_path)));
+        assert!(files.contains(&format!("{}/test_file_3.txt", temp_path)));
+    }
+
+    #[test]
+    fn get_files_recursive_test() {
+        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
+        println!("Running test in '{:?}'", tempdir);
+        let temp_path = tempdir.path().to_str().unwrap();
+
+        // Generate a mock directories tree and files
+        //
+        // - temp_path
+        //     |
+        //     - test_file.txt
+        //     |
+        //     - mock_dir_1
+        //         |
+        //         - test_file.txt
+        //         |
+        //         - mock_dir_2
+        //             |
+        //             - test_file.txt
+        //             |
+        //             - mock_dir_3
+        //                 |
+        //                 - test_file.txt
+        //
+        let mock_dirs: Vec<String> = vec![
+            format!("{}/mock_dir_1", temp_path),
+            format!("{}/mock_dir_1/mock_dir_2", temp_path),
+            format!("{}/mock_dir_1/mock_dir_2/mock_dir_3", temp_path),
+        ];
+        let mock_files: Vec<String> = vec![
+            format!("{}/test_file.txt", temp_path),
+            format!("{}/test_file.txt", mock_dirs[0]),
+            format!("{}/test_file.txt", mock_dirs[1]),
+            format!("{}/test_file.txt", mock_dirs[2]),
+        ];
+
+        // Create directory tree and files in the filesystem
+        for mock_dir in &mock_dirs {
+            fs::create_dir(&mock_dir).expect("Error creating mock directory...");
+        }
+        for file in &mock_files {
+            fs::File::create(&file).expect("Error creating mock file...");
+        }
+
+        // Create config with recursive search WITH max depth
+        let mock_config = Config {
+            expression: Regex::new("test").unwrap(),
+            replacement: "passed".to_string(),
+            force: false,
+            backup: false,
+            mode: RunMode::Recursive {
+                path: temp_path.to_string(),
+                max_depth: Some(2),
+            },
+        };
+
+        let files = get_files(&mock_config);
+        // Must contain these files
+        assert!(files.contains(&format!("{}/test_file.txt", temp_path)));
+        assert!(files.contains(&format!("{}/mock_dir_1/test_file.txt", temp_path)));
+        // Must NOT contain these files
+        assert!(!files.contains(&format!(
+            "{}/mock_dir_1/mock_dir_2/test_file.txt",
+            temp_path
+        )));
+        assert!(!files.contains(&format!(
+            "{}/mock_dir_1/mock_dir_2/mock_dir_3/test_file.txt",
+            temp_path
+        )));
+
+        // Create config with recursive search WITHOUT max depth
+        let mock_config = Config {
+            expression: Regex::new("test").unwrap(),
+            replacement: "passed".to_string(),
+            force: false,
+            backup: false,
+            mode: RunMode::Recursive {
+                path: temp_path.to_string(),
+                max_depth: None,
+            },
+        };
+
+        let files = get_files(&mock_config);
+        // Must contain all the files
+        assert!(files.contains(&format!("{}/test_file.txt", temp_path)));
+        assert!(files.contains(&format!("{}/mock_dir_1/test_file.txt", temp_path)));
+        assert!(files.contains(&format!(
+            "{}/mock_dir_1/mock_dir_2/test_file.txt",
+            temp_path
+        )));
+        assert!(files.contains(&format!(
+            "{}/mock_dir_1/mock_dir_2/mock_dir_3/test_file.txt",
+            temp_path
+        )));
+    }
 }
