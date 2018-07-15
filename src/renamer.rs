@@ -1,6 +1,6 @@
 use ansi_term::Colour::*;
 use args::Config;
-use fileutils::{create_backup, get_files};
+use fileutils::{create_backup, get_files, cleanup_files};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
@@ -21,7 +21,7 @@ impl Renamer {
 
     /// Process file batch
     pub fn process(&mut self) {
-        self.cleanup();
+        cleanup_files(&mut self.files);
 
         for file in &self.files {
             let target = self.replace_match(file);
@@ -29,28 +29,6 @@ impl Renamer {
                 self.rename(file, &target);
             }
         }
-    }
-
-    /// Clean files that does not exists, broken links and directories
-    fn cleanup(&mut self) {
-        self.files.retain(|file| {
-            if !Path::new(&file).exists() {
-                // Checks if non-existing path is actually a symlink
-                match fs::read_link(&file) {
-                    Ok(_) => true,
-                    Err(_) => {
-                        eprintln!(
-                            "{}File '{}' is not accessible",
-                            Yellow.paint("Warn: "),
-                            Yellow.paint(file.as_str())
-                        );
-                        false
-                    }
-                }
-            } else {
-                !fs::metadata(&file).unwrap().is_dir()
-            }
-        });
     }
 
     /// Replace expression match in the given file using stored config.

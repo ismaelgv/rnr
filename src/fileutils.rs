@@ -65,6 +65,28 @@ pub fn create_backup(file: &str) {
     }
 }
 
+/// Clean files that does not exists, broken links and directories
+pub fn cleanup_files(files: &mut Vec<String>) {
+    files.retain(|file| {
+        if !Path::new(&file).exists() {
+            // Checks if non-existing path is actually a symlink
+            match fs::read_link(&file) {
+                Ok(_) => true,
+                Err(_) => {
+                    eprintln!(
+                        "{}File '{}' is not accessible",
+                        Yellow.paint("Warn: "),
+                        Yellow.paint(file.as_str())
+                    );
+                    false
+                }
+            }
+        } else {
+            !fs::metadata(&file).unwrap().is_dir()
+        }
+    });
+}
+
 #[cfg(test)]
 mod test {
     extern crate tempfile;
@@ -239,6 +261,70 @@ mod test {
         )));
         assert!(files.contains(&format!(
             "{}/mock_dir_1/mock_dir_2/mock_dir_3/test_file.txt",
+            temp_path
+        )));
+    }
+
+    #[test]
+    fn cleanup_test() {
+        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
+        println!("Running test in '{:?}'", tempdir);
+        let temp_path = tempdir.path().to_str().unwrap();
+
+        // Generate a mock directories tree and files
+        //
+        // - temp_path
+        //     |
+        //     - test_file.txt
+        //     |
+        //     - mock_dir_1
+        //         |
+        //         - test_file.txt
+        //         |
+        //         - mock_dir_2
+        //             |
+        //             - test_file.txt
+        //
+        let mock_dirs: Vec<String> = vec![
+            format!("{}/mock_dir_1", temp_path),
+            format!("{}/mock_dir_1/mock_dir_2", temp_path),
+        ];
+        let mut mock_files: Vec<String> = vec![
+            format!("{}/test_file.txt", temp_path),
+            format!("{}/test_file.txt", mock_dirs[0]),
+            format!("{}/test_file.txt", mock_dirs[1]),
+        ];
+
+        // Create directory tree and files in the filesystem
+        for mock_dir in &mock_dirs {
+            fs::create_dir(&mock_dir).expect("Error creating mock directory...");
+        }
+        for file in &mock_files {
+            fs::File::create(&file).expect("Error creating mock file...");
+        }
+
+        // Add directories and false files to arguments
+        mock_files.append(&mut mock_dirs.clone());
+        mock_files.push(format!("{}/false_file.txt", temp_path));
+        mock_files.push(format!("{}/false_file.txt", mock_dirs[0]));
+        mock_files.push(format!("{}/false_file.txt", mock_dirs[1]));
+
+        cleanup_files(&mut mock_files);
+
+        // Must contain these the files
+        assert!(mock_files.contains(&format!("{}/test_file.txt", temp_path)));
+        assert!(mock_files.contains(&format!("{}/mock_dir_1/test_file.txt", temp_path)));
+        assert!(mock_files.contains(&format!(
+            "{}/mock_dir_1/mock_dir_2/test_file.txt",
+            temp_path
+        )));
+        // Must NOT contain these files/directories
+        assert!(!mock_files.contains(&format!("{}/mock_dir_1", temp_path)));
+        assert!(!mock_files.contains(&format!("{}/mock_dir_1/mock_dir_2", temp_path)));
+        assert!(!mock_files.contains(&format!("{}/false_file.txt", temp_path)));
+        assert!(!mock_files.contains(&format!("{}/mock_dir_1/false_file.txt", temp_path)));
+        assert!(!mock_files.contains(&format!(
+            "{}/mock_dir_1/mock_dir_2/false_file.txt",
             temp_path
         )));
     }
