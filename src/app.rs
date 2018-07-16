@@ -51,7 +51,7 @@ fn parse_arguments() -> Config {
     let expression = match Regex::new(matches.value_of("EXPRESSION").unwrap()) {
         Ok(expr) => expr,
         Err(err) => {
-            printer.eprint(format!(
+            printer.eprint(&format!(
                 "{}Bad expression provided\n\n{}",
                 printer.colors.error.paint("Error: "),
                 printer.colors.error.paint(err.to_string())
