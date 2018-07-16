@@ -112,7 +112,7 @@ mod test {
     use std::sync::Arc;
 
     #[test]
-    fn renamer_test() {
+    fn renamer() {
         let tempdir = tempfile::tempdir().expect("Error creating temp directory");
         println!("Running test in '{:?}'", tempdir);
         let temp_path = tempdir.path().to_str().unwrap();

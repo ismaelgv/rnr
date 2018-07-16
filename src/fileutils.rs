@@ -96,7 +96,7 @@ mod test {
     use std::path::Path;
 
     #[test]
-    fn backup_test() {
+    fn backup() {
         let tempdir = tempfile::tempdir().expect("Error creating temp directory");
         println!("Running test in '{:?}'", tempdir);
         let temp_path = tempdir.path().to_str().unwrap();
@@ -118,7 +118,7 @@ mod test {
     }
 
     #[test]
-    fn unique_name_test() {
+    fn unique_name() {
         let tempdir = tempfile::tempdir().expect("Error creating temp directory");
         println!("Running test in '{:?}'", tempdir);
         let temp_path = tempdir.path().to_str().unwrap();
@@ -140,7 +140,7 @@ mod test {
     }
 
     #[test]
-    fn get_files_args_test() {
+    fn get_files_args() {
         let tempdir = tempfile::tempdir().expect("Error creating temp directory");
         println!("Running test in '{:?}'", tempdir);
         let temp_path = tempdir.path().to_str().unwrap();
@@ -171,7 +171,7 @@ mod test {
     }
 
     #[test]
-    fn get_files_recursive_test() {
+    fn get_files_recursive() {
         let tempdir = tempfile::tempdir().expect("Error creating temp directory");
         println!("Running test in '{:?}'", tempdir);
         let temp_path = tempdir.path().to_str().unwrap();
@@ -271,7 +271,7 @@ mod test {
     }
 
     #[test]
-    fn cleanup_test() {
+    fn cleanup() {
         let tempdir = tempfile::tempdir().expect("Error creating temp directory");
         println!("Running test in '{:?}'", tempdir);
         let temp_path = tempdir.path().to_str().unwrap();
