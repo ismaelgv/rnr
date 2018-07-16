@@ -1,5 +1,4 @@
 #![allow(unknown_lints)]
-use ansi_term::Colour::*;
 use clap::{App, Arg};
 use output::Printer;
 use regex::Regex;
@@ -39,15 +38,24 @@ fn parse_arguments() -> Config {
     let app = config_app();
     let matches = app.get_matches();
 
+    // Set output mode
+    let printer = if matches.is_present("silent") {
+        Printer::silent()
+    } else if matches.value_of("color").unwrap_or("auto") == "never" {
+        Printer::no_colored()
+    } else {
+        Printer::colored()
+    };
+
     // Get and validate regex expression and replacement from arguments
     let expression = match Regex::new(matches.value_of("EXPRESSION").unwrap()) {
         Ok(expr) => expr,
         Err(err) => {
-            eprintln!(
+            printer.eprint(format!(
                 "{}Bad expression provided\n\n{}",
-                Red.paint("Error: "),
-                Red.paint(err.to_string())
-            );
+                printer.colors.error.paint("Error: "),
+                printer.colors.error.paint(err.to_string())
+            ));
             process::exit(1);
         }
     };
@@ -76,15 +84,6 @@ fn parse_arguments() -> Config {
                 .map(String::from)
                 .collect(),
         )
-    };
-
-    // Set output mode
-    let printer = if matches.is_present("silent") {
-        Printer::silent()
-    } else if matches.value_of("color").unwrap_or("auto") == "never" {
-        Printer::no_colored()
-    } else {
-        Printer::colored()
     };
 
     Config {
