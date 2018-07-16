@@ -1,8 +1,9 @@
 use ansi_term::Colour::*;
 use app::Config;
-use fileutils::{create_backup, get_files, cleanup_files};
+use fileutils::{cleanup_files, create_backup, get_files};
 use std::fs;
 use std::path::Path;
+use std::process;
 use std::sync::Arc;
 
 pub struct Renamer {
@@ -57,7 +58,21 @@ impl Renamer {
             );
         } else if self.config.force {
             if self.config.backup {
-                create_backup(file);
+                match create_backup(file) {
+                    Ok(backup) => println!(
+                        "{} Backup created - {}",
+                        Blue.paint("Info: "),
+                        Blue.paint(format!("{} -> {}", file, backup))
+                    ),
+                    Err(_) => {
+                        eprintln!(
+                            "{}File backup failed - {}",
+                            Red.paint("Error: "),
+                            Red.paint(file)
+                        );
+                        process::exit(1);
+                    }
+                }
             }
 
             if fs::rename(&file, &target).is_err() {

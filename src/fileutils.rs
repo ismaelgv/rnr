@@ -3,7 +3,6 @@ use app::Config;
 use app::RunMode;
 use std::fs;
 use std::path::Path;
-use std::process;
 use walkdir::WalkDir;
 
 /// Return a list of files for the given configuration.
@@ -51,17 +50,11 @@ pub fn get_unique_filename(file: &str, suffix: &str) -> String {
 }
 
 /// Create a backup of the file
-pub fn create_backup(file: &str) {
+pub fn create_backup(file: &str) -> Result<String, ()> {
     let backup = get_unique_filename(file, ".bk");
-    println!(
-        "{} Creating a backup - {}",
-        Blue.paint("Info: "),
-        Blue.paint(format!("{} -> {}", file, backup))
-    );
-
-    if fs::copy(file, backup).is_err() {
-        eprintln!("{}File backup failed.", Red.paint("Error: "));
-        process::exit(1);
+    match fs::copy(file, &backup) {
+        Ok(_) => Ok(backup),
+        Err(_) => Err(()),
     }
 }
 
@@ -70,17 +63,7 @@ pub fn cleanup_files(files: &mut Vec<String>) {
     files.retain(|file| {
         if !Path::new(&file).exists() {
             // Checks if non-existing path is actually a symlink
-            match fs::read_link(&file) {
-                Ok(_) => true,
-                Err(_) => {
-                    eprintln!(
-                        "{}File '{}' is not accessible",
-                        Yellow.paint("Warn: "),
-                        Yellow.paint(file.as_str())
-                    );
-                    false
-                }
-            }
+            fs::read_link(&file).is_ok()
         } else {
             !fs::metadata(&file).unwrap().is_dir()
         }
@@ -109,7 +92,7 @@ mod test {
 
         for file in &mock_files {
             fs::File::create(&file).expect("Error creating mock file...");
-            create_backup(&file);
+            create_backup(&file).expect("Error generating backup file...");
         }
 
         assert!(Path::new(&format!("{}/test_file_1.txt.bk", temp_path)).exists());
