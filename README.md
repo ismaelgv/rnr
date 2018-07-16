@@ -28,6 +28,7 @@ FLAGS:
     -n, --dry-run    Only show what would be done (default mode)
     -f, --force      Make actual changes to files
     -h, --help       Prints help information
+    -x, --hidden     Include hidden files and directories
     -s, --silent     Do not print any information
     -V, --version    Prints version information
 
