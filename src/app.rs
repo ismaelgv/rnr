@@ -5,6 +5,7 @@ use regex::Regex;
 use std::ffi::{OsStr, OsString};
 use std::process;
 use std::sync::Arc;
+use output::Printer;
 
 /// This module is defined Config struct to carry application configuration. This struct is created
 /// from the parsed arguments from command-line input using `clap`. Only UTF-8 valid arguments are
@@ -15,6 +16,7 @@ pub struct Config {
     pub force: bool,
     pub backup: bool,
     pub mode: RunMode,
+    pub printer: Printer,
 }
 
 impl Config {
@@ -76,12 +78,22 @@ fn parse_arguments() -> Config {
         )
     };
 
+    // Set output mode
+    let printer = if matches.is_present("silent") {
+        Printer::silent()
+    } else if matches.value_of("color").unwrap() == "never" {
+            Printer::no_colored()
+    } else {
+            Printer::colored()
+    };
+
     Config {
         expression,
         replacement,
         force: matches.is_present("force"),
         backup: matches.is_present("backup"),
         mode,
+        printer,
     }
 }
 
@@ -96,14 +108,14 @@ fn config_app<'a>() -> App<'a, 'a> {
                 .help("Expression to match (can be a regex)")
                 .required(true)
                 .validator_os(is_valid_string)
-                .index(1),
+                .index(1)
         )
         .arg(
             Arg::with_name("REPLACEMENT")
                 .help("Expression replacement")
                 .required(true)
                 .validator_os(is_valid_string)
-                .index(2),
+                .index(2)
         )
         .arg(
             Arg::with_name("FILE(S)")
@@ -118,7 +130,7 @@ fn config_app<'a>() -> App<'a, 'a> {
                 .long("dry-run")
                 .short("n")
                 .help("Only show what would be done (default mode)")
-                .conflicts_with("force"),
+                .conflicts_with("force")
         )
         .arg(
             Arg::with_name("force")
@@ -138,17 +150,31 @@ fn config_app<'a>() -> App<'a, 'a> {
                 .short("r")
                 .value_name("PATH")
                 .validator_os(is_valid_string)
-                .help("Recursive mode"),
+                .help("Recursive mode")
         )
         .arg(
             Arg::with_name("max-depth")
                 .requires("recursive")
                 .long("max-depth")
                 .short("d")
+                .takes_value(true)
                 .value_name("LEVEL")
                 .validator(is_integer)
                 .help("Set max depth in recursive mode")
-                .takes_value(true),
+        )
+        .arg(
+            Arg::with_name("silent")
+                .long("silent")
+                .short("s")
+                .help("Do not print any information")
+        )
+        .arg(
+            Arg::with_name("color")
+                .long("color")
+                .takes_value(true)
+                .possible_values(&["always", "auto", "never"])
+                .default_value("auto")
+                .help("Set color output mode")
         )
 }
 

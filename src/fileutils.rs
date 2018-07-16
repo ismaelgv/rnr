@@ -74,6 +74,7 @@ pub fn cleanup_files(files: &mut Vec<String>) {
 mod test {
     extern crate tempfile;
     use super::*;
+    use output::Printer;
     use regex::Regex;
     use std::fs;
     use std::path::Path;
@@ -144,6 +145,7 @@ mod test {
             force: false,
             backup: false,
             mode: RunMode::FileList(mock_files),
+            printer: Printer::colored(),
         };
 
         let files = get_files(&mock_config);
@@ -206,6 +208,7 @@ mod test {
                 path: temp_path.to_string(),
                 max_depth: Some(2),
             },
+            printer: Printer::colored(),
         };
 
         let files = get_files(&mock_config);
@@ -232,6 +235,7 @@ mod test {
                 path: temp_path.to_string(),
                 max_depth: None,
             },
+            printer: Printer::colored(),
         };
 
         let files = get_files(&mock_config);

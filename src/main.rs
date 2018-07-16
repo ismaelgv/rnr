@@ -13,6 +13,7 @@ use renamer::Renamer;
 mod app;
 mod renamer;
 mod fileutils;
+mod output;
 
 fn main() {
     // Read arguments

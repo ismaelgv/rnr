@@ -95,6 +95,7 @@ mod test {
     extern crate tempfile;
     use super::*;
     use app::RunMode;
+    use output::Printer;
     use regex::Regex;
     use std::fs;
     use std::path::Path;
@@ -141,6 +142,7 @@ mod test {
             force: true,
             backup: true,
             mode: RunMode::FileList(mock_files),
+            printer: Printer::colored(),
         };
 
         // Run renamer
