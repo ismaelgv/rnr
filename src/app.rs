@@ -30,6 +30,7 @@ pub enum RunMode {
     Recursive {
         path: String,
         max_depth: Option<usize>,
+        hidden: bool,
     },
 }
 
@@ -75,7 +76,7 @@ fn parse_arguments() -> Config {
         } else {
             None
         };
-        RunMode::Recursive { path, max_depth }
+        RunMode::Recursive { path, max_depth, hidden: matches.is_present("hidden") }
     } else {
         RunMode::FileList(
             matches
@@ -160,6 +161,13 @@ fn config_app<'a>() -> App<'a, 'a> {
                 .value_name("LEVEL")
                 .validator(is_integer)
                 .help("Set max depth in recursive mode"),
+        )
+        .arg(
+            Arg::with_name("hidden")
+                .requires("recursive")
+                .long("hidden")
+                .short("-x")
+                .help("Include hidden files and directories"),
         )
         .arg(
             Arg::with_name("silent")

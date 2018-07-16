@@ -2,12 +2,27 @@ use app::Config;
 use app::RunMode;
 use std::fs;
 use std::path::Path;
-use walkdir::WalkDir;
+use walkdir::{DirEntry, WalkDir};
 
 /// Return a list of files for the given configuration.
 pub fn get_files(config: &Config) -> Vec<String> {
     match &config.mode {
-        RunMode::Recursive { path, max_depth } => {
+        RunMode::Recursive {
+            path,
+            max_depth,
+            hidden,
+        } => {
+            // Detect if is a hidden file or directory, always include given path
+            let is_hidden = |f: &DirEntry| -> bool {
+                if !hidden && f.depth() > 0 {
+                    f.file_name()
+                        .to_str()
+                        .map(|s| !s.starts_with('.'))
+                        .unwrap_or(false)
+                } else {
+                    true
+                }
+            };
             // Get recursive list of files walking directories
             let walkdir = match max_depth {
                 Some(max_depth) => WalkDir::new(path).max_depth(*max_depth),
@@ -15,6 +30,7 @@ pub fn get_files(config: &Config) -> Vec<String> {
             };
             walkdir
                 .into_iter()
+                .filter_entry(is_hidden)
                 .filter_map(|e| e.ok())
                 .filter_map(|x| match x.path().to_str() {
                     Some(s) => Some(s.to_string()),
@@ -207,6 +223,7 @@ mod test {
             mode: RunMode::Recursive {
                 path: temp_path.to_string(),
                 max_depth: Some(2),
+                hidden: false,
             },
             printer: Printer::colored(),
         };
@@ -234,6 +251,7 @@ mod test {
             mode: RunMode::Recursive {
                 path: temp_path.to_string(),
                 max_depth: None,
+                hidden: false,
             },
             printer: Printer::colored(),
         };

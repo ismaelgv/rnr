@@ -1,3 +1,8 @@
+# v0.1.3 (Unreleased)
+### Added
+* Exclude hidden files and directories by default. Create a new flag to include
+  these hidden files.
+
 # v0.1.2 (2018-08-16)
 ### Added
 * Silent mode.
