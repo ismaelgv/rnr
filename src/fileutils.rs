@@ -170,17 +170,22 @@ mod test {
         assert!(files.contains(&format!("{}/test_file_3.txt", temp_path)));
     }
 
-    #[test]
-    fn get_files_recursive() {
+    // Generate directory tree and files for recursive tests
+    fn generate_recursive_tempdir() -> (tempfile::TempDir, String) {
         let tempdir = tempfile::tempdir().expect("Error creating temp directory");
         println!("Running test in '{:?}'", tempdir);
-        let temp_path = tempdir.path().to_str().unwrap();
-
+        let temp_path = tempdir.path().to_string_lossy().to_string().clone();
         // Generate a mock directories tree and files
         //
         // - temp_path
         //     |
         //     - test_file.txt
+        //     |
+        //     - .hidden_test_file.txt
+        //     |
+        //     - .hidden_mock_dir
+        //     |   |
+        //     |   - test_file.txt
         //     |
         //     - mock_dir_1
         //         |
@@ -194,16 +199,20 @@ mod test {
         //                 |
         //                 - test_file.txt
         //
+        //
         let mock_dirs: Vec<String> = vec![
+            format!("{}/.hidden_mock_dir", temp_path),
             format!("{}/mock_dir_1", temp_path),
             format!("{}/mock_dir_1/mock_dir_2", temp_path),
             format!("{}/mock_dir_1/mock_dir_2/mock_dir_3", temp_path),
         ];
         let mock_files: Vec<String> = vec![
             format!("{}/test_file.txt", temp_path),
+            format!("{}/.hidden_test_file.txt", temp_path),
             format!("{}/test_file.txt", mock_dirs[0]),
             format!("{}/test_file.txt", mock_dirs[1]),
             format!("{}/test_file.txt", mock_dirs[2]),
+            format!("{}/test_file.txt", mock_dirs[3]),
         ];
 
         // Create directory tree and files in the filesystem
@@ -213,6 +222,49 @@ mod test {
         for file in &mock_files {
             fs::File::create(&file).expect("Error creating mock file...");
         }
+
+        // Return tempdir data
+        (tempdir, temp_path)
+    }
+
+    #[test]
+    fn get_files_recursive() {
+        let (_tempdir, temp_path) = generate_recursive_tempdir();
+
+        // Create config with recursive search WITHOUT max depth
+        let mock_config = Config {
+            expression: Regex::new("test").unwrap(),
+            replacement: "passed".to_string(),
+            force: false,
+            backup: false,
+            mode: RunMode::Recursive {
+                path: temp_path.to_string(),
+                max_depth: None,
+                hidden: false,
+            },
+            printer: Printer::colored(),
+        };
+
+        let files = get_files(&mock_config);
+        // Must contain these files
+        assert!(files.contains(&format!("{}/test_file.txt", temp_path)));
+        assert!(files.contains(&format!("{}/mock_dir_1/test_file.txt", temp_path)));
+        assert!(files.contains(&format!(
+            "{}/mock_dir_1/mock_dir_2/test_file.txt",
+            temp_path
+        )));
+        assert!(files.contains(&format!(
+            "{}/mock_dir_1/mock_dir_2/mock_dir_3/test_file.txt",
+            temp_path
+        )));
+        // Must NOT contain these files
+        assert!(!files.contains(&format!("{}/.hidden_test_file.txt", temp_path)));
+        assert!(!files.contains(&format!("{}/.hidden_mock_dir/test_file.txt", temp_path)));
+    }
+
+    #[test]
+    fn get_files_recursive_depth() {
+        let (_tempdir, temp_path) = generate_recursive_tempdir();
 
         // Create config with recursive search WITH max depth
         let mock_config = Config {
@@ -241,6 +293,13 @@ mod test {
             "{}/mock_dir_1/mock_dir_2/mock_dir_3/test_file.txt",
             temp_path
         )));
+        assert!(!files.contains(&format!("{}/.hidden_test_file.txt", temp_path)));
+        assert!(!files.contains(&format!("{}/.hidden_mock_dir/test_file.txt", temp_path)));
+    }
+
+    #[test]
+    fn get_files_recursive_hidden() {
+        let (_tempdir, temp_path) = generate_recursive_tempdir();
 
         // Create config with recursive search WITHOUT max depth
         let mock_config = Config {
@@ -251,13 +310,13 @@ mod test {
             mode: RunMode::Recursive {
                 path: temp_path.to_string(),
                 max_depth: None,
-                hidden: false,
+                hidden: true,
             },
             printer: Printer::colored(),
         };
 
         let files = get_files(&mock_config);
-        // Must contain all the files
+        // Must contain these files
         assert!(files.contains(&format!("{}/test_file.txt", temp_path)));
         assert!(files.contains(&format!("{}/mock_dir_1/test_file.txt", temp_path)));
         assert!(files.contains(&format!(
@@ -268,6 +327,8 @@ mod test {
             "{}/mock_dir_1/mock_dir_2/mock_dir_3/test_file.txt",
             temp_path
         )));
+        assert!(files.contains(&format!("{}/.hidden_test_file.txt", temp_path)));
+        assert!(files.contains(&format!("{}/.hidden_mock_dir/test_file.txt", temp_path)));
     }
 
     #[test]
