@@ -1,5 +1,5 @@
 use ansi_term::Colour::*;
-use args::Config;
+use app::Config;
 use fileutils::{create_backup, get_files, cleanup_files};
 use std::fs;
 use std::path::Path;
@@ -79,7 +79,7 @@ impl Renamer {
 mod test {
     extern crate tempfile;
     use super::*;
-    use args::RunMode;
+    use app::RunMode;
     use regex::Regex;
     use std::fs;
     use std::path::Path;

@@ -10,13 +10,13 @@ extern crate walkdir;
 use ansi_term::Colour::*;
 use renamer::Renamer;
 
-mod args;
+mod app;
 mod renamer;
 mod fileutils;
 
 fn main() {
     // Read arguments
-    let config = args::Config::new();
+    let config = app::Config::new();
     if !config.force {
         println!("{}", White.bold().paint("This is a DRY-RUN"));
     }

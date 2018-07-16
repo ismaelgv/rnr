@@ -1,6 +1,6 @@
 use ansi_term::Colour::*;
-use args::Config;
-use args::RunMode;
+use app::Config;
+use app::RunMode;
 use std::fs;
 use std::path::Path;
 use std::process;
