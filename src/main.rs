@@ -7,19 +7,21 @@ extern crate clap;
 extern crate regex;
 extern crate walkdir;
 
-use ansi_term::Colour::*;
 use renamer::Renamer;
 
 mod app;
-mod renamer;
 mod fileutils;
 mod output;
+mod renamer;
 
 fn main() {
     // Read arguments
     let config = app::Config::new();
     if !config.force {
-        println!("{}", White.bold().paint("This is a DRY-RUN"));
+        let info = &config.printer.colors.info;
+        config
+            .printer
+            .print(&format!("{}", info.paint("This is a DRY-RUN")));
     }
 
     // Configure renamer

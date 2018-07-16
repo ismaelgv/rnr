@@ -1,4 +1,3 @@
-use ansi_term::Colour::*;
 use app::Config;
 use app::RunMode;
 use std::fs;
@@ -20,11 +19,12 @@ pub fn get_files(config: &Config) -> Vec<String> {
                 .filter_map(|x| match x.path().to_str() {
                     Some(s) => Some(s.to_string()),
                     None => {
-                        eprintln!(
+                        let warn = &config.printer.colors.warn;
+                        config.printer.eprint(&format!(
                             "{}File '{}' contains invalid characters",
-                            Yellow.paint("Warn: "),
-                            Yellow.paint(x.path().to_string_lossy())
-                        );
+                            warn.paint("Warn: "),
+                            warn.paint(x.path().to_string_lossy())
+                        ));
                         None
                     }
                 })

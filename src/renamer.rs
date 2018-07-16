@@ -1,4 +1,3 @@
-use ansi_term::Colour::*;
 use app::Config;
 use fileutils::{cleanup_files, create_backup, get_files};
 use std::fs;
@@ -50,42 +49,53 @@ impl Renamer {
     /// Rename file in the filesystem or simply print renaming information. Checks if target
     /// filename exists before renaming.
     fn rename(&self, file: &str, target: &str) {
+        let printer = &self.config.printer;
+        let colors = &printer.colors;
+
         if Path::new(&target).exists() {
-            eprintln!(
+            printer.print(&format!(
                 "{}File already exists - {}",
-                Red.paint("Error: "),
-                Red.paint(format!("{} -> {}", file, target))
-            );
+                colors.error.paint("Error: "),
+                colors.error.paint(format!("{} -> {}", file, target))
+            ));
         } else if self.config.force {
             if self.config.backup {
                 match create_backup(file) {
-                    Ok(backup) => println!(
+                    Ok(backup) => printer.print(&format!(
                         "{} Backup created - {}",
-                        Blue.paint("Info: "),
-                        Blue.paint(format!("{} -> {}", file, backup))
-                    ),
+                        colors.info.paint("Info: "),
+                        colors.source.paint(format!("{} -> {}", file, backup))
+                    )),
                     Err(_) => {
-                        eprintln!(
+                        printer.eprint(&format!(
                             "{}File backup failed - {}",
-                            Red.paint("Error: "),
-                            Red.paint(file)
-                        );
+                            colors.error.paint("Error: "),
+                            colors.error.paint(file)
+                        ));
                         process::exit(1);
                     }
                 }
             }
 
             if fs::rename(&file, &target).is_err() {
-                eprintln!(
+                printer.eprint(&format!(
                     "{}File {} renaming failed.",
-                    Red.paint("Error: "),
-                    Red.paint(file)
-                );
+                    colors.error.paint("Error: "),
+                    colors.error.paint(file)
+                ));
             } else {
-                println!("{} -> {}", Blue.paint(file), Green.paint(target),);
+                printer.print(&format!(
+                    "{} -> {}",
+                    colors.source.paint(file),
+                    colors.target.paint(target)
+                ));
             }
         } else {
-            println!("{} -> {}", Blue.paint(file), Green.paint(target),);
+            printer.print(&format!(
+                "{} -> {}",
+                colors.source.paint(file),
+                colors.target.paint(target)
+            ));
         }
     }
 }

@@ -7,14 +7,15 @@ pub struct Printer {
 }
 
 pub struct Colors {
-    info: Style,
-    warn: Style,
-    error: Style,
-    source: Style,
-    target: Style,
+    pub info: Style,
+    pub warn: Style,
+    pub error: Style,
+    pub source: Style,
+    pub target: Style,
 }
 
 impl Printer {
+    /// Return a printer configured to colorize output
     pub fn colored() -> Printer {
         let colors = Colors {
             info: White.bold(),
@@ -29,6 +30,8 @@ impl Printer {
             silent: false,
         }
     }
+
+    /// Return a printer configured to not use colors
     pub fn no_colored() -> Printer {
         let colors = Colors {
             info: Style::default(),
@@ -44,6 +47,7 @@ impl Printer {
         }
     }
 
+    /// Return a printer configured to be in silent mode
     pub fn silent() -> Printer {
         let colors = Colors {
             info: Style::default(),
@@ -59,13 +63,15 @@ impl Printer {
         }
     }
 
-    fn print(&self, message: &str) {
+    /// Print string to Stdout when printer is not in silent mode
+    pub fn print(&self, message: &str) {
         if !self.silent {
             println!("{}", message);
         }
     }
 
-    fn eprint(&self, message: &str) {
+    /// Print string to Stderr when printer is not in silent mode
+    pub fn eprint(&self, message: &str) {
         if !self.silent {
             eprintln!("{}", message);
         }
