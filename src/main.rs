@@ -13,6 +13,7 @@ mod app;
 mod fileutils;
 mod output;
 mod renamer;
+mod solver;
 
 fn main() {
     // Read arguments

@@ -2,7 +2,8 @@
 ### Added
 * Exclude hidden files and directories by default. Create a new flag to include
   these hidden files.
-* New solver which is more reliable handling conflicting renames. 
+* New renaming order solver which is more reliable handling conflicting renames. 
+* New `solver` module.
 
 # v0.1.2 (2018-08-16)
 ### Added
