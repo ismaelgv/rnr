@@ -100,7 +100,7 @@ fn parse_arguments() -> Config {
 /// Configure application using clap. It sets all options and command-line help.
 fn config_app<'a>() -> App<'a, 'a> {
     App::new("rnr")
-        .version("0.1.2")
+        .version("0.1.3")
         .author("Ismael González <ismgonval@gmail.com>")
         .about("\nrnr is simple file renamer written in Rust.")
         .arg(
