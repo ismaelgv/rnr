@@ -3,7 +3,6 @@ use clap::{App, Arg};
 use output::Printer;
 use regex::Regex;
 use std::ffi::{OsStr, OsString};
-use std::process;
 use std::sync::Arc;
 
 /// This module is defined Config struct to carry application configuration. This struct is created
@@ -19,9 +18,12 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new() -> Arc<Config> {
-        let config = parse_arguments();
-        Arc::new(config)
+    pub fn new() -> Result<Arc<Config>, String> {
+        let config = match parse_arguments() {
+            Ok(config) => config,
+            Err(err) => return Err(err),
+        };
+        Ok(Arc::new(config))
     }
 }
 
@@ -35,7 +37,7 @@ pub enum RunMode {
 }
 
 /// Parse arguments and do some checking.
-fn parse_arguments() -> Config {
+fn parse_arguments() -> Result<Config, String> {
     let app = config_app();
     let matches = app.get_matches();
 
@@ -52,12 +54,11 @@ fn parse_arguments() -> Config {
     let expression = match Regex::new(matches.value_of("EXPRESSION").unwrap()) {
         Ok(expr) => expr,
         Err(err) => {
-            printer.eprint(&format!(
+            return Err(format!(
                 "{}Bad expression provided\n\n{}",
                 printer.colors.error.paint("Error: "),
-                printer.colors.error.paint(err.to_string())
-            ));
-            process::exit(1);
+                printer.colors.error.paint(err.to_string()))
+            );
         }
     };
     let replacement = String::from(matches.value_of("REPLACEMENT").unwrap());
@@ -87,14 +88,14 @@ fn parse_arguments() -> Config {
         )
     };
 
-    Config {
+    Ok(Config {
         expression,
         replacement,
         force: matches.is_present("force"),
         backup: matches.is_present("backup"),
         mode,
         printer,
-    }
+    })
 }
 
 /// Configure application using clap. It sets all options and command-line help.

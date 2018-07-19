@@ -17,7 +17,14 @@ mod solver;
 
 fn main() {
     // Read arguments
-    let config = app::Config::new();
+    let config = match app::Config::new() {
+        Ok(config) => config,
+        Err(err) => {
+            eprintln!("{}", err);
+            std::process::exit(1);
+        }
+    };
+
     if !config.force {
         let info = &config.printer.colors.info;
         config
