@@ -33,8 +33,17 @@ fn main() {
     }
 
     // Configure renamer
-    let mut renamer = Renamer::new(&config);
+    let mut renamer = match Renamer::new(&config) {
+        Ok(renamer) => renamer,
+        Err(err) => {
+            eprintln!("{}", err);
+            std::process::exit(1);
+        }
+    };
 
     // Process files
-    renamer.process();
+    if let Err(err) = renamer.process() {
+        eprintln!("{}", err);
+        std::process::exit(1);
+    }
 }
