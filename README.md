@@ -5,10 +5,9 @@
 `rnr` is a command-line tool to batch rename files for ANSI terminals.
 
 # Install
-*RnR* is written in Rust. At this moment, you will need Cargo to
-build/install this application.
+*RnR* is written in Rust. You can build it from source using Cargo.
 
-### From source
+### From git repository
 ```sh
 git clone https://github.com/ChuckDaniels87/rnr .
 cargo install
@@ -17,6 +16,11 @@ cargo install
 ```sh
 cargo install rnr
 ```
+
+### Arch Linux
+There is available a package in the AUR 
+([`rnr`](https://aur.archlinux.org/packages/rnr/)) to install latest version of
+*RnR* in Arch Linux.
 
 # Options
 ```
