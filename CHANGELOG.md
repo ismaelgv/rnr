@@ -1,4 +1,4 @@
-# v0.1.4 (Unreleased)
+# v0.1.4 (2018-08-23)
 ### Added
 * Bash, Fish and Zsh completions.
 ### Changed
