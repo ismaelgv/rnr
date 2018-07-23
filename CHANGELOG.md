@@ -1,6 +1,9 @@
 # v0.1.4 (Unreleased)
 ### Added
 * Bash, Fish and Zsh completions.
+### Changed
+* Now batch renaming stops if a file cannot be renamed. This will avoid some bad
+  ordering problems and a possible file overwrite.
 
 # v0.1.3 (2018-08-17)
 ### Added
