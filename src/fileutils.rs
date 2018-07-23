@@ -1,5 +1,6 @@
 use app::Config;
 use app::RunMode;
+use error::*;
 use std::fs;
 use std::path::Path;
 use walkdir::{DirEntry, WalkDir};
@@ -66,11 +67,14 @@ pub fn get_unique_filename(file: &str, suffix: &str) -> String {
 }
 
 /// Create a backup of the file
-pub fn create_backup(file: &str) -> Result<String, ()> {
+pub fn create_backup(file: &str) -> Result<String> {
     let backup = get_unique_filename(file, ".bk");
     match fs::copy(file, &backup) {
         Ok(_) => Ok(backup),
-        Err(_) => Err(()),
+        Err(_) => Err(Error {
+            kind: ErrorKind::CreateBackup,
+            value: Some(file.to_string()),
+        }),
     }
 }
 

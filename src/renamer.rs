@@ -1,4 +1,5 @@
 use app::Config;
+use error::*;
 use fileutils::{cleanup_files, create_backup, get_files};
 use solver::{solve_rename_order, RenameMap};
 use std::fs;
@@ -11,7 +12,7 @@ pub struct Renamer {
 }
 
 impl Renamer {
-    pub fn new(config: &Arc<Config>) -> Result<Renamer, String> {
+    pub fn new(config: &Arc<Config>) -> Result<Renamer> {
         let input_files = get_files(&config);
         Ok(Renamer {
             files: input_files,
@@ -20,24 +21,21 @@ impl Renamer {
     }
 
     /// Process file batch
-    pub fn process(&mut self) -> Result<(), String> {
-        let printer = &self.config.printer;
-        let colors = &printer.colors;
-
+    pub fn process(&mut self) -> Result<()> {
         // Remove directories and on existing files from the list
         cleanup_files(&mut self.files);
 
         // Relate original names with their targets
         let rename_map = match self.get_rename_map() {
             Ok(rename_map) => rename_map,
-            Err(err) => return Err(format!("{}{}", colors.error.paint("Error: "), err)),
+            Err(err) => return Err(err),
         };
 
         // Solve targets ordering to avoid renaming conflicts
         let rename_order = match solve_rename_order(&rename_map) {
             Ok(rename_order) => rename_order,
             Err(err) => {
-                return Err(format!("{}{}", colors.error.paint("Error: "), err));
+                return Err(err);
             }
         };
 
@@ -45,7 +43,7 @@ impl Renamer {
         for target in &rename_order {
             let source = &rename_map[target];
             if let Err(err) = self.rename(&source, target) {
-                return Err(format!("{}{}", colors.error.paint("Error: "), err));
+                return Err(err);
             };
         }
 
@@ -68,7 +66,7 @@ impl Renamer {
     }
 
     /// Get hash map containing all replacements to be done
-    fn get_rename_map(&self) -> Result<RenameMap, String> {
+    fn get_rename_map(&self) -> Result<RenameMap> {
         let printer = &self.config.printer;
         let colors = &printer.colors;
 
@@ -92,14 +90,16 @@ impl Renamer {
         if error_string.is_empty() {
             Ok(rename_map)
         } else {
-            error_string.insert_str(0, "Files will have the same name:\n");
-            Err(error_string)
+            Err(Error {
+                kind: ErrorKind::SameFilename,
+                value: Some(error_string),
+            })
         }
     }
 
     /// Rename file in the filesystem or simply print renaming information. Checks if target
     /// filename exists before renaming.
-    fn rename(&self, source: &str, target: &str) -> Result<(), String> {
+    fn rename(&self, source: &str, target: &str) -> Result<()> {
         let printer = &self.config.printer;
         let colors = &printer.colors;
 
@@ -112,21 +112,15 @@ impl Renamer {
                         colors.info.paint("Info: "),
                         colors.source.paint(format!("{} -> {}", source, backup))
                     )),
-                    Err(_) => {
-                        return Err(format!(
-                            "Failed to create backup - {}",
-                            colors.error.paint(source)
-                        ));
+                    Err(err) => {
+                        return Err(err);
                     }
                 }
             }
 
             // Rename files in the filesystem
             if fs::rename(&source, &target).is_err() {
-                printer.eprint(&format!(
-                    "File {} renaming failed.",
-                    colors.error.paint(source)
-                ));
+                return Err(Error{kind: ErrorKind::RenameFile, value: Some(source.to_string())});
             } else {
                 printer.print(&format!(
                     "{} -> {}",
@@ -194,25 +188,25 @@ mod test {
         }
 
         // Create config
-        let mock_config = Config {
+        let mock_config = Arc::new(Config {
             expression: Regex::new("test").unwrap(),
             replacement: "passed".to_string(),
             force: true,
             backup: true,
             mode: RunMode::FileList(mock_files),
             printer: Printer::colored(),
-        };
+        });
 
         // Run renamer
-        let mut renamer = match Renamer::new(&Arc::new(mock_config)) {
+        let mut renamer = match Renamer::new(&mock_config) {
             Ok(renamer) => renamer,
             Err(err) => {
-                eprintln!("{}", err);
+                mock_config.printer.print_error(&err);
                 process::exit(1);
             }
         };
         if let Err(err) = renamer.process() {
-            eprintln!("{}", err);
+            mock_config.printer.print_error(&err);
             process::exit(1);
         }
 

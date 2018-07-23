@@ -1,5 +1,6 @@
 use ansi_term::Colour::*;
 use ansi_term::Style;
+use error::*;
 
 pub struct Printer {
     pub colors: Colors,
@@ -75,5 +76,16 @@ impl Printer {
         if !self.silent {
             eprintln!("{}", message);
         }
+    }
+
+    pub fn print_error(&self, error: &Error) {
+        let error_value = error.value.clone().unwrap_or_else(|| "".to_string());
+
+        self.eprint(&format!(
+            "{}{}{}",
+            self.colors.error.paint("Error: "),
+            error.description(),
+            self.colors.error.paint(error_value)
+        ));
     }
 }

@@ -10,6 +10,7 @@ extern crate walkdir;
 use renamer::Renamer;
 
 mod app;
+mod error;
 mod fileutils;
 mod output;
 mod renamer;
@@ -36,14 +37,14 @@ fn main() {
     let mut renamer = match Renamer::new(&config) {
         Ok(renamer) => renamer,
         Err(err) => {
-            eprintln!("{}", err);
+            config.printer.print_error(&err);
             std::process::exit(1);
         }
     };
 
     // Process files
     if let Err(err) = renamer.process() {
-        eprintln!("{}", err);
+        config.printer.print_error(&err);
         std::process::exit(1);
     }
 }

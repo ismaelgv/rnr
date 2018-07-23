@@ -1,3 +1,4 @@
+use error::*;
 use std::collections::HashMap;
 use std::path::Path;
 
@@ -5,11 +6,11 @@ pub type RenameMap = HashMap<String, String>;
 
 /// Solve renaming order to avoid file overwrite. Solver will order existing targets to avoid
 /// conflicts and adds remaining targets to the list.
-pub fn solve_rename_order(rename_map: &RenameMap) -> Result<Vec<String>, String> {
+pub fn solve_rename_order(rename_map: &RenameMap) -> Result<Vec<String>> {
     // Return existing targets in the list of original filenames
     let existing_targets = match get_existing_targets(&rename_map) {
         Ok(existing_targets) => existing_targets,
-        Err(file_err) => return Err(format!("Conflict with existing file: {}.", file_err)),
+        Err(err) => return Err(err),
     };
 
     // Store first all non conflicting entries
@@ -35,14 +36,17 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<Vec<String>, String>
 
 /// Check if targets exists in the filesystem and return a list of them. If they exist, these
 /// targets must be contained in the original file list for the renaming problem to be solvable.
-fn get_existing_targets(rename_map: &RenameMap) -> Result<Vec<String>, String> {
+fn get_existing_targets(rename_map: &RenameMap) -> Result<Vec<String>> {
     let mut existing_targets: Vec<String> = Vec::new();
     let sources: Vec<String> = rename_map.values().cloned().collect();
 
     for (target, source) in rename_map {
         if Path::new(&target).exists() {
             if !sources.contains(&target) {
-                return Err(format!("{}->{}", source, target));
+                return Err(Error {
+                    kind: ErrorKind::ExistingFile,
+                    value: Some(format!("{}->{}", source, target)),
+                });
             } else {
                 existing_targets.push(target.clone());
             }
@@ -57,7 +61,7 @@ fn get_existing_targets(rename_map: &RenameMap) -> Result<Vec<String>, String> {
 fn order_existing_targets(
     rename_map: &RenameMap,
     mut existing_targets: Vec<String>,
-) -> Result<Vec<String>, String> {
+) -> Result<Vec<String>> {
     let mut ordered_targets: Vec<String> = Vec::new();
 
     while !existing_targets.is_empty() {
@@ -82,7 +86,7 @@ fn order_existing_targets(
         match selected_index {
             Some(index) => ordered_targets.push(existing_targets.swap_remove(index)),
             // This will avoid infite while loop if order is not solved
-            None => return Err("Cannot solve sorting problem.".to_string()),
+            None => return Err(Error{kind: ErrorKind::SolveOrder, value: None}),
         }
     }
 
