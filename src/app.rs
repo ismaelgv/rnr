@@ -1,3 +1,4 @@
+#![allow(unknown_lints)]
 use clap::{App, Arg};
 use std::ffi::{OsStr, OsString};
 
@@ -88,6 +89,7 @@ pub fn create_app<'a>() -> App<'a, 'a> {
         )
 }
 
+#[allow(clippy)]
 /// Check if the input provided is valid unsigned integer
 fn is_integer(arg_value: String) -> Result<(), String> {
     match arg_value.parse::<usize>() {
