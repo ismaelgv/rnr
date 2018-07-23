@@ -19,3 +19,6 @@ tempfile = "3"
 
 [build-dependencies]
 clap = "~2.32"
+
+[badges]
+travis-ci = { repository = "ChuckDaniels87/rnr" }
