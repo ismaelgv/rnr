@@ -10,6 +10,7 @@ extern crate walkdir;
 use renamer::Renamer;
 
 mod app;
+mod config;
 mod error;
 mod fileutils;
 mod output;
@@ -18,7 +19,7 @@ mod solver;
 
 fn main() {
     // Read arguments
-    let config = match app::Config::new() {
+    let config = match config::Config::new() {
         Ok(config) => config,
         Err(err) => {
             eprintln!("{}", err);

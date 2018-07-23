@@ -1,4 +1,4 @@
-use app::Config;
+use config::Config;
 use error::*;
 use fileutils::{cleanup_files, create_backup, get_files};
 use solver::{solve_rename_order, RenameMap};
@@ -120,7 +120,10 @@ impl Renamer {
 
             // Rename files in the filesystem
             if fs::rename(&source, &target).is_err() {
-                return Err(Error{kind: ErrorKind::RenameFile, value: Some(source.to_string())});
+                return Err(Error {
+                    kind: ErrorKind::RenameFile,
+                    value: Some(source.to_string()),
+                });
             } else {
                 printer.print(&format!(
                     "{} -> {}",
@@ -145,7 +148,7 @@ impl Renamer {
 mod test {
     extern crate tempfile;
     use super::*;
-    use app::RunMode;
+    use config::RunMode;
     use output::Printer;
     use regex::Regex;
     use std::fs;

@@ -1,5 +1,4 @@
-use app::Config;
-use app::RunMode;
+use config::{Config, RunMode};
 use error::*;
 use std::fs;
 use std::path::Path;
