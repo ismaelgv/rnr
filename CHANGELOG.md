@@ -1,3 +1,7 @@
+# v0.1.4 (Unreleased)
+### Added
+* Bash, Fish and Zsh completions.
+
 # v0.1.3 (2018-08-17)
 ### Added
 * Exclude hidden files and directories by default. Create a new flag to include

@@ -7,6 +7,7 @@ categories = ["command-line-utilities"]
 license = "MIT"
 homepage = "https://github.com/ChuckDaniels87/rnr"
 repository = "https://github.com/ChuckDaniels87/rnr"
+build = "build.rs"
 readme = "README.md"
 
 [dependencies]
@@ -15,3 +16,6 @@ clap = "~2.32"
 regex = "1"
 walkdir= "2"
 tempfile = "3"
+
+[build-dependencies]
+clap = "~2.32"
