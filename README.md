@@ -18,9 +18,9 @@ cargo install rnr
 ```
 
 ### Arch Linux
-There is available a package in the AUR 
+A package is available in the AUR 
 ([`rnr`](https://aur.archlinux.org/packages/rnr/)) to install latest version of
-*RnR* in Arch Linux.
+*RnR* on Arch Linux.
 
 # Options
 ```
