@@ -3,6 +3,7 @@
 //! `rnr` is a command-line tool to batch rename files for ANSI terminals.
 //!
 extern crate ansi_term;
+extern crate atty;
 extern crate clap;
 extern crate regex;
 extern crate walkdir;

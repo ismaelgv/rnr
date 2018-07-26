@@ -1,3 +1,7 @@
+# v0.1.5 (Unreleased)
+### Added
+* Detect output type in color=auto mode.
+
 # v0.1.4 (2018-08-23)
 ### Added
 * Bash, Fish and Zsh completions.

@@ -1,4 +1,5 @@
 use app::create_app;
+use atty;
 use output::Printer;
 use regex::Regex;
 use std::sync::Arc;
@@ -42,10 +43,12 @@ fn parse_arguments() -> Result<Config, String> {
     // Set output mode
     let printer = if matches.is_present("silent") {
         Printer::silent()
-    } else if matches.value_of("color").unwrap_or("auto") == "never" {
-        Printer::no_colored()
     } else {
-        Printer::colored()
+        match matches.value_of("color").unwrap_or("auto") {
+        "always" => Printer::colored(),
+        "never" => Printer::no_colored(),
+        "auto" | _ => detect_output_color(),
+    }
     };
 
     // Get and validate regex expression and replacement from arguments
@@ -98,4 +101,14 @@ fn parse_arguments() -> Result<Config, String> {
         mode,
         printer,
     })
+}
+
+/// Detect if output must be colored and returns a properly configured printer.
+fn detect_output_color() -> Printer {
+    if atty::is(atty::Stream::Stdout) {
+        // TODO: Use enviromental variables to determine if color is supported
+        Printer::colored()
+    } else {
+        Printer::no_colored()
+    }
 }
