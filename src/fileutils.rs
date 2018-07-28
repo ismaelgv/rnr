@@ -242,19 +242,27 @@ mod test {
 
         let files = get_files(&mock_config);
         // Must contain these files
-        assert!(files.contains(&format!("{}/test_file.txt", temp_path)));
-        assert!(files.contains(&format!("{}/mock_dir_1/test_file.txt", temp_path)));
-        assert!(files.contains(&format!(
-            "{}/mock_dir_1/mock_dir_2/test_file.txt",
-            temp_path
-        )));
-        assert!(files.contains(&format!(
-            "{}/mock_dir_1/mock_dir_2/mock_dir_3/test_file.txt",
-            temp_path
-        )));
+        let listed_files: Vec<String> = vec![
+            format!("{}/test_file.txt", temp_path),
+            format!("{}/mock_dir_1/test_file.txt", temp_path),
+            format!("{}/mock_dir_1/mock_dir_2/test_file.txt", temp_path),
+            format!("{}/mock_dir_1/mock_dir_2/mock_dir_3/test_file.txt", temp_path),
+        ];
+        for file in &listed_files {
+            #[cfg(windows)] // Replace delimiters on Windows
+            let file = &file.replace("/", "\\");
+            assert!(files.contains(file));
+        }
         // Must NOT contain these files
-        assert!(!files.contains(&format!("{}/.hidden_test_file.txt", temp_path)));
-        assert!(!files.contains(&format!("{}/.hidden_mock_dir/test_file.txt", temp_path)));
+        let non_listed_files: Vec<String> = vec![
+            format!("{}/.hidden_test_file.txt", temp_path),
+            format!("{}/.hidden_mock_dir/test_file.txt", temp_path),
+        ];
+        for file in &non_listed_files {
+            #[cfg(windows)] // Replace delimiters on Windows
+            let file = &file.replace("/", "\\");
+            assert!(!files.contains(file));
+        }
     }
 
     #[test]
@@ -277,19 +285,27 @@ mod test {
 
         let files = get_files(&mock_config);
         // Must contain these files
-        assert!(files.contains(&format!("{}/test_file.txt", temp_path)));
-        assert!(files.contains(&format!("{}/mock_dir_1/test_file.txt", temp_path)));
+        let listed_files: Vec<String> = vec![
+            format!("{}/test_file.txt", temp_path),
+            format!("{}/mock_dir_1/test_file.txt", temp_path),
+        ];
+        for file in &listed_files {
+            #[cfg(windows)] // Replace delimiters on Windows
+            let file = &file.replace("/", "\\");
+            assert!(files.contains(file));
+        }
         // Must NOT contain these files
-        assert!(!files.contains(&format!(
-            "{}/mock_dir_1/mock_dir_2/test_file.txt",
-            temp_path
-        )));
-        assert!(!files.contains(&format!(
-            "{}/mock_dir_1/mock_dir_2/mock_dir_3/test_file.txt",
-            temp_path
-        )));
-        assert!(!files.contains(&format!("{}/.hidden_test_file.txt", temp_path)));
-        assert!(!files.contains(&format!("{}/.hidden_mock_dir/test_file.txt", temp_path)));
+        let non_listed_files: Vec<String> = vec![
+            format!("{}/mock_dir_1/mock_dir_2/test_file.txt", temp_path),
+            format!("{}/mock_dir_1/mock_dir_2/mock_dir_3/test_file.txt", temp_path),
+            format!("{}/.hidden_test_file.txt", temp_path),
+            format!("{}/.hidden_mock_dir/test_file.txt", temp_path),
+        ];
+        for file in &non_listed_files {
+            #[cfg(windows)] // Replace delimiters on Windows
+            let file = &file.replace("/", "\\");
+            assert!(!files.contains(file));
+        }
     }
 
     #[test]
@@ -312,18 +328,19 @@ mod test {
 
         let files = get_files(&mock_config);
         // Must contain these files
-        assert!(files.contains(&format!("{}/test_file.txt", temp_path)));
-        assert!(files.contains(&format!("{}/mock_dir_1/test_file.txt", temp_path)));
-        assert!(files.contains(&format!(
-            "{}/mock_dir_1/mock_dir_2/test_file.txt",
-            temp_path
-        )));
-        assert!(files.contains(&format!(
-            "{}/mock_dir_1/mock_dir_2/mock_dir_3/test_file.txt",
-            temp_path
-        )));
-        assert!(files.contains(&format!("{}/.hidden_test_file.txt", temp_path)));
-        assert!(files.contains(&format!("{}/.hidden_mock_dir/test_file.txt", temp_path)));
+        let listed_files: Vec<String> = vec![
+            format!("{}/test_file.txt", temp_path),
+            format!("{}/mock_dir_1/test_file.txt", temp_path),
+            format!("{}/mock_dir_1/mock_dir_2/test_file.txt", temp_path),
+            format!("{}/mock_dir_1/mock_dir_2/mock_dir_3/test_file.txt", temp_path),
+            format!("{}/.hidden_test_file.txt", temp_path),
+            format!("{}/.hidden_mock_dir/test_file.txt", temp_path),
+        ];
+        for file in &listed_files {
+            #[cfg(windows)] // Replace delimiters on Windows
+            let file = &file.replace("/", "\\");
+            assert!(files.contains(file));
+        }
     }
 
     #[test]
