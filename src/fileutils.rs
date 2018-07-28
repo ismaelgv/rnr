@@ -144,19 +144,11 @@ mod test {
 
     #[test]
     fn get_files_args() {
-        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
-        println!("Running test in '{:?}'", tempdir);
-        let temp_path = tempdir.path().to_str().unwrap();
-
         let mock_files: Vec<String> = vec![
-            format!("{}/test_file_1.txt", temp_path),
-            format!("{}/test_file_2.txt", temp_path),
-            format!("{}/test_file_3.txt", temp_path),
+            "test_file_1.txt".to_string(),
+            "test_file_2.txt".to_string(),
+            "test_file_3.txt".to_string(),
         ];
-
-        for file in &mock_files {
-            fs::File::create(&file).expect("Error creating mock file...");
-        }
 
         let mock_config = Config {
             expression: Regex::new("test").unwrap(),
@@ -168,9 +160,9 @@ mod test {
         };
 
         let files = get_files(&mock_config);
-        assert!(files.contains(&format!("{}/test_file_1.txt", temp_path)));
-        assert!(files.contains(&format!("{}/test_file_2.txt", temp_path)));
-        assert!(files.contains(&format!("{}/test_file_3.txt", temp_path)));
+        assert!(files.contains(&"test_file_1.txt".to_string()));
+        assert!(files.contains(&"test_file_2.txt".to_string()));
+        assert!(files.contains(&"test_file_3.txt".to_string()));
     }
 
     // Generate directory tree and files for recursive tests
