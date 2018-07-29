@@ -23,3 +23,4 @@ clap = "~2.32"
 
 [badges]
 travis-ci = { repository = "ChuckDaniels87/rnr" }
+appveyor = { repository = "ChuckDaniels87/rnr" }
