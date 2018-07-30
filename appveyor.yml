@@ -30,3 +30,6 @@ build: false
 
 test_script:
 - cargo test --verbose %cargoflags%
+
+matrix:
+  fast_finish: true
