@@ -1,6 +1,7 @@
 # v0.1.5 (Unreleased)
 ### Added
 * Detect output type in color=auto mode.
+* Windows support. (Color is only supported in ANSI terminals)
 ### Changed
 * Change source color and default info color.
 
