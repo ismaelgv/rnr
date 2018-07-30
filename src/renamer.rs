@@ -61,7 +61,10 @@ impl Renamer {
         let target_name = expression.replace(file_name, &replacement[..]);
         match file_path {
             "" => String::from(target_name),
-            _ => format!("{}/{}", file_path, target_name),
+            _ => Path::new(file_path)
+                .join(Path::new(&target_name.into_owned()))
+                .to_string_lossy()
+                .to_string(),
         }
     }
 
