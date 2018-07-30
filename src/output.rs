@@ -22,7 +22,7 @@ impl Printer {
             info: Style::default().bold(),
             warn: Style::from(Yellow),
             error: Style::from(Red),
-            source: Style::from(Purple),
+            source: Style::from(Fixed(8)), //Dark grey
             target: Style::from(Green),
         };
 
