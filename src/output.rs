@@ -19,10 +19,10 @@ impl Printer {
     /// Return a printer configured to colorize output
     pub fn colored() -> Printer {
         let colors = Colors {
-            info: White.bold(),
+            info: Style::default().bold(),
             warn: Style::from(Yellow),
             error: Style::from(Red),
-            source: Style::from(Blue),
+            source: Style::from(Purple),
             target: Style::from(Green),
         };
 

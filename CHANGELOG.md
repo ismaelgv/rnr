@@ -1,6 +1,8 @@
 # v0.1.5 (Unreleased)
 ### Added
 * Detect output type in color=auto mode.
+### Changed
+* Change source color and default info color.
 
 # v0.1.4 (2018-08-23)
 ### Added
