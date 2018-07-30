@@ -4,7 +4,7 @@
 [![Crates.io](https://img.shields.io/crates/v/rnr.svg)](https://crates.io/crates/rnr)
 [![License](https://img.shields.io/crates/l/rnr.svg)](https://github.com/ChuckDaniels87/rnr/blob/master/LICENSE)
 
-`rnr` is a command-line tool to batch rename files for ANSI terminals.
+`rnr` is a command-line tool to batch rename files.
 
 # Install
 *RnR* is written in Rust. You can build it from source using Cargo.
@@ -59,7 +59,7 @@ ARGS:
   limitations of `regex` crate. It supports *capture groups*.
 * If max depth is not provided to recursive mode, it is assumed *infinite*.
 * Does not generate backups.
-* Output is *colored*.
+* Output is *colored* (only ANSI terminals).
 * Ignore hidden files and directories.
 
 # Demo
