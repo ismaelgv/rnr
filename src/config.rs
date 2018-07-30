@@ -45,10 +45,10 @@ fn parse_arguments() -> Result<Config, String> {
         Printer::silent()
     } else {
         match matches.value_of("color").unwrap_or("auto") {
-        "always" => Printer::colored(),
-        "never" => Printer::no_colored(),
-        "auto" | _ => detect_output_color(),
-    }
+            "always" => Printer::colored(),
+            "never" => Printer::no_colored(),
+            "auto" | _ => detect_output_color(),
+        }
     };
 
     // Get and validate regex expression and replacement from arguments
@@ -106,8 +106,16 @@ fn parse_arguments() -> Result<Config, String> {
 /// Detect if output must be colored and returns a properly configured printer.
 fn detect_output_color() -> Printer {
     if atty::is(atty::Stream::Stdout) {
-        // TODO: Use enviromental variables to determine if color is supported
-        Printer::colored()
+        #[cfg(not(windows))]
+        {
+            Printer::colored()
+        }
+        // Enable color support for Windows 10
+        #[cfg(windows)]
+        match ansi_term::enable_ansi_support() {
+            Ok(_) => Printer::colored(),
+            Err(_) => Printer::no_colored(),
+        }
     } else {
         Printer::no_colored()
     }
