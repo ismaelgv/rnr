@@ -1,6 +1,7 @@
-# v0.1.6 (Unreleased)
+# v0.1.6 (2018-08-01)
 ### Added
 * Option to include directories in the renaming process.
+* Binary files in GitHub Releases.
 ### Changed
 * Heavy internal refactor to use PathBuf instead of String for files.
 
