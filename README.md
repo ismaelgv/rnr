@@ -4,7 +4,7 @@
 [![Crates.io](https://img.shields.io/crates/v/rnr.svg)](https://crates.io/crates/rnr)
 [![License](https://img.shields.io/crates/l/rnr.svg)](https://github.com/ChuckDaniels87/rnr/blob/master/LICENSE)
 
-`rnr` is a command-line tool to batch rename files.
+`rnr` is a command-line tool to batch rename files and directories.
 
 # Install
 *RnR* is written in Rust. You can build it from source using Cargo.

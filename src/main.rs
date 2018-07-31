@@ -1,6 +1,6 @@
 //! # RnR
 //!
-//! `rnr` is a command-line tool to batch rename files.
+//! `rnr` is a command-line tool to batch rename files and directories.
 //!
 extern crate ansi_term;
 extern crate atty;

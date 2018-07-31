@@ -2,7 +2,7 @@
 name = "rnr"
 version = "0.1.5"
 authors = ["Ismael González Valverde <ismgonval@gmail.com>"]
-description = "rnr is a command-line tool to batch rename files"
+description = "rnr is a command-line tool to batch rename files and directories"
 categories = ["command-line-utilities"]
 license = "MIT"
 homepage = "https://github.com/ChuckDaniels87/rnr"
