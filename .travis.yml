@@ -1,8 +1,27 @@
 language: rust
-rust:
-  - stable
-  - beta
 cache: cargo
+matrix:
+  include:
+    # Linux - Stable
+    - os: linux
+      rust: stable
+      env: TARGET=x86_64-unknown-linux-gnu
+    - os: linux
+      rust: stable
+      env: TARGET=i686-unknown-linux-gnu
+    # Linux - Beta
+    - os: linux
+      rust: beta
+      env: TARGET=x86_64-unknown-linux-gnu
+    - os: linux
+      rust: beta
+      env: TARGET=i686-unknown-linux-gnu
+
+    # OSX
+    - os: osx
+      rust: stable
+      env: TARGET=x86_64-apple-darwin
+
 script:
   - cargo build --verbose
   - cargo test --verbose
