@@ -41,6 +41,7 @@ before_deploy:
   - appveyor PushArtifact ../rnr-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip
 
 deploy:
+  description: 'Automated release'
   # All the zipped artifacts will be deployed
   artifact: /.*\.zip/
   auth_token:

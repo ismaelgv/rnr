@@ -7,15 +7,8 @@ matrix:
     rust: stable
     env: TARGET=x86_64-unknown-linux-gnu
   - os: linux
-    rust: stable
-    env: TARGET=i686-unknown-linux-gnu
-  # Linux - Beta
-  - os: linux
     rust: beta
     env: TARGET=x86_64-unknown-linux-gnu
-  - os: linux
-    rust: beta
-    env: TARGET=i686-unknown-linux-gnu
   # OSX
   - os: osx
     rust: stable
