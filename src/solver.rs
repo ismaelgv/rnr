@@ -38,8 +38,8 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<PathList> {
 /// Check if targets exists in the filesystem and return a list of them. If they exist, these
 /// targets must be contained in the original file list for the renaming problem to be solvable.
 fn get_existing_targets(rename_map: &RenameMap) -> Result<PathList> {
-    let mut existing_targets: Vec<PathBuf> = Vec::new();
-    let sources: Vec<PathBuf> = rename_map.values().cloned().collect();
+    let mut existing_targets: PathList = Vec::new();
+    let sources: PathList = rename_map.values().cloned().collect();
 
     for (target, source) in rename_map {
         if target.exists() {
@@ -63,13 +63,13 @@ fn order_existing_targets(
     rename_map: &RenameMap,
     mut existing_targets: PathList,
 ) -> Result<PathList> {
-    let mut ordered_targets: Vec<PathBuf> = Vec::new();
+    let mut ordered_targets: PathList = Vec::new();
 
     while !existing_targets.is_empty() {
         // Track selected index to extract value
         let mut selected_index: Option<usize> = None;
         // Create a vector with all sources from existing targets
-        let sources: Vec<PathBuf> = existing_targets
+        let sources: PathList = existing_targets
             .iter()
             .map(|x| rename_map.get(x).cloned().unwrap())
             .collect();
@@ -111,7 +111,7 @@ mod test {
         println!("Running test in '{:?}'", tempdir);
         let temp_path = tempdir.path().to_str().unwrap();
 
-        let mock_sources: Vec<PathBuf> = vec![
+        let mock_sources: PathList = vec![
             [temp_path, "a.txt"].iter().collect(),
             [temp_path, "aa.txt"].iter().collect(),
             [temp_path, "aaa.txt"].iter().collect(),
@@ -125,7 +125,7 @@ mod test {
         }
 
         // Add one 'a' to the beginning of the filename
-        let mock_targets: Vec<PathBuf> = vec![
+        let mock_targets: PathList = vec![
             [temp_path, "aa.txt"].iter().collect(),
             [temp_path, "aaa.txt"].iter().collect(),
             [temp_path, "aaaa.txt"].iter().collect(),
@@ -151,14 +151,14 @@ mod test {
 
     #[test]
     fn test_order_existing_targets() {
-        let mock_sources: Vec<PathBuf> = vec![
+        let mock_sources: PathList = vec![
             PathBuf::from("a.txt"),
             PathBuf::from("aa.txt"),
             PathBuf::from("aaa.txt"),
             PathBuf::from("aaaa.txt"),
         ];
         // Add one 'a' to the beginning of the filename
-        let mock_targets: Vec<PathBuf> = vec![
+        let mock_targets: PathList = vec![
             PathBuf::from("aa.txt"),
             PathBuf::from("aaa.txt"),
             PathBuf::from("aaaa.txt"),
@@ -170,7 +170,7 @@ mod test {
             .zip(mock_sources.into_iter())
             .collect();
 
-        let mock_existing_targets: Vec<PathBuf> = vec![
+        let mock_existing_targets: PathList = vec![
             PathBuf::from("aa.txt"),
             PathBuf::from("aaa.txt"),
             PathBuf::from("aaaa.txt"),
@@ -189,7 +189,7 @@ mod test {
         println!("Running test in '{:?}'", tempdir);
         let temp_path = tempdir.path().to_str().unwrap();
 
-        let mock_sources: Vec<PathBuf> = vec![
+        let mock_sources: PathList = vec![
             [temp_path, "a.txt"].iter().collect(),
             [temp_path, "aa.txt"].iter().collect(),
             [temp_path, "aaa.txt"].iter().collect(),
@@ -202,7 +202,7 @@ mod test {
         }
 
         // Add one 'a' to the beginning of the filename
-        let mock_targets: Vec<PathBuf> = vec![
+        let mock_targets: PathList = vec![
             [temp_path, "aa.txt"].iter().collect(),
             [temp_path, "aaa.txt"].iter().collect(),
             [temp_path, "aaaa.txt"].iter().collect(),

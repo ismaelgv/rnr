@@ -98,7 +98,7 @@ mod test {
         println!("Running test in '{:?}'", tempdir);
         let temp_path = tempdir.path().to_str().unwrap();
 
-        let mock_files: Vec<PathBuf> = vec![
+        let mock_files: PathList = vec![
             [temp_path, "test_file_1.txt"].iter().collect(),
             [temp_path, "test_file_2.txt"].iter().collect(),
             [temp_path, "test_file_3.txt"].iter().collect(),
@@ -109,7 +109,7 @@ mod test {
             create_backup(&file).expect("Error generating backup file...");
         }
 
-        let backup_files: Vec<PathBuf> = vec![
+        let backup_files: PathList = vec![
             [temp_path, "test_file_1.txt.bk"].iter().collect(),
             [temp_path, "test_file_2.txt.bk"].iter().collect(),
             [temp_path, "test_file_3.txt.bk"].iter().collect(),
@@ -127,7 +127,7 @@ mod test {
         println!("Running test in '{:?}'", tempdir);
         let temp_path = tempdir.path().to_str().unwrap();
 
-        let mock_files: Vec<PathBuf> = vec![
+        let mock_files: PathList = vec![
             [temp_path, "test_file_1"].iter().collect(),
             [temp_path, "test_file_1.1"].iter().collect(),
             [temp_path, "test_file_1.2"].iter().collect(),
@@ -196,14 +196,14 @@ mod test {
         //
         //
         #[cfg_attr(rustfmt, rustfmt_skip)]
-        let mock_dirs: Vec<PathBuf> = vec![
+        let mock_dirs: PathList = vec![
             [&temp_path, ".hidden_mock_dir"].iter().collect(),
             [&temp_path, "mock_dir_1"].iter().collect(),
             [&temp_path, "mock_dir_1", "mock_dir_2"].iter().collect(),
             [&temp_path, "mock_dir_1", "mock_dir_2", "mock_dir_3"].iter().collect(),
         ];
         #[cfg_attr(rustfmt, rustfmt_skip)]
-        let mock_files: Vec<PathBuf> = vec![
+        let mock_files: PathList = vec![
             [&temp_path, "test_file.txt"].iter().collect(),
             [&temp_path, ".hidden_test_file.txt"].iter().collect(),
             [&mock_dirs[0], &PathBuf::from("test_file.txt")].iter().collect(),
@@ -246,7 +246,7 @@ mod test {
         let files = get_files(&mock_config);
         // Must contain these files
         #[cfg_attr(rustfmt, rustfmt_skip)]
-        let listed_files: Vec<PathBuf> = vec![
+        let listed_files: PathList = vec![
             [&temp_path, "test_file.txt"].iter().collect(),
             [&temp_path, "mock_dir_1", "test_file.txt"].iter().collect(),
             [&temp_path, "mock_dir_1", "mock_dir_2", "test_file.txt"].iter().collect(),
@@ -258,7 +258,7 @@ mod test {
         }
         // Must NOT contain these files
         #[cfg_attr(rustfmt, rustfmt_skip)]
-        let non_listed_files: Vec<PathBuf> = vec![
+        let non_listed_files: PathList = vec![
             [&temp_path, ".hidden_test_file.txt"].iter().collect(),
             [&temp_path, ".hidden_mock_dir", "test_file.txt"].iter().collect(),
         ];
@@ -288,7 +288,7 @@ mod test {
 
         let files = get_files(&mock_config);
         // Must contain these files
-        let listed_files: Vec<PathBuf> = vec![
+        let listed_files: PathList = vec![
             [&temp_path, "test_file.txt"].iter().collect(),
             [&temp_path, "mock_dir_1", "test_file.txt"].iter().collect(),
         ];
@@ -297,7 +297,7 @@ mod test {
         }
         // Must NOT contain these files
         #[cfg_attr(rustfmt, rustfmt_skip)]
-        let non_listed_files: Vec<PathBuf> = vec![
+        let non_listed_files: PathList = vec![
             [&temp_path, "mock_dir_1", "mock_dir_2", "test_file.txt"].iter().collect(),
             [&temp_path, "mock_dir_1", "mock_dir_2", "mock_dir_3", "test_file.txt"]
                 .iter().collect(),
@@ -331,7 +331,7 @@ mod test {
         let files = get_files(&mock_config);
         // Must contain these files
         #[cfg_attr(rustfmt, rustfmt_skip)]
-        let listed_files: Vec<PathBuf> = vec![
+        let listed_files: PathList = vec![
             [&temp_path, "test_file.txt"].iter().collect(),
             [&temp_path, "mock_dir_1", "test_file.txt"].iter().collect(),
             [&temp_path, "mock_dir_1", "mock_dir_2", "test_file.txt"].iter().collect(),
@@ -365,12 +365,12 @@ mod test {
         //             |
         //             - test_file.txt
         //
-        let mock_dirs: Vec<PathBuf> = vec![
+        let mock_dirs: PathList = vec![
             [temp_path, "mock_dir_1"].iter().collect(),
             [temp_path, "mock_dir_1", "mock_dir_2"].iter().collect(),
         ];
         #[cfg_attr(rustfmt, rustfmt_skip)]
-        let mut mock_files: Vec<PathBuf> = vec![
+        let mut mock_files: PathList = vec![
             [temp_path, "test_file.txt"].iter().collect(),
             [&mock_dirs[0], &PathBuf::from("test_file.txt")].iter().collect(),
             [&mock_dirs[1], &PathBuf::from("test_file.txt")].iter().collect(),
@@ -396,7 +396,7 @@ mod test {
 
         // Must contain these the files
         #[cfg_attr(rustfmt, rustfmt_skip)]
-        let listed_files: Vec<PathBuf> = vec![
+        let listed_files: PathList = vec![
             [temp_path, "test_file.txt"].iter().collect(),
             [temp_path, "mock_dir_1", "test_file.txt"].iter().collect(),
             [temp_path, "mock_dir_1", "mock_dir_2", "test_file.txt"].iter().collect(),
@@ -407,7 +407,7 @@ mod test {
 
         // Must NOT contain these files/directories
         #[cfg_attr(rustfmt, rustfmt_skip)]
-        let non_listed_files: Vec<PathBuf> = vec![
+        let non_listed_files: PathList = vec![
             [temp_path, "mock_dir_1"].iter().collect(),
             [temp_path, "mock_dir_1", "mock_dir_2"].iter().collect(),
             [temp_path, "false_file.txt"].iter().collect(),
