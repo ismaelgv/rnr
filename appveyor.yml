@@ -28,8 +28,29 @@ install:
 ## Build Script ##
 build: false
 
-test_script:
-- cargo test --verbose %cargoflags%
+test_script: cargo test --verbose %cargoflags%
+
+before_deploy:
+  # Generate artifacts for release
+  - cargo build --release
+  - mkdir staging
+  - copy target\release\rnr.exe staging
+  - ps: copy target\release\build\rnr-*\out\_rg.ps1 staging
+  - cd staging
+  - 7z a ../rnr-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip *
+  - appveyor PushArtifact ../rnr-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip
+
+deploy:
+  # All the zipped artifacts will be deployed
+  artifact: /.*\.zip/
+  auth_token:
+    secure: Tz4TKacVOJpbdd6rJ/MsgYAR/vr/OkbafruG3yAQA5nymwBoenVPMowjRRS0g3WW
+  provider: GitHub
+  # deploy when a new tag is pushed and only on the stable channel
+  on:
+    # channel to use to produce the release artifacts
+    CHANNEL: stable
+    appveyor_repo_tag: true
 
 matrix:
   fast_finish: true
