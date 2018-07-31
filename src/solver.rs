@@ -9,7 +9,7 @@ pub type RenameMap = HashMap<PathBuf, PathBuf>;
 /// conflicts and adds remaining targets to the list.
 pub fn solve_rename_order(rename_map: &RenameMap) -> Result<PathList> {
     // Return existing targets in the list of original filenames
-    let existing_targets = match get_existing_targets(&rename_map) {
+    let mut existing_targets = match get_existing_targets(&rename_map) {
         Ok(existing_targets) => existing_targets,
         Err(err) => return Err(err),
     };
@@ -27,10 +27,13 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<PathList> {
         .collect();
 
     // Order and store the rest of entries
-    match order_existing_targets(&rename_map, existing_targets) {
+    match order_existing_targets(&rename_map, &mut existing_targets) {
         Ok(mut targets) => rename_order.append(&mut targets),
         Err(err) => return Err(err),
     }
+
+    // Move children before parent directories if they are renamed
+    reorder_children_first(&rename_map, &mut rename_order);
 
     Ok(rename_order)
 }
@@ -61,7 +64,7 @@ fn get_existing_targets(rename_map: &RenameMap) -> Result<PathList> {
 /// to current existing targets.
 fn order_existing_targets(
     rename_map: &RenameMap,
-    mut existing_targets: PathList,
+    existing_targets: &mut PathList,
 ) -> Result<PathList> {
     let mut ordered_targets: PathList = Vec::new();
 
@@ -97,6 +100,40 @@ fn order_existing_targets(
     }
 
     Ok(ordered_targets)
+}
+
+/// Move children in the remaname order list before its parents if are renamed.
+fn reorder_children_first(rename_map: &RenameMap, rename_order: &mut PathList) {
+    let mut i = 0;
+    let order_length = rename_order.len();
+    while i < order_length {
+        // Only consider directories
+        let source = &rename_map[&rename_order[i]];
+        if !source.is_dir() {
+            i += 1;
+            continue;
+        }
+
+        let mut children_index: Vec<usize> = Vec::new();
+        for j in i + 1..rename_order.len() {
+            let child_source = &rename_map[&rename_order[j]];
+            if child_source.starts_with(source) {
+                children_index.push(j);
+            }
+        }
+        // Increase outer index counter when there is any change
+        if children_index.is_empty() {
+            i += 1;
+        } else {
+            // Reorder elements in the vector
+            let mut new_index = i;
+            for old_index in children_index {
+                let element = rename_order.remove(old_index);
+                rename_order.insert(new_index, element);
+                new_index += 1;
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -170,13 +207,13 @@ mod test {
             .zip(mock_sources.into_iter())
             .collect();
 
-        let mock_existing_targets: PathList = vec![
+        let mut mock_existing_targets: PathList = vec![
             PathBuf::from("aa.txt"),
             PathBuf::from("aaa.txt"),
             PathBuf::from("aaaa.txt"),
         ];
 
-        let ordered_targets = order_existing_targets(&mock_rename_map, mock_existing_targets)
+        let ordered_targets = order_existing_targets(&mock_rename_map, &mut mock_existing_targets)
             .expect("Failed to order existing_targets.");
         assert_eq!(ordered_targets[0], PathBuf::from("aaaa.txt"));
         assert_eq!(ordered_targets[1], PathBuf::from("aaa.txt"));
@@ -223,5 +260,67 @@ mod test {
         assert_eq!(rename_order[2], mock_targets[2]);
         assert_eq!(rename_order[3], mock_targets[1]);
         assert_eq!(rename_order[4], mock_targets[0]);
+    }
+
+    #[test]
+    fn test_reorder_children_first() {
+        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
+        println!("Running test in '{:?}'", tempdir);
+        let temp_path = tempdir.path().to_str().unwrap();
+
+        #[cfg_attr(rustfmt, rustfmt_skip)]
+        let mock_dirs: PathList = vec![
+            [temp_path, "mock_dir_1"].iter().collect(),
+            [temp_path, "mock_dir_1", "mock_dir_2"].iter().collect(),
+        ];
+        #[cfg_attr(rustfmt, rustfmt_skip)]
+        let mock_files: PathList = vec![
+            [temp_path, "test_file.txt"].iter().collect(),
+            [&mock_dirs[0], &PathBuf::from("test_file.txt")].iter().collect(),
+            [&mock_dirs[1], &PathBuf::from("test_file.txt")].iter().collect(),
+        ];
+        // Create directory tree and files in the filesystem
+        for mock_dir in &mock_dirs {
+            fs::create_dir(&mock_dir).expect("Error creating mock directory...");
+        }
+        for file in &mock_files {
+            fs::File::create(&file).expect("Error creating mock file...");
+        }
+        let mock_sources: PathList = vec![
+            mock_dirs[0].clone(),
+            mock_dirs[1].clone(),
+            mock_files[0].clone(),
+            mock_files[1].clone(),
+            mock_files[2].clone(),
+        ];
+        // Add one 'a' to the beginning of the filename
+        #[cfg_attr(rustfmt, rustfmt_skip)]
+        let mock_targets: PathList = vec![
+            [temp_path, "atest_file.txt"].iter().collect(),
+            [temp_path, "amock_dir_1"].iter().collect(),
+            [temp_path, "mock_dir_1", "amock_dir_2"].iter().collect(),
+            [&mock_dirs[0], &PathBuf::from("atest_file.txt")].iter().collect(),
+            [&mock_dirs[1], &PathBuf::from("atest_file.txt")].iter().collect(),
+        ];
+        let mut rename_order = mock_targets.clone();
+
+        let mock_rename_map: RenameMap = mock_targets
+            .clone()
+            .into_iter()
+            .zip(mock_sources.into_iter())
+            .collect();
+
+        reorder_children_first(&mock_rename_map, &mut rename_order);
+
+        println!("{}", 0);
+        assert_eq!(rename_order[0], mock_targets[4]);
+        println!("{}", 1);
+        assert_eq!(rename_order[1], mock_targets[3]);
+        println!("{}", 2);
+        assert_eq!(rename_order[2], mock_targets[2]);
+        println!("{}", 3);
+        assert_eq!(rename_order[3], mock_targets[3]);
+        println!("{}", 4);
+        assert_eq!(rename_order[4], mock_targets[4]);
     }
 }
