@@ -77,7 +77,7 @@ pub fn cleanup_files(files: &mut PathList, keep_dirs: bool) {
             // Checks if non-existing path is actually a symlink
             file.read_link().is_ok()
         } else if file.is_dir() {
-            keep_dirs
+            keep_dirs && file.file_name().is_some()
         } else {
             true
         }
