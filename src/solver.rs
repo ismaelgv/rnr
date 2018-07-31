@@ -296,9 +296,9 @@ mod test {
         // Add one 'a' to the beginning of the filename
         #[cfg_attr(rustfmt, rustfmt_skip)]
         let mock_targets: PathList = vec![
-            [temp_path, "atest_file.txt"].iter().collect(),
             [temp_path, "amock_dir_1"].iter().collect(),
             [temp_path, "mock_dir_1", "amock_dir_2"].iter().collect(),
+            [temp_path, "atest_file.txt"].iter().collect(),
             [&mock_dirs[0], &PathBuf::from("atest_file.txt")].iter().collect(),
             [&mock_dirs[1], &PathBuf::from("atest_file.txt")].iter().collect(),
         ];
@@ -312,15 +312,10 @@ mod test {
 
         reorder_children_first(&mock_rename_map, &mut rename_order);
 
-        println!("{}", 0);
-        assert_eq!(rename_order[0], mock_targets[4]);
-        println!("{}", 1);
-        assert_eq!(rename_order[1], mock_targets[3]);
-        println!("{}", 2);
-        assert_eq!(rename_order[2], mock_targets[2]);
-        println!("{}", 3);
-        assert_eq!(rename_order[3], mock_targets[3]);
-        println!("{}", 4);
-        assert_eq!(rename_order[4], mock_targets[4]);
+        assert_eq!(rename_order[0], mock_targets[4]); // mock_dir_1/mock_dir_2/test_file.txt
+        assert_eq!(rename_order[1], mock_targets[1]); // mock_dir_1/mock_dir_2/
+        assert_eq!(rename_order[2], mock_targets[3]); // mock_dir_1/test_file.txt
+        assert_eq!(rename_order[3], mock_targets[0]); // mock_dir_1/
+        assert_eq!(rename_order[4], mock_targets[2]); // test_file.txt
     }
 }
