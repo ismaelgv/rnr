@@ -1,4 +1,6 @@
 # v0.1.6 (Unreleased)
+### Added
+* Option to include directories in the renaming process.
 ### Changed
 * Heavy internal refactor to use PathBuf instead of String for files.
 

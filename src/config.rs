@@ -12,6 +12,7 @@ pub struct Config {
     pub replacement: String,
     pub force: bool,
     pub backup: bool,
+    pub dirs: bool,
     pub mode: RunMode,
     pub printer: Printer,
 }
@@ -98,6 +99,7 @@ fn parse_arguments() -> Result<Config, String> {
         replacement,
         force: matches.is_present("force"),
         backup: matches.is_present("backup"),
+        dirs: matches.is_present("include-dirs"),
         mode,
         printer,
     })

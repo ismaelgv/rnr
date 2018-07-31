@@ -151,6 +151,7 @@ mod test {
             replacement: "passed".to_string(),
             force: false,
             backup: false,
+            dirs: false,
             mode: RunMode::FileList(mock_files),
             printer: Printer::colored(),
         };
@@ -230,6 +231,7 @@ mod test {
             replacement: "passed".to_string(),
             force: false,
             backup: false,
+            dirs: false,
             mode: RunMode::Recursive {
                 path: temp_path.to_string(),
                 max_depth: None,
@@ -272,6 +274,7 @@ mod test {
             replacement: "passed".to_string(),
             force: false,
             backup: false,
+            dirs: false,
             mode: RunMode::Recursive {
                 path: temp_path.to_string(),
                 max_depth: Some(2),
@@ -313,6 +316,7 @@ mod test {
             replacement: "passed".to_string(),
             force: false,
             backup: false,
+            dirs: false,
             mode: RunMode::Recursive {
                 path: temp_path.to_string(),
                 max_depth: None,

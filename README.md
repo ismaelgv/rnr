@@ -30,13 +30,14 @@ USAGE:
     rnr [FLAGS] [OPTIONS] <EXPRESSION> <REPLACEMENT> <FILE(S)>...
 
 FLAGS:
-    -b, --backup     Generate file backups before renaming
-    -n, --dry-run    Only show what would be done (default mode)
-    -f, --force      Make actual changes to files
-    -h, --help       Prints help information
-    -x, --hidden     Include hidden files and directories
-    -s, --silent     Do not print any information
-    -V, --version    Prints version information
+    -b, --backup          Generate file backups before renaming
+    -n, --dry-run         Only show what would be done (default mode)
+    -f, --force           Make actual changes to files
+    -h, --help            Prints help information
+    -x, --hidden          Include hidden files and directories
+    -D, --include-dirs    Rename matching directories
+    -s, --silent          Do not print any information
+    -V, --version         Prints version information
 
 OPTIONS:
         --color <color>        Set color output mode [default: auto]

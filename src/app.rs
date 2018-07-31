@@ -50,6 +50,12 @@ pub fn create_app<'a>() -> App<'a, 'a> {
                 .help("Generate file backups before renaming"),
         )
         .arg(
+            Arg::with_name("include-dirs")
+                .long("include-dirs")
+                .short("D")
+                .help("Rename matching directories"),
+        )
+        .arg(
             Arg::with_name("recursive")
                 .long("recursive")
                 .short("r")

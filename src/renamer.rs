@@ -205,6 +205,7 @@ mod test {
             replacement: "passed".to_string(),
             force: true,
             backup: true,
+            dirs: false,
             mode: RunMode::FileList(mock_files),
             printer: Printer::colored(),
         });
