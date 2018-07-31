@@ -1,11 +1,13 @@
 use config::{Config, RunMode};
 use error::*;
 use std::fs;
-use std::path::Path;
+use std::path::PathBuf;
 use walkdir::{DirEntry, WalkDir};
 
+pub type PathList = Vec<PathBuf>;
+
 /// Return a list of files for the given configuration.
-pub fn get_files(config: &Config) -> Vec<String> {
+pub fn get_files(config: &Config) -> PathList {
     match &config.mode {
         RunMode::Recursive {
             path,
@@ -32,55 +34,45 @@ pub fn get_files(config: &Config) -> Vec<String> {
                 .into_iter()
                 .filter_entry(is_hidden)
                 .filter_map(|e| e.ok())
-                .filter_map(|x| match x.path().to_str() {
-                    Some(s) => Some(s.to_string()),
-                    None => {
-                        let warn = &config.printer.colors.warn;
-                        config.printer.eprint(&format!(
-                            "{}File '{}' contains invalid characters",
-                            warn.paint("Warn: "),
-                            warn.paint(x.path().to_string_lossy())
-                        ));
-                        None
-                    }
-                })
+                .map(|p| p.path().to_path_buf())
                 .collect()
         }
-        RunMode::FileList(file_list) => file_list.clone(),
+        RunMode::FileList(file_list) => file_list.into_iter().map(|f| PathBuf::from(f)).collect(),
     }
 }
 
 /// Generate a non-existing name adding numbers to the end of the file. It also supports adding a
 /// suffix to the original name.
-pub fn get_unique_filename(file: &str, suffix: &str) -> String {
-    let base_name = format!("{}{}", file, suffix);
-    let mut unique_name = base_name.clone();
-    let mut index = 0;
+pub fn get_unique_filename(file: &PathBuf, suffix: &str) -> PathBuf {
+    let base_name = format!("{}{}", file.file_name().unwrap().to_string_lossy(), suffix);
+    let mut unique_name = file.clone();
+    unique_name.set_file_name(&base_name);
 
-    while Path::new(&unique_name).exists() {
+    let mut index = 0;
+    while unique_name.exists() {
         index += 1;
-        unique_name = format!("{}.{}", base_name, index);
+        unique_name.set_file_name(format!("{}.{}", base_name, index));
     }
 
-    unique_name.to_string()
+    unique_name
 }
 
 /// Create a backup of the file
-pub fn create_backup(file: &str) -> Result<String> {
+pub fn create_backup(file: &PathBuf) -> Result<PathBuf> {
     let backup = get_unique_filename(file, ".bk");
     match fs::copy(file, &backup) {
         Ok(_) => Ok(backup),
         Err(_) => Err(Error {
             kind: ErrorKind::CreateBackup,
-            value: Some(file.to_string()),
+            value: Some(file.to_string_lossy().to_string()),
         }),
     }
 }
 
 /// Clean files that does not exists, broken links and directories
-pub fn cleanup_files(files: &mut Vec<String>) {
+pub fn cleanup_files(files: &mut PathList) {
     files.retain(|file| {
-        if !Path::new(&file).exists() {
+        if !file.exists() {
             // Checks if non-existing path is actually a symlink
             fs::read_link(&file).is_ok()
         } else {
@@ -96,7 +88,6 @@ mod test {
     use output::Printer;
     use regex::Regex;
     use std::fs;
-    use std::path::Path;
 
     #[test]
     fn backup() {
@@ -104,10 +95,10 @@ mod test {
         println!("Running test in '{:?}'", tempdir);
         let temp_path = tempdir.path().to_str().unwrap();
 
-        let mock_files: Vec<String> = vec![
-            format!("{}/test_file_1.txt", temp_path),
-            format!("{}/test_file_2.txt", temp_path),
-            format!("{}/test_file_3.txt", temp_path),
+        let mock_files: Vec<PathBuf> = vec![
+            [temp_path, "test_file_1.txt"].iter().collect(),
+            [temp_path, "test_file_2.txt"].iter().collect(),
+            [temp_path, "test_file_3.txt"].iter().collect(),
         ];
 
         for file in &mock_files {
@@ -115,9 +106,16 @@ mod test {
             create_backup(&file).expect("Error generating backup file...");
         }
 
-        assert!(Path::new(&format!("{}/test_file_1.txt.bk", temp_path)).exists());
-        assert!(Path::new(&format!("{}/test_file_2.txt.bk", temp_path)).exists());
-        assert!(Path::new(&format!("{}/test_file_3.txt.bk", temp_path)).exists());
+        let backup_files: Vec<PathBuf> = vec![
+            [temp_path, "test_file_1.txt.bk"].iter().collect(),
+            [temp_path, "test_file_2.txt.bk"].iter().collect(),
+            [temp_path, "test_file_3.txt.bk"].iter().collect(),
+        ];
+
+        for file in &backup_files {
+            println!("{}", file.display());
+            assert!(file.exists());
+        }
     }
 
     #[test]
@@ -126,20 +124,18 @@ mod test {
         println!("Running test in '{:?}'", tempdir);
         let temp_path = tempdir.path().to_str().unwrap();
 
-        let mock_files: Vec<String> = vec![
-            format!("{}/test_file_1", temp_path),
-            format!("{}/test_file_1.1", temp_path),
-            format!("{}/test_file_1.2", temp_path),
+        let mock_files: Vec<PathBuf> = vec![
+            [temp_path, "test_file_1"].iter().collect(),
+            [temp_path, "test_file_1.1"].iter().collect(),
+            [temp_path, "test_file_1.2"].iter().collect(),
         ];
 
         for file in &mock_files {
             fs::File::create(&file).expect("Error creating mock file...");
         }
 
-        assert_eq!(
-            get_unique_filename(&mock_files[0], ""),
-            format!("{}/test_file_1.3", temp_path)
-        );
+        let new_file: PathBuf = [temp_path, "test_file_1.3"].iter().collect();
+        assert_eq!(get_unique_filename(&mock_files[0], ""), new_file);
     }
 
     #[test]
@@ -160,9 +156,9 @@ mod test {
         };
 
         let files = get_files(&mock_config);
-        assert!(files.contains(&"test_file_1.txt".to_string()));
-        assert!(files.contains(&"test_file_2.txt".to_string()));
-        assert!(files.contains(&"test_file_3.txt".to_string()));
+        assert!(files.contains(&PathBuf::from("test_file_1.txt")));
+        assert!(files.contains(&PathBuf::from("test_file_2.txt")));
+        assert!(files.contains(&PathBuf::from("test_file_3.txt")));
     }
 
     // Generate directory tree and files for recursive tests
@@ -195,19 +191,21 @@ mod test {
         //                 - test_file.txt
         //
         //
-        let mock_dirs: Vec<String> = vec![
-            format!("{}/.hidden_mock_dir", temp_path),
-            format!("{}/mock_dir_1", temp_path),
-            format!("{}/mock_dir_1/mock_dir_2", temp_path),
-            format!("{}/mock_dir_1/mock_dir_2/mock_dir_3", temp_path),
+        #[cfg_attr(rustfmt, rustfmt_skip)]
+        let mock_dirs: Vec<PathBuf> = vec![
+            [&temp_path, ".hidden_mock_dir"].iter().collect(),
+            [&temp_path, "mock_dir_1"].iter().collect(),
+            [&temp_path, "mock_dir_1", "mock_dir_2"].iter().collect(),
+            [&temp_path, "mock_dir_1", "mock_dir_2", "mock_dir_3"].iter().collect(),
         ];
-        let mock_files: Vec<String> = vec![
-            format!("{}/test_file.txt", temp_path),
-            format!("{}/.hidden_test_file.txt", temp_path),
-            format!("{}/test_file.txt", mock_dirs[0]),
-            format!("{}/test_file.txt", mock_dirs[1]),
-            format!("{}/test_file.txt", mock_dirs[2]),
-            format!("{}/test_file.txt", mock_dirs[3]),
+        #[cfg_attr(rustfmt, rustfmt_skip)]
+        let mock_files: Vec<PathBuf> = vec![
+            [&temp_path, "test_file.txt"].iter().collect(),
+            [&temp_path, ".hidden_test_file.txt"].iter().collect(),
+            [&mock_dirs[0], &PathBuf::from("test_file.txt")].iter().collect(),
+            [&mock_dirs[1], &PathBuf::from("test_file.txt")].iter().collect(),
+            [&mock_dirs[2], &PathBuf::from("test_file.txt")].iter().collect(),
+            [&mock_dirs[3], &PathBuf::from("test_file.txt")].iter().collect(),
         ];
 
         // Create directory tree and files in the filesystem
@@ -242,25 +240,24 @@ mod test {
 
         let files = get_files(&mock_config);
         // Must contain these files
-        let listed_files: Vec<String> = vec![
-            format!("{}/test_file.txt", temp_path),
-            format!("{}/mock_dir_1/test_file.txt", temp_path),
-            format!("{}/mock_dir_1/mock_dir_2/test_file.txt", temp_path),
-            format!("{}/mock_dir_1/mock_dir_2/mock_dir_3/test_file.txt", temp_path),
+        #[cfg_attr(rustfmt, rustfmt_skip)]
+        let listed_files: Vec<PathBuf> = vec![
+            [&temp_path, "test_file.txt"].iter().collect(),
+            [&temp_path, "mock_dir_1", "test_file.txt"].iter().collect(),
+            [&temp_path, "mock_dir_1", "mock_dir_2", "test_file.txt"].iter().collect(),
+            [&temp_path, "mock_dir_1", "mock_dir_2", "mock_dir_3", "test_file.txt"]
+                .iter().collect(),
         ];
         for file in &listed_files {
-            #[cfg(windows)] // Replace delimiters on Windows
-            let file = &file.replace("/", "\\");
             assert!(files.contains(file));
         }
         // Must NOT contain these files
-        let non_listed_files: Vec<String> = vec![
-            format!("{}/.hidden_test_file.txt", temp_path),
-            format!("{}/.hidden_mock_dir/test_file.txt", temp_path),
+        #[cfg_attr(rustfmt, rustfmt_skip)]
+        let non_listed_files: Vec<PathBuf> = vec![
+            [&temp_path, ".hidden_test_file.txt"].iter().collect(),
+            [&temp_path, ".hidden_mock_dir", "test_file.txt"].iter().collect(),
         ];
         for file in &non_listed_files {
-            #[cfg(windows)] // Replace delimiters on Windows
-            let file = &file.replace("/", "\\");
             assert!(!files.contains(file));
         }
     }
@@ -285,25 +282,23 @@ mod test {
 
         let files = get_files(&mock_config);
         // Must contain these files
-        let listed_files: Vec<String> = vec![
-            format!("{}/test_file.txt", temp_path),
-            format!("{}/mock_dir_1/test_file.txt", temp_path),
+        let listed_files: Vec<PathBuf> = vec![
+            [&temp_path, "test_file.txt"].iter().collect(),
+            [&temp_path, "mock_dir_1", "test_file.txt"].iter().collect(),
         ];
         for file in &listed_files {
-            #[cfg(windows)] // Replace delimiters on Windows
-            let file = &file.replace("/", "\\");
             assert!(files.contains(file));
         }
         // Must NOT contain these files
-        let non_listed_files: Vec<String> = vec![
-            format!("{}/mock_dir_1/mock_dir_2/test_file.txt", temp_path),
-            format!("{}/mock_dir_1/mock_dir_2/mock_dir_3/test_file.txt", temp_path),
-            format!("{}/.hidden_test_file.txt", temp_path),
-            format!("{}/.hidden_mock_dir/test_file.txt", temp_path),
+        #[cfg_attr(rustfmt, rustfmt_skip)]
+        let non_listed_files: Vec<PathBuf> = vec![
+            [&temp_path, "mock_dir_1", "mock_dir_2", "test_file.txt"].iter().collect(),
+            [&temp_path, "mock_dir_1", "mock_dir_2", "mock_dir_3", "test_file.txt"]
+                .iter().collect(),
+            [&temp_path, ".hidden_test_file.txt"].iter().collect(),
+            [&temp_path, ".hidden_mock_dir", "test_file.txt"].iter().collect(),
         ];
         for file in &non_listed_files {
-            #[cfg(windows)] // Replace delimiters on Windows
-            let file = &file.replace("/", "\\");
             assert!(!files.contains(file));
         }
     }
@@ -328,17 +323,17 @@ mod test {
 
         let files = get_files(&mock_config);
         // Must contain these files
-        let listed_files: Vec<String> = vec![
-            format!("{}/test_file.txt", temp_path),
-            format!("{}/mock_dir_1/test_file.txt", temp_path),
-            format!("{}/mock_dir_1/mock_dir_2/test_file.txt", temp_path),
-            format!("{}/mock_dir_1/mock_dir_2/mock_dir_3/test_file.txt", temp_path),
-            format!("{}/.hidden_test_file.txt", temp_path),
-            format!("{}/.hidden_mock_dir/test_file.txt", temp_path),
+        #[cfg_attr(rustfmt, rustfmt_skip)]
+        let listed_files: Vec<PathBuf> = vec![
+            [&temp_path, "test_file.txt"].iter().collect(),
+            [&temp_path, "mock_dir_1", "test_file.txt"].iter().collect(),
+            [&temp_path, "mock_dir_1", "mock_dir_2", "test_file.txt"].iter().collect(),
+            [&temp_path, "mock_dir_1", "mock_dir_2", "mock_dir_3", "test_file.txt"]
+                .iter().collect(),
+            [&temp_path, ".hidden_test_file.txt"].iter().collect(),
+            [&temp_path, ".hidden_mock_dir", "test_file.txt"].iter().collect(),
         ];
         for file in &listed_files {
-            #[cfg(windows)] // Replace delimiters on Windows
-            let file = &file.replace("/", "\\");
             assert!(files.contains(file));
         }
     }
@@ -363,14 +358,15 @@ mod test {
         //             |
         //             - test_file.txt
         //
-        let mock_dirs: Vec<String> = vec![
-            format!("{}/mock_dir_1", temp_path),
-            format!("{}/mock_dir_1/mock_dir_2", temp_path),
+        let mock_dirs: Vec<PathBuf> = vec![
+            [temp_path, "mock_dir_1"].iter().collect(),
+            [temp_path, "mock_dir_1", "mock_dir_2"].iter().collect(),
         ];
-        let mut mock_files: Vec<String> = vec![
-            format!("{}/test_file.txt", temp_path),
-            format!("{}/test_file.txt", mock_dirs[0]),
-            format!("{}/test_file.txt", mock_dirs[1]),
+        #[cfg_attr(rustfmt, rustfmt_skip)]
+        let mut mock_files: Vec<PathBuf> = vec![
+            [temp_path, "test_file.txt"].iter().collect(),
+            [&mock_dirs[0], &PathBuf::from("test_file.txt")].iter().collect(),
+            [&mock_dirs[1], &PathBuf::from("test_file.txt")].iter().collect(),
         ];
 
         // Create directory tree and files in the filesystem
@@ -383,27 +379,36 @@ mod test {
 
         // Add directories and false files to arguments
         mock_files.append(&mut mock_dirs.clone());
-        mock_files.push(format!("{}/false_file.txt", temp_path));
-        mock_files.push(format!("{}/false_file.txt", mock_dirs[0]));
-        mock_files.push(format!("{}/false_file.txt", mock_dirs[1]));
+        mock_files.push([temp_path, "false_file.txt"].iter().collect());
+        #[cfg_attr(rustfmt, rustfmt_skip)]
+        mock_files.push([&mock_dirs[0], &PathBuf::from("false_file.txt")].iter().collect());
+        #[cfg_attr(rustfmt, rustfmt_skip)]
+        mock_files.push([&mock_dirs[1], &PathBuf::from("false_file.txt")].iter().collect());
 
         cleanup_files(&mut mock_files);
 
         // Must contain these the files
-        assert!(mock_files.contains(&format!("{}/test_file.txt", temp_path)));
-        assert!(mock_files.contains(&format!("{}/mock_dir_1/test_file.txt", temp_path)));
-        assert!(mock_files.contains(&format!(
-            "{}/mock_dir_1/mock_dir_2/test_file.txt",
-            temp_path
-        )));
+        #[cfg_attr(rustfmt, rustfmt_skip)]
+        let listed_files: Vec<PathBuf> = vec![
+            [temp_path, "test_file.txt"].iter().collect(),
+            [temp_path, "mock_dir_1", "test_file.txt"].iter().collect(),
+            [temp_path, "mock_dir_1", "mock_dir_2", "test_file.txt"].iter().collect(),
+        ];
+        for file in &listed_files {
+            assert!(mock_files.contains(file));
+        }
+
         // Must NOT contain these files/directories
-        assert!(!mock_files.contains(&format!("{}/mock_dir_1", temp_path)));
-        assert!(!mock_files.contains(&format!("{}/mock_dir_1/mock_dir_2", temp_path)));
-        assert!(!mock_files.contains(&format!("{}/false_file.txt", temp_path)));
-        assert!(!mock_files.contains(&format!("{}/mock_dir_1/false_file.txt", temp_path)));
-        assert!(!mock_files.contains(&format!(
-            "{}/mock_dir_1/mock_dir_2/false_file.txt",
-            temp_path
-        )));
+        #[cfg_attr(rustfmt, rustfmt_skip)]
+        let non_listed_files: Vec<PathBuf> = vec![
+            [temp_path, "mock_dir_1"].iter().collect(),
+            [temp_path, "mock_dir_1", "mock_dir_2"].iter().collect(),
+            [temp_path, "false_file.txt"].iter().collect(),
+            [temp_path, "mock_dir_1", "false_file.txt"].iter().collect(),
+            [temp_path, "mock_dir_1", "mock_dir_2", "false_file.txt"].iter().collect(),
+        ];
+        for file in &non_listed_files {
+            assert!(!mock_files.contains(file));
+        }
     }
 }

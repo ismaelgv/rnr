@@ -1,3 +1,7 @@
+# v0.1.6 (Unreleased)
+### Changed
+* Heavy internal refactor to use PathBuf instead of String for files.
+
 # v0.1.5 (2018-07-30)
 ### Added
 * Detect output type in color=auto mode.

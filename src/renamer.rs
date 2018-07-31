@@ -1,13 +1,13 @@
 use config::Config;
 use error::*;
-use fileutils::{cleanup_files, create_backup, get_files};
+use fileutils::{cleanup_files, create_backup, get_files, PathList};
 use solver::{solve_rename_order, RenameMap};
 use std::fs;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 pub struct Renamer {
-    files: Vec<String>,
+    files: PathList,
     config: Arc<Config>,
 }
 
@@ -42,7 +42,7 @@ impl Renamer {
         // Execute actual renaming
         for target in &rename_order {
             let source = &rename_map[target];
-            if let Err(err) = self.rename(&source, target) {
+            if let Err(err) = self.rename(source, target) {
                 return Err(err);
             };
         }
@@ -51,20 +51,17 @@ impl Renamer {
     }
 
     /// Replace expression match in the given file using stored config.
-    fn replace_match(&self, file: &str) -> String {
+    fn replace_match(&self, file: &PathBuf) -> PathBuf {
         let expression = &self.config.expression;
         let replacement = &self.config.replacement;
 
-        let file_name = Path::new(&file).file_name().unwrap().to_str().unwrap();
-        let file_path = Path::new(&file).parent().unwrap().to_str().unwrap();
+        let file_name = file.file_name().unwrap().to_str().unwrap();
+        let file_path = file.parent();
 
         let target_name = expression.replace(file_name, &replacement[..]);
         match file_path {
-            "" => String::from(target_name),
-            _ => Path::new(file_path)
-                .join(Path::new(&target_name.into_owned()))
-                .to_string_lossy()
-                .to_string(),
+            None => PathBuf::from(target_name.to_string()),
+            Some(path) => path.join(Path::new(&target_name.into_owned())),
         }
     }
 
@@ -84,7 +81,12 @@ impl Renamer {
                     // Targets cannot be duplicated by any reason
                     error_string.push_str(&colors
                         .error
-                        .paint(format!("\n{0}->{2}\n{1}->{2}\n", old_file, file, target))
+                        .paint(format!(
+                            "\n{0}->{2}\n{1}->{2}\n",
+                            old_file.display(),
+                            file.display(),
+                            target.display()
+                        ))
                         .to_string());
                 }
             }
@@ -102,7 +104,7 @@ impl Renamer {
 
     /// Rename file in the filesystem or simply print renaming information. Checks if target
     /// filename exists before renaming.
-    fn rename(&self, source: &str, target: &str) -> Result<()> {
+    fn rename(&self, source: &PathBuf, target: &PathBuf) -> Result<()> {
         let printer = &self.config.printer;
         let colors = &printer.colors;
 
@@ -113,7 +115,11 @@ impl Renamer {
                     Ok(backup) => printer.print(&format!(
                         "{} Backup created - {}",
                         colors.info.paint("Info: "),
-                        colors.source.paint(format!("{} -> {}", source, backup))
+                        colors.source.paint(format!(
+                            "{} -> {}",
+                            source.display(),
+                            backup.display()
+                        ))
                     )),
                     Err(err) => {
                         return Err(err);
@@ -125,21 +131,21 @@ impl Renamer {
             if fs::rename(&source, &target).is_err() {
                 return Err(Error {
                     kind: ErrorKind::RenameFile,
-                    value: Some(source.to_string()),
+                    value: Some(source.to_string_lossy().to_string()),
                 });
             } else {
                 printer.print(&format!(
                     "{} -> {}",
-                    colors.source.paint(source),
-                    colors.target.paint(target)
+                    colors.source.paint(source.to_string_lossy().to_string()),
+                    colors.target.paint(target.to_string_lossy().to_string())
                 ));
             }
         } else {
             // Just print info in dry-run mode
             printer.print(&format!(
                 "{} -> {}",
-                colors.source.paint(source),
-                colors.target.paint(target)
+                colors.source.paint(source.to_string_lossy().to_string()),
+                colors.target.paint(target.to_string_lossy().to_string())
             ));
         }
 
