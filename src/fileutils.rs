@@ -37,7 +37,7 @@ pub fn get_files(config: &Config) -> PathList {
                 .map(|p| p.path().to_path_buf())
                 .collect()
         }
-        RunMode::FileList(file_list) => file_list.into_iter().map(|f| PathBuf::from(f)).collect(),
+        RunMode::FileList(file_list) => file_list.into_iter().map(PathBuf::from).collect(),
     }
 }
 
