@@ -69,14 +69,17 @@ pub fn create_backup(file: &PathBuf) -> Result<PathBuf> {
     }
 }
 
-/// Clean files that does not exists, broken links and directories
-pub fn cleanup_files(files: &mut PathList) {
+/// Clean files that does not exists and broken links. It remove directories too if dirs parameters
+/// is set to false.
+pub fn cleanup_files(files: &mut PathList, keep_dirs: bool) {
     files.retain(|file| {
         if !file.exists() {
             // Checks if non-existing path is actually a symlink
             file.read_link().is_ok()
+        } else if file.is_dir() {
+            keep_dirs
         } else {
-            !file.is_dir()
+            true
         }
     });
 }
@@ -389,7 +392,7 @@ mod test {
         #[cfg_attr(rustfmt, rustfmt_skip)]
         mock_files.push([&mock_dirs[1], &PathBuf::from("false_file.txt")].iter().collect());
 
-        cleanup_files(&mut mock_files);
+        cleanup_files(&mut mock_files, false);
 
         // Must contain these the files
         #[cfg_attr(rustfmt, rustfmt_skip)]

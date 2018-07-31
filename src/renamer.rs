@@ -23,7 +23,7 @@ impl Renamer {
     /// Process file batch
     pub fn process(&mut self) -> Result<()> {
         // Remove directories and on existing files from the list
-        cleanup_files(&mut self.files);
+        cleanup_files(&mut self.files, self.config.dirs);
 
         // Relate original names with their targets
         let rename_map = match self.get_rename_map() {
