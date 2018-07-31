@@ -74,9 +74,9 @@ pub fn cleanup_files(files: &mut PathList) {
     files.retain(|file| {
         if !file.exists() {
             // Checks if non-existing path is actually a symlink
-            fs::read_link(&file).is_ok()
+            file.read_link().is_ok()
         } else {
-            !fs::metadata(&file).unwrap().is_dir()
+            !file.is_dir()
         }
     });
 }
