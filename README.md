@@ -7,6 +7,22 @@
 `rnr` is a command-line tool to batch rename files and directories.
 
 # Install
+
+## Binaries
+
+### GitHub Releases
+You can download binaries from [latest release
+page](https://github.com/ChuckDaniels87/rnr/releases). Choose the compressed
+file corresponding to your platform and extrac it. These compressed files
+contain the executable and other additional content such as completion files
+(*Bash*, *Zsh*, *fish* and *PowerShell*).
+
+### Arch Linux
+A package is available in the AUR 
+([`rnr`](https://aur.archlinux.org/packages/rnr/)) to install latest version of
+*RnR* on Arch Linux.
+
+## From Source
 *RnR* is written in Rust. You can build it from source using Cargo.
 
 ### From git repository
@@ -18,12 +34,6 @@ cargo install
 ```sh
 cargo install rnr
 ```
-
-### Arch Linux
-A package is available in the AUR 
-([`rnr`](https://aur.archlinux.org/packages/rnr/)) to install latest version of
-*RnR* on Arch Linux.
-
 # Options
 ```
 USAGE:
