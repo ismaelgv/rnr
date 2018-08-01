@@ -35,7 +35,9 @@ before_deploy:
   - cargo build --release
   - mkdir staging
   - copy target\release\rnr.exe staging
-  - ps: copy target\release\build\rnr-*\out\_rg.ps1 staging
+  - ps: copy target\release\build\rnr-*\out\_rnr.ps1 staging
+  - copy README.md staging
+  - copy LICENSE staging
   - cd staging
   - 7z a ../rnr-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip *
   - appveyor PushArtifact ../rnr-%APPVEYOR_REPO_TAG_NAME%-%TARGET%.zip
