@@ -10,14 +10,14 @@ build() {
 create_package() {
     local tempdir
     local out_dir
-    local project_name
+    local PROJECT_NAME
     local package_name
     local deploy_dir
 
-    project_name="rnr"
+    PROJECT_NAME="rnr"
     tempdir=$(mktemp -d 2>/dev/null || mktemp -d -t tmp)
     out_dir=$(pwd)
-    package_name="${project_name}-${TRAVIS_TAG}-${TARGET}"
+    package_name="${PROJECT_NAME}-${TRAVIS_TAG}-${TARGET}"
     deploy_dir="${tempdir}/${package_name}"
 
     # create a deployment directory
@@ -25,8 +25,11 @@ create_package() {
     mkdir "${deploy_dir}/completion"
 
     # copy files
-    cp "target/${TARGET}/release/${project_name}" "${deploy_dir}/"
-    cp "target/${TARGET}/release/build/rnr-*/out/*" "${deploy_dir}/completion/"
+    cp "target/${TARGET}/release/${PROJECT_NAME}" "${deploy_dir}/"
+    cp "target/${TARGET}/release/build/rnr"-*/out/"_rnr" "${deploy_dir}/completion/"
+    cp "target/${TARGET}/release/build/rnr"-*/out/"rnr.bash" "${deploy_dir}/completion/"
+    cp "target/${TARGET}/release/build/rnr"-*/out/"rnr.fish" "${deploy_dir}/completion/"
+    cp "target/${TARGET}/release/build/rnr"-*/out/"_rnr.ps1" "${deploy_dir}/completion/"
     cp README.md "${deploy_dir}"
     cp LICENSE "${deploy_dir}"
 
