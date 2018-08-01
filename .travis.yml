@@ -18,7 +18,10 @@ script:
 - cargo build --target $TARGET --verbose
 - cargo test  --target $TARGET --verbose
 
-before_deploy: ci/before-deploy.sh
+install:
+  - if [[ $TRAVIS_OS_NAME = linux && $HOST != $TARGET ]]; then rustup target add $TARGET; fi
+
+before_deploy: ci/before_deploy.sh
 
 deploy:
   provider: releases
