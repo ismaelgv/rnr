@@ -22,5 +22,5 @@ walkdir= "2"
 clap = "~2.32"
 
 [badges]
-travis-ci = { repository = "ChuckDaniels87/rnr" }
-appveyor = { repository = "ChuckDaniels87/rnr" }
+travis-ci = { repository = "ChuckDaniels87/rnr", branch = "master" }
+appveyor = { repository = "ChuckDaniels87/rnr", branch = "master" }
