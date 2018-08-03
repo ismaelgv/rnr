@@ -12,10 +12,10 @@
 
 ### GitHub Releases
 You can download binaries from [latest release
-page](https://github.com/ChuckDaniels87/rnr/releases). Choose the compressed
-file corresponding to your platform and extrac it. These compressed files
-contain the executable and other additional content such as completion files
-(*Bash*, *Zsh*, *fish* and *PowerShell*).
+page](https://github.com/ChuckDaniels87/rnr/releases), choose the compressed
+file corresponding to your platform. These compressed files contain the
+executable and other additional content such as completion files (*Bash*, *Zsh*,
+*fish* and *PowerShell*).
 
 ### Arch Linux
 A package is available in the AUR 
