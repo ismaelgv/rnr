@@ -37,7 +37,7 @@ cargo install rnr
 # Options
 ```
 USAGE:
-    rnr [FLAGS] [OPTIONS] <EXPRESSION> <REPLACEMENT> <FILE(S)>...
+    rnr [FLAGS] [OPTIONS] <EXPRESSION> <REPLACEMENT> <PATH(S)>...
 
 FLAGS:
     -b, --backup          Generate file backups before renaming
@@ -46,6 +46,7 @@ FLAGS:
     -h, --help            Prints help information
     -x, --hidden          Include hidden files and directories
     -D, --include-dirs    Rename matching directories
+    -r, --recursive       Recursive mode (limited to one input path)
     -s, --silent          Do not print any information
     -V, --version         Prints version information
 
@@ -53,12 +54,11 @@ OPTIONS:
         --color <color>        Set color output mode [default: auto]
                                [possible values: always, auto, never]
     -d, --max-depth <LEVEL>    Set max depth in recursive mode
-    -r, --recursive <PATH>     Recursive mode
 
 ARGS:
     <EXPRESSION>     Expression to match (can be a regex)
     <REPLACEMENT>    Expression replacement
-    <FILE(S)>...     Target files
+    <PATH(S)>...     Target paths
 ```
 
 ## Default behavior
