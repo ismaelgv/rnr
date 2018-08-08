@@ -34,9 +34,7 @@ impl Renamer {
         // Solve targets ordering to avoid renaming conflicts
         let rename_order = match solve_rename_order(&rename_map) {
             Ok(rename_order) => rename_order,
-            Err(err) => {
-                return Err(err);
-            }
+            Err(err) => return Err(err),
         };
 
         // Execute actual renaming
