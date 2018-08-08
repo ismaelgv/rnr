@@ -67,15 +67,31 @@ fn parse_arguments() -> Result<Config, String> {
     let replacement = String::from(matches.value_of("REPLACEMENT").unwrap());
 
     // Detect normal or recursive mode and set properly set its parameters
+    let mut file_input: Vec<String> = matches
+        .values_of("PATH(S)")
+        .unwrap()
+        .map(String::from)
+        .collect();
+
     let mode = if matches.is_present("recursive") {
-        let path = matches.value_of("recursive").unwrap().to_string();
+
+        let path = if file_input.len() == 1 {
+            file_input.pop().unwrap()
+        } else {
+            return Err(format!(
+                "{}Recursive mode only accepts one input path.",
+                printer.colors.error.paint("Error: "),
+            ));
+        };
+
         if !Path::new(&path).exists() {
             return Err(format!(
                 "{}Path {} does not exist!",
                 printer.colors.error.paint("Error: "),
-                printer.colors.error.paint(path.to_string())
+                printer.colors.error.paint(path)
             ));
         }
+
         let max_depth = if matches.is_present("max-depth") {
             Some(
                 matches
@@ -87,19 +103,14 @@ fn parse_arguments() -> Result<Config, String> {
         } else {
             None
         };
+
         RunMode::Recursive {
             path,
             max_depth,
             hidden: matches.is_present("hidden"),
         }
     } else {
-        RunMode::FileList(
-            matches
-                .values_of("FILE(S)")
-                .unwrap()
-                .map(String::from)
-                .collect(),
-        )
+        RunMode::FileList( file_input )
     };
 
     Ok(Config {

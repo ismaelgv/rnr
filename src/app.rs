@@ -23,10 +23,8 @@ pub fn create_app<'a>() -> App<'a, 'a> {
                 .index(2),
         )
         .arg(
-            Arg::with_name("FILE(S)")
-                .help("Target files")
-                .required_unless("recursive")
-                .conflicts_with("recursive")
+            Arg::with_name("PATH(S)")
+                .help("Target paths")
                 .validator_os(is_valid_string)
                 .multiple(true),
         )
@@ -59,9 +57,7 @@ pub fn create_app<'a>() -> App<'a, 'a> {
             Arg::with_name("recursive")
                 .long("recursive")
                 .short("r")
-                .value_name("PATH")
-                .validator_os(is_valid_string)
-                .help("Recursive mode"),
+                .help("Recursive mode (limited to one input path)"),
         )
         .arg(
             Arg::with_name("max-depth")
