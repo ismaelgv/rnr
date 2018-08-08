@@ -1,3 +1,9 @@
+# v0.2.0 (Unreleased)
+### Added
+* Check input for recursive mode.
+### Changed
+* Recursive mode now takes the last positional argument instead of the next one.
+
 # v0.1.6 (2018-08-01)
 ### Added
 * Option to include directories in the renaming process.
