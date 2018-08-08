@@ -2,6 +2,7 @@ use app::create_app;
 use atty;
 use output::Printer;
 use regex::Regex;
+use std::path::Path;
 use std::sync::Arc;
 
 /// This module is defined Config struct to carry application configuration. This struct is created
@@ -68,6 +69,13 @@ fn parse_arguments() -> Result<Config, String> {
     // Detect normal or recursive mode and set properly set its parameters
     let mode = if matches.is_present("recursive") {
         let path = matches.value_of("recursive").unwrap().to_string();
+        if !Path::new(&path).exists() {
+            return Err(format!(
+                "{}Path {} does not exist!",
+                printer.colors.error.paint("Error: "),
+                printer.colors.error.paint(path.to_string())
+            ));
+        }
         let max_depth = if matches.is_present("max-depth") {
             Some(
                 matches
