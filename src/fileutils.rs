@@ -40,9 +40,7 @@ pub fn get_files(config: &Config) -> PathList {
                     .collect();
                 path_list.append(&mut walk_list);
             }
-            // Remove duplicated paths since multiple walkdirs can produce repeated entries
-            path_list.sort_unstable();
-            path_list.dedup();
+
             path_list
         }
         RunMode::FileList(path_list) => path_list.into_iter().map(PathBuf::from).collect(),
@@ -77,8 +75,8 @@ pub fn create_backup(file: &PathBuf) -> Result<PathBuf> {
     }
 }
 
-/// Clean files that does not exists and broken links. It remove directories too if dirs parameters
-/// is set to false.
+/// Clean files that does not exists, broken links and duplicated entries. It remove directories
+/// too if dirs parameters is set to false.
 pub fn cleanup_files(files: &mut PathList, keep_dirs: bool) {
     files.retain(|file| {
         if !file.exists() {
@@ -90,6 +88,10 @@ pub fn cleanup_files(files: &mut PathList, keep_dirs: bool) {
             true
         }
     });
+
+    // Remove duplicated entries canonicalizing them first
+    files.sort_unstable_by(|a, b| a.canonicalize().unwrap().cmp(&b.canonicalize().unwrap()));
+    files.dedup_by(|a, b| a.canonicalize().unwrap().eq(&b.canonicalize().unwrap()));
 }
 
 #[cfg(test)]
