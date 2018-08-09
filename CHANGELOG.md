@@ -1,6 +1,7 @@
 # v0.2.0 (Unreleased)
 ### Added
 * Recursive mode accept more than one input path.
+* New dependency: `path_abs`
 ### Changed
 * Recursive mode now takes the last positional arguments instead of the next
   one.
