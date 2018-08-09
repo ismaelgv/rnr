@@ -25,6 +25,7 @@ pub fn create_app<'a>() -> App<'a, 'a> {
         .arg(
             Arg::with_name("PATH(S)")
                 .help("Target paths")
+                .required(true)
                 .validator_os(is_valid_string)
                 .multiple(true),
         )
