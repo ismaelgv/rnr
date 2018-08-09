@@ -46,7 +46,7 @@ FLAGS:
     -h, --help            Prints help information
     -x, --hidden          Include hidden files and directories
     -D, --include-dirs    Rename matching directories
-    -r, --recursive       Recursive mode (limited to one input path)
+    -r, --recursive       Recursive mode
     -s, --silent          Do not print any information
     -V, --version         Prints version information
 

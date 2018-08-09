@@ -58,7 +58,7 @@ pub fn create_app<'a>() -> App<'a, 'a> {
             Arg::with_name("recursive")
                 .long("recursive")
                 .short("r")
-                .help("Recursive mode (limited to one input path)"),
+                .help("Recursive mode"),
         )
         .arg(
             Arg::with_name("max-depth")

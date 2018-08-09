@@ -1,8 +1,9 @@
 # v0.2.0 (Unreleased)
 ### Added
-* Check input for recursive mode.
+* Recursive mode accept more than one input path.
 ### Changed
-* Recursive mode now takes the last positional argument instead of the next one.
+* Recursive mode now takes the last positional arguments instead of the next
+  one.
 
 # v0.1.6 (2018-08-01)
 ### Added
