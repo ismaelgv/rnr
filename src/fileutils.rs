@@ -394,13 +394,18 @@ mod test {
             fs::File::create(&file).expect("Error creating mock file...");
         }
 
-        // Add directories and false files to arguments
+        // Add directories, false files and duplicated files to arguments
+        // Directories
         mock_files.append(&mut mock_dirs.clone());
+        // False files
         mock_files.push([temp_path, "false_file.txt"].iter().collect());
         #[cfg_attr(rustfmt, rustfmt_skip)]
         mock_files.push([&mock_dirs[0], &PathBuf::from("false_file.txt")].iter().collect());
         #[cfg_attr(rustfmt, rustfmt_skip)]
         mock_files.push([&mock_dirs[1], &PathBuf::from("false_file.txt")].iter().collect());
+        // Duplicated files
+        let duplicated_files = mock_files.clone();
+        mock_files.extend_from_slice(&duplicated_files[..]);
 
         cleanup_files(&mut mock_files, false);
 
@@ -413,6 +418,8 @@ mod test {
         ];
         for file in &listed_files {
             assert!(mock_files.contains(file));
+            // Only once
+            assert_eq!(mock_files.iter().filter(|f| f == &file).count(), 1);
         }
 
         // Must NOT contain these files/directories
