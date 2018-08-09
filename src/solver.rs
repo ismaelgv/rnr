@@ -71,14 +71,15 @@ fn order_existing_targets(
     while !existing_targets.is_empty() {
         // Track selected index to extract value
         let mut selected_index: Option<usize> = None;
-        // Create a vector with all sources from existing targets
+        // Create a vector with all sources from existing targets in their canonical format
         let sources: PathList = existing_targets
             .iter()
             .map(|x| rename_map.get(x).cloned().unwrap())
+            .map(|p| p.canonicalize().unwrap())
             .collect();
         // Select targets without conflicts in sources
         for (index, target) in existing_targets.iter().enumerate() {
-            if sources.contains(&target) {
+            if sources.contains(&target.canonicalize().unwrap()) {
                 continue;
             } else {
                 selected_index = Some(index);
@@ -107,27 +108,27 @@ fn reorder_children_first(rename_map: &RenameMap, rename_order: &mut PathList) {
     let mut i = 0;
     let order_length = rename_order.len();
     while i < order_length {
-        // Only consider directories
-        let source = &rename_map[&rename_order[i]];
+        // Only consider directories, work with canonical paths to avoid bad match problems
+        let source = &rename_map[&rename_order[i]].canonicalize().unwrap();
         if !source.is_dir() {
             i += 1;
             continue;
         }
 
-        let mut children_index: Vec<usize> = Vec::new();
+        let mut children_indices: Vec<usize> = Vec::new();
         for j in i + 1..rename_order.len() {
-            let child_source = &rename_map[&rename_order[j]];
+            let child_source = &rename_map[&rename_order[j]].canonicalize().unwrap();
             if child_source.starts_with(source) {
-                children_index.push(j);
+                children_indices.push(j);
             }
         }
         // Increase outer index counter when there is any change
-        if children_index.is_empty() {
+        if children_indices.is_empty() {
             i += 1;
         } else {
             // Reorder elements in the vector
             let mut new_index = i;
-            for old_index in children_index {
+            for old_index in children_indices {
                 let element = rename_order.remove(old_index);
                 rename_order.insert(new_index, element);
                 new_index += 1;
@@ -156,7 +157,7 @@ mod test {
             [temp_path, "aaaaa.txt"].iter().collect(),
             [temp_path, "test.txt"].iter().collect(),
         ];
-        // Create directory tree and files in the filesystem
+        // Create files in the filesystem
         for file in &mock_sources {
             fs::File::create(&file).expect("Error creating mock file...");
         }
@@ -188,18 +189,27 @@ mod test {
 
     #[test]
     fn test_order_existing_targets() {
+        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
+        println!("Running test in '{:?}'", tempdir);
+        let temp_path = tempdir.path().to_str().unwrap();
+
         let mock_sources: PathList = vec![
-            PathBuf::from("a.txt"),
-            PathBuf::from("aa.txt"),
-            PathBuf::from("aaa.txt"),
-            PathBuf::from("aaaa.txt"),
+            [temp_path, "a.txt"].iter().collect(),
+            [temp_path, "aa.txt"].iter().collect(),
+            [temp_path, "aaa.txt"].iter().collect(),
+            [temp_path, "aaaa.txt"].iter().collect(),
         ];
+        // Create files in the filesystem
+        for file in &mock_sources {
+            fs::File::create(&file).expect("Error creating mock file...");
+        }
+
         // Add one 'a' to the beginning of the filename
         let mock_targets: PathList = vec![
-            PathBuf::from("aa.txt"),
-            PathBuf::from("aaa.txt"),
-            PathBuf::from("aaaa.txt"),
-            PathBuf::from("aaaaa.txt"),
+            [temp_path, "aa.txt"].iter().collect(),
+            [temp_path, "aaa.txt"].iter().collect(),
+            [temp_path, "aaaa.txt"].iter().collect(),
+            [temp_path, "aaaaa.txt"].iter().collect(),
         ];
         let mock_rename_map: RenameMap = mock_targets
             .clone()
@@ -208,16 +218,16 @@ mod test {
             .collect();
 
         let mut mock_existing_targets: PathList = vec![
-            PathBuf::from("aa.txt"),
-            PathBuf::from("aaa.txt"),
-            PathBuf::from("aaaa.txt"),
+            [temp_path, "aa.txt"].iter().collect(),
+            [temp_path, "aaa.txt"].iter().collect(),
+            [temp_path, "aaaa.txt"].iter().collect(),
         ];
 
         let ordered_targets = order_existing_targets(&mock_rename_map, &mut mock_existing_targets)
             .expect("Failed to order existing_targets.");
-        assert_eq!(ordered_targets[0], PathBuf::from("aaaa.txt"));
-        assert_eq!(ordered_targets[1], PathBuf::from("aaa.txt"));
-        assert_eq!(ordered_targets[2], PathBuf::from("aa.txt"));
+        assert_eq!(ordered_targets[0], [temp_path, "aaaa.txt"].iter().collect::<PathBuf>());
+        assert_eq!(ordered_targets[1], [temp_path, "aaa.txt"].iter().collect::<PathBuf>());
+        assert_eq!(ordered_targets[2], [temp_path, "aa.txt"].iter().collect::<PathBuf>());
     }
 
     #[test]
