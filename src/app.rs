@@ -5,7 +5,7 @@ use std::ffi::{OsStr, OsString};
 /// Create application using clap. It sets all options and command-line help.
 pub fn create_app<'a>() -> App<'a, 'a> {
     App::new("rnr")
-        .version("0.1.6")
+        .version("0.2.0")
         .author("Ismael González <ismgonval@gmail.com>")
         .about("\nrnr is simple file renamer written in Rust.")
         .arg(
