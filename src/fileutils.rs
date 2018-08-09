@@ -10,7 +10,7 @@ pub type PathList = Vec<PathBuf>;
 pub fn get_files(config: &Config) -> PathList {
     match &config.mode {
         RunMode::Recursive {
-            path,
+            paths,
             max_depth,
             hidden,
         } => {
@@ -26,18 +26,26 @@ pub fn get_files(config: &Config) -> PathList {
                 }
             };
             // Get recursive list of files walking directories
-            let walkdir = match max_depth {
-                Some(max_depth) => WalkDir::new(path).max_depth(*max_depth),
-                None => WalkDir::new(path),
-            };
-            walkdir
-                .into_iter()
-                .filter_entry(is_hidden)
-                .filter_map(|e| e.ok())
-                .map(|p| p.path().to_path_buf())
-                .collect()
+            let mut path_list = PathList::new();
+            for path in paths {
+                let walkdir = match max_depth {
+                    Some(max_depth) => WalkDir::new(path).max_depth(*max_depth),
+                    None => WalkDir::new(path),
+                };
+                let mut walk_list: PathList = walkdir
+                    .into_iter()
+                    .filter_entry(is_hidden)
+                    .filter_map(|e| e.ok())
+                    .map(|p| p.path().to_path_buf())
+                    .collect();
+                path_list.append(&mut walk_list);
+            }
+            // Remove duplicated paths since multiple walkdirs can produce repeated entries
+            path_list.sort_unstable();
+            path_list.dedup();
+            path_list
         }
-        RunMode::FileList(file_list) => file_list.into_iter().map(PathBuf::from).collect(),
+        RunMode::FileList(path_list) => path_list.into_iter().map(PathBuf::from).collect(),
     }
 }
 
@@ -236,7 +244,7 @@ mod test {
             backup: false,
             dirs: false,
             mode: RunMode::Recursive {
-                path: temp_path.to_string(),
+                paths: vec![temp_path.clone()],
                 max_depth: None,
                 hidden: false,
             },
@@ -279,7 +287,7 @@ mod test {
             backup: false,
             dirs: false,
             mode: RunMode::Recursive {
-                path: temp_path.to_string(),
+                paths: vec![temp_path.clone()],
                 max_depth: Some(2),
                 hidden: false,
             },
@@ -321,7 +329,7 @@ mod test {
             backup: false,
             dirs: false,
             mode: RunMode::Recursive {
-                path: temp_path.to_string(),
+                paths: vec![temp_path.clone()],
                 max_depth: None,
                 hidden: true,
             },

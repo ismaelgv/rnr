@@ -2,7 +2,6 @@ use app::create_app;
 use atty;
 use output::Printer;
 use regex::Regex;
-use std::path::Path;
 use std::sync::Arc;
 
 /// This module is defined Config struct to carry application configuration. This struct is created
@@ -31,7 +30,7 @@ impl Config {
 pub enum RunMode {
     FileList(Vec<String>),
     Recursive {
-        path: String,
+        paths: Vec<String>,
         max_depth: Option<usize>,
         hidden: bool,
     },
@@ -67,31 +66,13 @@ fn parse_arguments() -> Result<Config, String> {
     let replacement = String::from(matches.value_of("REPLACEMENT").unwrap());
 
     // Detect normal or recursive mode and set properly set its parameters
-    let mut file_input: Vec<String> = matches
+    let input_paths: Vec<String> = matches
         .values_of("PATH(S)")
         .unwrap()
         .map(String::from)
         .collect();
 
     let mode = if matches.is_present("recursive") {
-
-        let path = if file_input.len() == 1 {
-            file_input.pop().unwrap()
-        } else {
-            return Err(format!(
-                "{}Recursive mode only accepts one input path.",
-                printer.colors.error.paint("Error: "),
-            ));
-        };
-
-        if !Path::new(&path).exists() {
-            return Err(format!(
-                "{}Path {} does not exist!",
-                printer.colors.error.paint("Error: "),
-                printer.colors.error.paint(path)
-            ));
-        }
-
         let max_depth = if matches.is_present("max-depth") {
             Some(
                 matches
@@ -105,12 +86,12 @@ fn parse_arguments() -> Result<Config, String> {
         };
 
         RunMode::Recursive {
-            path,
+            paths: input_paths,
             max_depth,
             hidden: matches.is_present("hidden"),
         }
     } else {
-        RunMode::FileList( file_input )
+        RunMode::FileList( input_paths )
     };
 
     Ok(Config {
