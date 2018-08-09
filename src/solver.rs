@@ -1,5 +1,6 @@
 use error::*;
 use fileutils::PathList;
+use path_abs::PathAbs;
 use std::collections::HashMap;
 use std::path::PathBuf;
 
@@ -71,15 +72,15 @@ fn order_existing_targets(
     while !existing_targets.is_empty() {
         // Track selected index to extract value
         let mut selected_index: Option<usize> = None;
-        // Create a vector with all sources from existing targets in their canonical format
+        // Create a vector with all sources from existing targets using absolute paths
         let sources: PathList = existing_targets
             .iter()
             .map(|x| rename_map.get(x).cloned().unwrap())
-            .map(|p| p.canonicalize().unwrap())
+            .map(|p| PathAbs::new(p).unwrap().to_path_buf())
             .collect();
         // Select targets without conflicts in sources
         for (index, target) in existing_targets.iter().enumerate() {
-            if sources.contains(&target.canonicalize().unwrap()) {
+            if sources.contains(&PathAbs::new(target).unwrap().to_path_buf()) {
                 continue;
             } else {
                 selected_index = Some(index);
@@ -108,8 +109,8 @@ fn reorder_children_first(rename_map: &RenameMap, rename_order: &mut PathList) {
     let mut i = 0;
     let order_length = rename_order.len();
     while i < order_length {
-        // Only consider directories, work with canonical paths to avoid bad match problems
-        let source = &rename_map[&rename_order[i]].canonicalize().unwrap();
+        // Only consider directories, work with absolute paths to avoid bad match problems
+        let source = PathAbs::new(&rename_map[&rename_order[i]]).unwrap();
         if !source.is_dir() {
             i += 1;
             continue;
@@ -117,8 +118,8 @@ fn reorder_children_first(rename_map: &RenameMap, rename_order: &mut PathList) {
 
         let mut children_indices: Vec<usize> = Vec::new();
         for j in i + 1..rename_order.len() {
-            let child_source = &rename_map[&rename_order[j]].canonicalize().unwrap();
-            if child_source.starts_with(source) {
+            let child_source = PathAbs::new(&rename_map[&rename_order[j]]).unwrap();
+            if child_source.starts_with(&source) {
                 children_indices.push(j);
             }
         }
@@ -225,9 +226,18 @@ mod test {
 
         let ordered_targets = order_existing_targets(&mock_rename_map, &mut mock_existing_targets)
             .expect("Failed to order existing_targets.");
-        assert_eq!(ordered_targets[0], [temp_path, "aaaa.txt"].iter().collect::<PathBuf>());
-        assert_eq!(ordered_targets[1], [temp_path, "aaa.txt"].iter().collect::<PathBuf>());
-        assert_eq!(ordered_targets[2], [temp_path, "aa.txt"].iter().collect::<PathBuf>());
+        assert_eq!(
+            ordered_targets[0],
+            [temp_path, "aaaa.txt"].iter().collect::<PathBuf>()
+        );
+        assert_eq!(
+            ordered_targets[1],
+            [temp_path, "aaa.txt"].iter().collect::<PathBuf>()
+        );
+        assert_eq!(
+            ordered_targets[2],
+            [temp_path, "aa.txt"].iter().collect::<PathBuf>()
+        );
     }
 
     #[test]

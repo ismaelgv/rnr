@@ -5,6 +5,7 @@
 extern crate ansi_term;
 extern crate atty;
 extern crate clap;
+extern crate path_abs;
 extern crate regex;
 extern crate walkdir;
 

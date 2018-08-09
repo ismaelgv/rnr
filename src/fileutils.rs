@@ -1,5 +1,6 @@
 use config::{Config, RunMode};
 use error::*;
+use path_abs::PathAbs;
 use std::fs;
 use std::path::PathBuf;
 use walkdir::{DirEntry, WalkDir};
@@ -89,9 +90,9 @@ pub fn cleanup_files(files: &mut PathList, keep_dirs: bool) {
         }
     });
 
-    // Remove duplicated entries canonicalizing them first
-    files.sort_unstable_by(|a, b| a.canonicalize().unwrap().cmp(&b.canonicalize().unwrap()));
-    files.dedup_by(|a, b| a.canonicalize().unwrap().eq(&b.canonicalize().unwrap()));
+    // Remove duplicated entries using absolute path
+    files.sort_unstable_by(|a, b| PathAbs::new(a).unwrap().cmp(&PathAbs::new(b).unwrap()));
+    files.dedup_by(|a, b| PathAbs::new(a).unwrap().eq(&PathAbs::new(b).unwrap()));
 }
 
 #[cfg(test)]
