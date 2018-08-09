@@ -7,8 +7,8 @@ use walkdir::{DirEntry, WalkDir};
 
 pub type PathList = Vec<PathBuf>;
 
-/// Return a list of files for the given configuration.
-pub fn get_files(config: &Config) -> PathList {
+/// Return a list of paths for the given configuration.
+pub fn get_paths(config: &Config) -> PathList {
     match &config.mode {
         RunMode::Recursive {
             paths,
@@ -26,7 +26,7 @@ pub fn get_files(config: &Config) -> PathList {
                     true
                 }
             };
-            // Get recursive list of files walking directories
+            // Get recursive list of paths walking directories
             let mut path_list = PathList::new();
             for path in paths {
                 let walkdir = match max_depth {
@@ -48,11 +48,11 @@ pub fn get_files(config: &Config) -> PathList {
     }
 }
 
-/// Generate a non-existing name adding numbers to the end of the file. It also supports adding a
+/// Generate a non-existing name adding numbers to the end of the file name. It also supports adding a
 /// suffix to the original name.
-pub fn get_unique_filename(file: &PathBuf, suffix: &str) -> PathBuf {
-    let base_name = format!("{}{}", file.file_name().unwrap().to_string_lossy(), suffix);
-    let mut unique_name = file.clone();
+pub fn get_unique_filename(path: &PathBuf, suffix: &str) -> PathBuf {
+    let base_name = format!("{}{}", path.file_name().unwrap().to_string_lossy(), suffix);
+    let mut unique_name = path.clone();
     unique_name.set_file_name(&base_name);
 
     let mut index = 0;
@@ -65,34 +65,34 @@ pub fn get_unique_filename(file: &PathBuf, suffix: &str) -> PathBuf {
 }
 
 /// Create a backup of the file
-pub fn create_backup(file: &PathBuf) -> Result<PathBuf> {
-    let backup = get_unique_filename(file, ".bk");
-    match fs::copy(file, &backup) {
+pub fn create_backup(path: &PathBuf) -> Result<PathBuf> {
+    let backup = get_unique_filename(path, ".bk");
+    match fs::copy(path, &backup) {
         Ok(_) => Ok(backup),
         Err(_) => Err(Error {
             kind: ErrorKind::CreateBackup,
-            value: Some(file.to_string_lossy().to_string()),
+            value: Some(path.to_string_lossy().to_string()),
         }),
     }
 }
 
-/// Clean files that does not exists, broken links and duplicated entries. It remove directories
+/// Clean paths that does not exists, broken links and duplicated entries. It remove directories
 /// too if dirs parameters is set to false.
-pub fn cleanup_files(files: &mut PathList, keep_dirs: bool) {
-    files.retain(|file| {
-        if !file.exists() {
+pub fn cleanup_paths(paths: &mut PathList, keep_dirs: bool) {
+    paths.retain(|path| {
+        if !path.exists() {
             // Checks if non-existing path is actually a symlink
-            file.read_link().is_ok()
-        } else if file.is_dir() {
-            keep_dirs && file.file_name().is_some()
+            path.read_link().is_ok()
+        } else if path.is_dir() {
+            keep_dirs && path.file_name().is_some()
         } else {
             true
         }
     });
 
     // Remove duplicated entries using absolute path
-    files.sort_unstable_by(|a, b| PathAbs::new(a).unwrap().cmp(&PathAbs::new(b).unwrap()));
-    files.dedup_by(|a, b| PathAbs::new(a).unwrap().eq(&PathAbs::new(b).unwrap()));
+    paths.sort_unstable_by(|a, b| PathAbs::new(a).unwrap().cmp(&PathAbs::new(b).unwrap()));
+    paths.dedup_by(|a, b| PathAbs::new(a).unwrap().eq(&PathAbs::new(b).unwrap()));
 }
 
 #[cfg(test)]
@@ -153,7 +153,7 @@ mod test {
     }
 
     #[test]
-    fn get_files_args() {
+    fn get_file_list() {
         let mock_files: Vec<String> = vec![
             "test_file_1.txt".to_string(),
             "test_file_2.txt".to_string(),
@@ -170,7 +170,7 @@ mod test {
             printer: Printer::colored(),
         };
 
-        let files = get_files(&mock_config);
+        let files = get_paths(&mock_config);
         assert!(files.contains(&PathBuf::from("test_file_1.txt")));
         assert!(files.contains(&PathBuf::from("test_file_2.txt")));
         assert!(files.contains(&PathBuf::from("test_file_3.txt")));
@@ -236,7 +236,7 @@ mod test {
     }
 
     #[test]
-    fn get_files_recursive() {
+    fn get_paths_recursive() {
         let (_tempdir, temp_path) = generate_recursive_tempdir();
 
         // Create config with recursive search WITHOUT max depth
@@ -254,7 +254,7 @@ mod test {
             printer: Printer::colored(),
         };
 
-        let files = get_files(&mock_config);
+        let files = get_paths(&mock_config);
         // Must contain these files
         #[cfg_attr(rustfmt, rustfmt_skip)]
         let listed_files: PathList = vec![
@@ -279,7 +279,7 @@ mod test {
     }
 
     #[test]
-    fn get_files_recursive_depth() {
+    fn get_paths_recursive_depth() {
         let (_tempdir, temp_path) = generate_recursive_tempdir();
 
         // Create config with recursive search WITH max depth
@@ -297,7 +297,7 @@ mod test {
             printer: Printer::colored(),
         };
 
-        let files = get_files(&mock_config);
+        let files = get_paths(&mock_config);
         // Must contain these files
         let listed_files: PathList = vec![
             [&temp_path, "test_file.txt"].iter().collect(),
@@ -321,7 +321,7 @@ mod test {
     }
 
     #[test]
-    fn get_files_recursive_hidden() {
+    fn get_paths_recursive_hidden() {
         let (_tempdir, temp_path) = generate_recursive_tempdir();
 
         // Create config with recursive search WITHOUT max depth
@@ -339,7 +339,7 @@ mod test {
             printer: Printer::colored(),
         };
 
-        let files = get_files(&mock_config);
+        let files = get_paths(&mock_config);
         // Must contain these files
         #[cfg_attr(rustfmt, rustfmt_skip)]
         let listed_files: PathList = vec![
@@ -408,7 +408,7 @@ mod test {
         let duplicated_files = mock_files.clone();
         mock_files.extend_from_slice(&duplicated_files[..]);
 
-        cleanup_files(&mut mock_files, false);
+        cleanup_paths(&mut mock_files, false);
 
         // Must contain these the files
         #[cfg_attr(rustfmt, rustfmt_skip)]

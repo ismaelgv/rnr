@@ -45,7 +45,7 @@ fn main() {
         }
     };
 
-    // Process files
+    // Process paths
     if let Err(err) = renamer.process() {
         config.printer.print_error(&err);
         std::process::exit(1);

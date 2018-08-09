@@ -1,29 +1,29 @@
 use config::Config;
 use error::*;
-use fileutils::{cleanup_files, create_backup, get_files, PathList};
+use fileutils::{cleanup_paths, create_backup, get_paths, PathList};
 use solver::{solve_rename_order, RenameMap};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 pub struct Renamer {
-    files: PathList,
+    paths: PathList,
     config: Arc<Config>,
 }
 
 impl Renamer {
     pub fn new(config: &Arc<Config>) -> Result<Renamer> {
-        let input_files = get_files(&config);
+        let input_paths = get_paths(&config);
         Ok(Renamer {
-            files: input_files,
+            paths: input_paths,
             config: config.clone(),
         })
     }
 
-    /// Process file batch
+    /// Process path batch
     pub fn process(&mut self) -> Result<()> {
-        // Remove directories and on existing files from the list
-        cleanup_files(&mut self.files, self.config.dirs);
+        // Remove directories and on existing paths from the list
+        cleanup_paths(&mut self.paths, self.config.dirs);
 
         // Relate original names with their targets
         let rename_map = match self.get_rename_map() {
@@ -48,16 +48,16 @@ impl Renamer {
         Ok(())
     }
 
-    /// Replace expression match in the given file using stored config.
-    fn replace_match(&self, file: &PathBuf) -> PathBuf {
+    /// Replace expression match in the given path using stored config.
+    fn replace_match(&self, path: &PathBuf) -> PathBuf {
         let expression = &self.config.expression;
         let replacement = &self.config.replacement;
 
-        let file_name = file.file_name().unwrap().to_str().unwrap();
-        let file_path = file.parent();
+        let file_name = path.file_name().unwrap().to_str().unwrap();
+        let parent = path.parent();
 
         let target_name = expression.replace(file_name, &replacement[..]);
-        match file_path {
+        match parent {
             None => PathBuf::from(target_name.to_string()),
             Some(path) => path.join(Path::new(&target_name.into_owned())),
         }
@@ -71,18 +71,18 @@ impl Renamer {
         let mut rename_map = RenameMap::new();
         let mut error_string = String::new();
 
-        for file in &self.files {
-            let target = self.replace_match(&file);
-            // Discard files with no changes
-            if target != *file {
-                if let Some(old_file) = rename_map.insert(target.clone(), file.clone()) {
+        for path in &self.paths {
+            let target = self.replace_match(&path);
+            // Discard paths with no changes
+            if target != *path {
+                if let Some(old_path) = rename_map.insert(target.clone(), path.clone()) {
                     // Targets cannot be duplicated by any reason
                     error_string.push_str(&colors
                         .error
                         .paint(format!(
                             "\n{0}->{2}\n{1}->{2}\n",
-                            old_file.display(),
-                            file.display(),
+                            old_path.display(),
+                            path.display(),
                             target.display()
                         ))
                         .to_string());
@@ -100,7 +100,7 @@ impl Renamer {
         }
     }
 
-    /// Rename file in the filesystem or simply print renaming information. Checks if target
+    /// Rename path in the filesystem or simply print renaming information. Checks if target
     /// filename exists before renaming.
     fn rename(&self, source: &PathBuf, target: &PathBuf) -> Result<()> {
         let printer = &self.config.printer;
@@ -125,7 +125,7 @@ impl Renamer {
                 }
             }
 
-            // Rename files in the filesystem
+            // Rename paths in the filesystem
             if fs::rename(&source, &target).is_err() {
                 return Err(Error {
                     kind: ErrorKind::RenameFile,
