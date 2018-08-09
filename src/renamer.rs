@@ -128,7 +128,7 @@ impl Renamer {
             // Rename paths in the filesystem
             if fs::rename(&source, &target).is_err() {
                 return Err(Error {
-                    kind: ErrorKind::RenameFile,
+                    kind: ErrorKind::Rename,
                     value: Some(source.to_string_lossy().to_string()),
                 });
             } else {

@@ -15,8 +15,8 @@ pub struct Error {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ErrorKind {
     CreateBackup,
-    ExistingFile,
-    RenameFile,
+    ExistingPath,
+    Rename,
     SameFilename,
     SolveOrder,
 }
@@ -25,9 +25,9 @@ impl Error {
     pub fn description(&self) -> &str {
         use self::ErrorKind::*;
         match self.kind {
-            CreateBackup => "Cannot create a backup of file ",
-            ExistingFile => "Conflict with existing file ",
-            RenameFile => "Cannot rename file ",
+            CreateBackup => "Cannot create a backup of ",
+            ExistingPath => "Conflict with existing path ",
+            Rename => "Cannot rename ",
             SameFilename => "Files will have the same name\n",
             SolveOrder => "Cannot solve sorting problem.",
         }

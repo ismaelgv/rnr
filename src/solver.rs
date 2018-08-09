@@ -49,7 +49,7 @@ fn get_existing_targets(rename_map: &RenameMap) -> Result<PathList> {
         if target.exists() {
             if !sources.contains(&target) {
                 return Err(Error {
-                    kind: ErrorKind::ExistingFile,
+                    kind: ErrorKind::ExistingPath,
                     value: Some(format!("{}->{}", source.display(), target.display())),
                 });
             } else {
