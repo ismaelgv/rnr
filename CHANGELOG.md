@@ -1,6 +1,9 @@
 # v0.2.1 (Unreleased)
 ### Added
 * More info displayed on error messages.
+### Fixed
+* Notable execution speed regression when recursive mode changes were
+  introduced.
 
 # v0.2.0 (2018-08-10)
 ### Added
