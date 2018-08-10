@@ -1,7 +1,7 @@
 use config::{Config, RunMode};
 use error::*;
 use path_abs::PathAbs;
-use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 use walkdir::{DirEntry, WalkDir};
@@ -89,8 +89,9 @@ pub fn cleanup_paths(paths: &mut PathList, keep_dirs: bool) {
                 || (path.is_dir() && keep_dirs && path.file_name().is_some()))
     });
 
-    // Deduplicate generating absolute path and inserting data in BTreeMap. Replace original content with ordered data.
-    let abs_path_map: BTreeMap<PathAbs, PathBuf> = paths
+    // Deduplicate paths generating their absolute path and inserting them in a Hashmap. Replace
+    // the PathList original content with the deduplicated data.
+    let abs_path_map: HashMap<PathAbs, PathBuf> = paths
         .drain(..)
         .map(|p| (PathAbs::new(&p).unwrap(), p))
         .collect();
