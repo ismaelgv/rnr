@@ -1,4 +1,8 @@
-# v0.2.0 (Unreleased)
+# v0.2.1 (Unreleased)
+### Added
+* More info displayed on error messages.
+
+# v0.2.0 (2018-08-10)
 ### Added
 * Recursive mode accept more than one input path.
 * New dependency: `path_abs`
