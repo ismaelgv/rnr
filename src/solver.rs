@@ -50,7 +50,7 @@ fn get_existing_targets(rename_map: &RenameMap) -> Result<PathList> {
             if !sources.contains(&target) {
                 return Err(Error {
                     kind: ErrorKind::ExistingPath,
-                    value: Some(format!("{}->{}", source.display(), target.display())),
+                    value: Some(format!("{} -> {}", source.display(), target.display())),
                 });
             } else {
                 existing_targets.push(target.clone());

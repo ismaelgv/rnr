@@ -126,10 +126,10 @@ impl Renamer {
             }
 
             // Rename paths in the filesystem
-            if fs::rename(&source, &target).is_err() {
+            if let Err(err) = fs::rename(&source, &target) {
                 return Err(Error {
                     kind: ErrorKind::Rename,
-                    value: Some(source.to_string_lossy().to_string()),
+                    value: Some(format!("{} -> {}\n{}", source.display(), target.display(), err)),
                 });
             } else {
                 printer.print(&format!(
