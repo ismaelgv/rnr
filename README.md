@@ -68,7 +68,9 @@ ARGS:
 * Works on files and symlinks (ignores directories).
 * Accepts multiple files as arguments.
 * Accepts a **regex** to generate matches. These expressions have same
-  limitations of `regex` crate. It supports *capture groups*.
+  limitations of `regex` crate. You can check regex syntax
+  [here](https://docs.rs/regex/#syntax). It supports numbered and named *capture
+  groups*.
 * If max depth is not provided to recursive mode, it is assumed *infinite*.
 * Does not generate backups.
 * Output is *colored* (only ANSI terminals).
