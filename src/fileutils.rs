@@ -394,13 +394,12 @@ mod test {
         for file in &mock_files {
             fs::File::create(&file).expect("Error creating mock file...");
         }
-        let symlink: PathBuf= [temp_path, "test_link"].iter().collect();
+        let symlink: PathBuf = [temp_path, "test_link"].iter().collect();
         #[cfg(windows)]
         ::std::os::windows::fs::symlink_file(&mock_files[0], &symlink)
             .expect("Error creating symlink.");
         #[cfg(unix)]
-        ::std::os::unix::fs::symlink(&mock_files[0], &symlink)
-            .expect("Error creating symlink.");
+        ::std::os::unix::fs::symlink(&mock_files[0], &symlink).expect("Error creating symlink.");
 
         // Create mock_paths from files, symlink, directories, false files and duplicated files
         // Existing files
