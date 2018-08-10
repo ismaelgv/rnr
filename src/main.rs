@@ -1,6 +1,6 @@
 //! # RnR
-//!
-//! `rnr` is a command-line tool to batch rename files and directories.
+//! *RnR* is a command-line tool to rename multiple files and directories that supports regex
+//! expressions.
 //!
 extern crate ansi_term;
 extern crate atty;
