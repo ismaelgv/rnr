@@ -381,7 +381,7 @@ mod test {
             [temp_path, "mock_dir_1", "mock_dir_2"].iter().collect(),
         ];
         #[cfg_attr(rustfmt, rustfmt_skip)]
-        let mut mock_files: PathList = vec![
+        let mock_files: PathList = vec![
             [temp_path, "test_file.txt"].iter().collect(),
             [&mock_dirs[0], &PathBuf::from("test_file.txt")].iter().collect(),
             [&mock_dirs[1], &PathBuf::from("test_file.txt")].iter().collect(),
@@ -402,48 +402,47 @@ mod test {
         ::std::os::unix::fs::symlink(&mock_files[0], &symlink)
             .expect("Error creating symlink.");
 
-        // Add directories, false files and duplicated files to arguments
+        // Create mock_paths from files, symlink, directories, false files and duplicated files
+        // Existing files
+        let mut mock_paths = PathList::new();
+        mock_paths.append(&mut mock_files.clone());
         // Symlink
-        mock_files.push(symlink.clone());
+        mock_paths.push(symlink.clone());
         // Directories
-        mock_files.append(&mut mock_dirs.clone());
+        mock_paths.append(&mut mock_dirs.clone());
         // False files
-        mock_files.push([temp_path, "false_file.txt"].iter().collect());
         #[cfg_attr(rustfmt, rustfmt_skip)]
-        mock_files.push([&mock_dirs[0], &PathBuf::from("false_file.txt")].iter().collect());
-        #[cfg_attr(rustfmt, rustfmt_skip)]
-        mock_files.push([&mock_dirs[1], &PathBuf::from("false_file.txt")].iter().collect());
-        // Duplicated files
-        let duplicated_files = mock_files.clone();
-        mock_files.extend_from_slice(&duplicated_files[..]);
+        let false_files: PathList = vec![
+            [temp_path, "false_file.txt"].iter().collect(),
+            [&mock_dirs[0], &PathBuf::from("false_file.txt")].iter().collect(),
+            [&mock_dirs[1], &PathBuf::from("false_file.txt")].iter().collect(),
+        ];
+        mock_paths.append(&mut mock_files.clone());
+        // Quadruplicate existing files
+        mock_paths.append(&mut mock_files.clone());
+        mock_paths.append(&mut mock_files.clone());
+        mock_paths.append(&mut mock_files.clone());
 
-        cleanup_paths(&mut mock_files, false);
+        cleanup_paths(&mut mock_paths, false);
 
         // Must contain these the files
-        #[cfg_attr(rustfmt, rustfmt_skip)]
-        let listed_files: PathList = vec![
-            [temp_path, "test_file.txt"].iter().collect(),
-            [temp_path, "mock_dir_1", "test_file.txt"].iter().collect(),
-            [temp_path, "mock_dir_1", "mock_dir_2", "test_file.txt"].iter().collect(),
-            symlink,
-        ];
+        let mut listed_files = PathList::new();
+        listed_files.append(&mut mock_files.clone());
+        listed_files.push(symlink.clone());
+
         for file in &listed_files {
-            assert!(mock_files.contains(file));
+            assert!(mock_paths.contains(file));
             // Only once
-            assert_eq!(mock_files.iter().filter(|f| f == &file).count(), 1);
+            assert_eq!(mock_paths.iter().filter(|f| f == &file).count(), 1);
         }
 
         // Must NOT contain these files/directories
         #[cfg_attr(rustfmt, rustfmt_skip)]
-        let non_listed_files: PathList = vec![
-            [temp_path, "mock_dir_1"].iter().collect(),
-            [temp_path, "mock_dir_1", "mock_dir_2"].iter().collect(),
-            [temp_path, "false_file.txt"].iter().collect(),
-            [temp_path, "mock_dir_1", "false_file.txt"].iter().collect(),
-            [temp_path, "mock_dir_1", "mock_dir_2", "false_file.txt"].iter().collect(),
-        ];
+        let mut non_listed_files = PathList::new();
+        non_listed_files.append(&mut mock_dirs.clone());
+        non_listed_files.append(&mut false_files.clone());
         for file in &non_listed_files {
-            assert!(!mock_files.contains(file));
+            assert!(!mock_paths.contains(file));
         }
     }
 }
