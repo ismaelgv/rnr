@@ -366,6 +366,8 @@ mod test {
         //     |
         //     - test_file.txt
         //     |
+        //     - test_link -> test_file.txt
+        //     |
         //     - mock_dir_1
         //         |
         //         - test_file.txt
@@ -385,15 +387,24 @@ mod test {
             [&mock_dirs[1], &PathBuf::from("test_file.txt")].iter().collect(),
         ];
 
-        // Create directory tree and files in the filesystem
+        // Create directory tree, files and symlinks in the filesystem
         for mock_dir in &mock_dirs {
             fs::create_dir(&mock_dir).expect("Error creating mock directory...");
         }
         for file in &mock_files {
             fs::File::create(&file).expect("Error creating mock file...");
         }
+        let symlink: PathBuf= [temp_path, "test_link"].iter().collect();
+        #[cfg(windows)]
+        ::std::os::windows::fs::symlink_file(&mock_files[0], &symlink)
+            .expect("Error creating symlink.");
+        #[cfg(unix)]
+        ::std::os::unix::fs::symlink(&mock_files[0], &symlink)
+            .expect("Error creating symlink.");
 
         // Add directories, false files and duplicated files to arguments
+        // Symlink
+        mock_files.push(symlink.clone());
         // Directories
         mock_files.append(&mut mock_dirs.clone());
         // False files
@@ -414,6 +425,7 @@ mod test {
             [temp_path, "test_file.txt"].iter().collect(),
             [temp_path, "mock_dir_1", "test_file.txt"].iter().collect(),
             [temp_path, "mock_dir_1", "mock_dir_2", "test_file.txt"].iter().collect(),
+            symlink,
         ];
         for file in &listed_files {
             assert!(mock_files.contains(file));
