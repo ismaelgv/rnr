@@ -28,13 +28,13 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<PathList> {
         .collect();
 
     // Order and store the rest of entries
-    match order_existing_targets(&rename_map, &mut existing_targets) {
+    match sort_existing_targets(&rename_map, &mut existing_targets) {
         Ok(mut targets) => rename_order.append(&mut targets),
         Err(err) => return Err(err),
     }
 
     // Move children before parent directories if they are renamed
-    reorder_children_first(&rename_map, &mut rename_order);
+    sort_children_first(&rename_map, &mut rename_order);
 
     Ok(rename_order)
 }
@@ -63,7 +63,7 @@ fn get_existing_targets(rename_map: &RenameMap) -> Result<PathList> {
 /// Process the container with existing targets until it is empty. The algorithm extracts
 /// recursively all targets that are not present in a container with the sources exclusively related
 /// to current existing targets.
-fn order_existing_targets(
+fn sort_existing_targets(
     rename_map: &RenameMap,
     existing_targets: &mut PathList,
 ) -> Result<PathList> {
@@ -105,7 +105,7 @@ fn order_existing_targets(
 }
 
 /// Move children in the remaname order list before its parents if are renamed.
-fn reorder_children_first(rename_map: &RenameMap, rename_order: &mut PathList) {
+fn sort_children_first(rename_map: &RenameMap, rename_order: &mut PathList) {
     let mut i = 0;
     let order_length = rename_order.len();
     while i < order_length {
@@ -189,7 +189,7 @@ mod test {
     }
 
     #[test]
-    fn test_order_existing_targets() {
+    fn test_sort_existing_targets() {
         let tempdir = tempfile::tempdir().expect("Error creating temp directory");
         println!("Running test in '{:?}'", tempdir);
         let temp_path = tempdir.path().to_str().unwrap();
@@ -224,7 +224,7 @@ mod test {
             [temp_path, "aaaa.txt"].iter().collect(),
         ];
 
-        let ordered_targets = order_existing_targets(&mock_rename_map, &mut mock_existing_targets)
+        let ordered_targets = sort_existing_targets(&mock_rename_map, &mut mock_existing_targets)
             .expect("Failed to order existing_targets.");
         assert_eq!(
             ordered_targets[0],
@@ -283,7 +283,7 @@ mod test {
     }
 
     #[test]
-    fn test_reorder_children_first() {
+    fn test_sort_children_first() {
         let tempdir = tempfile::tempdir().expect("Error creating temp directory");
         println!("Running test in '{:?}'", tempdir);
         let temp_path = tempdir.path().to_str().unwrap();
@@ -330,7 +330,7 @@ mod test {
             .zip(mock_sources.into_iter())
             .collect();
 
-        reorder_children_first(&mock_rename_map, &mut rename_order);
+        sort_children_first(&mock_rename_map, &mut rename_order);
 
         assert_eq!(rename_order[0], mock_targets[4]); // mock_dir_1/mock_dir_2/test_file.txt
         assert_eq!(rename_order[1], mock_targets[1]); // mock_dir_1/mock_dir_2/
