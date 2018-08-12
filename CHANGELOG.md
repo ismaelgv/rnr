@@ -1,6 +1,7 @@
 # v0.2.1 (Unreleased)
 ### Added
 * More info displayed on error messages.
+* Symlink test.
 ### Fixed
 * Notable execution speed regression when recursive mode changes were
   introduced.
