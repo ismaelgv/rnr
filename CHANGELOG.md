@@ -5,6 +5,10 @@
 ### Fixed
 * Notable execution speed regression when recursive mode changes were
   introduced.
+### Changed
+* Heavy rewrite of solver. Now, the execution speed when directories are
+  included is several order of magnitude faster. This is more noticeable when a
+  large number of directories are processed.
 
 # v0.2.0 (2018-08-10)
 ### Added
