@@ -1,4 +1,4 @@
-# v0.2.1 (Unreleased)
+# v0.2.1 (2018-08-23)
 ### Added
 * More info displayed on error messages.
 * Symlink test.
