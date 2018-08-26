@@ -34,10 +34,7 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<PathList> {
             .collect();
 
         // Return existing targets in the list of original filenames
-        let mut existing_targets = match get_existing_targets(&level_targets, &rename_map) {
-            Ok(existing_targets) => existing_targets,
-            Err(err) => return Err(err),
-        };
+        let mut existing_targets = get_existing_targets(&level_targets, &rename_map)?;
 
         // Store first all non conflicting entries
         rename_order.append(&mut level_targets

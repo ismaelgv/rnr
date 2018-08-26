@@ -26,23 +26,15 @@ impl Renamer {
         cleanup_paths(&mut self.paths, self.config.dirs);
 
         // Relate original names with their targets
-        let rename_map = match self.get_rename_map() {
-            Ok(rename_map) => rename_map,
-            Err(err) => return Err(err),
-        };
+        let rename_map = self.get_rename_map()?;
 
         // Solve targets ordering to avoid renaming conflicts
-        let rename_order = match solve_rename_order(&rename_map) {
-            Ok(rename_order) => rename_order,
-            Err(err) => return Err(err),
-        };
+        let rename_order = solve_rename_order(&rename_map)?;
 
         // Execute actual renaming
         for target in &rename_order {
             let source = &rename_map[target];
-            if let Err(err) = self.rename(source, target) {
-                return Err(err);
-            };
+            self.rename(source, target)?;
         }
 
         Ok(())
