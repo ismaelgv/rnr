@@ -58,7 +58,7 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<PathList> {
     Ok(rename_order)
 }
 
-/// Check if targets exists in the filesystem and return a list of them. If they exist, these
+/// Check if targets exist in the filesystem and return a list of them. If they exist, these
 /// targets must be contained in the original file list for the renaming problem to be solvable.
 fn get_existing_targets(targets: &PathList, rename_map: &RenameMap) -> Result<PathList> {
     let mut existing_targets: PathList = Vec::new();
@@ -111,7 +111,7 @@ fn sort_existing_targets(
         // Store result in ordered targets container or fail to stop the loop
         match selected_index {
             Some(index) => ordered_targets.push(existing_targets.swap_remove(index)),
-            // This will avoid infite while loop if order is not solved
+            // This will avoid infinite while loop if order is not solved
             None => {
                 return Err(Error {
                     kind: ErrorKind::SolveOrder,
