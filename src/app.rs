@@ -74,7 +74,7 @@ pub fn create_app<'a>() -> App<'a, 'a> {
             Arg::with_name("hidden")
                 .requires("recursive")
                 .long("hidden")
-                .short("-x")
+                .short("x")
                 .help("Include hidden files and directories"),
         )
         .arg(
