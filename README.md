@@ -43,10 +43,12 @@ USAGE:
 FLAGS:
     -b, --backup          Generate file backups before renaming
     -n, --dry-run         Only show what would be done (default mode)
+        --dump            Force dumping operations into a file even in dry-run mode
     -f, --force           Make actual changes to files
     -h, --help            Prints help information
     -x, --hidden          Include hidden files and directories
     -D, --include-dirs    Rename matching directories
+        --no-dump         Do not dump operations into a file
     -r, --recursive       Recursive mode
     -s, --silent          Do not print any information
     -V, --version         Prints version information
@@ -75,6 +77,7 @@ ARGS:
 * Does not generate backups.
 * Output is *colored* (only ANSI terminals).
 * Ignore hidden files and directories.
+* Dump all operations to a file in force mode.
 
 # Demo
 [![Demo](https://cdn.rawgit.com/ChuckDaniels87/b0607fdaa44c6201cde398b6a9e23e4e/raw/59d43365d15c55d9c259edd29292609c06de21f7/rnr-demo.svg)](https://cdn.rawgit.com/ChuckDaniels87/b0607fdaa44c6201cde398b6a9e23e4e/raw/f29d84760f4225dce74bf81052180e12a287b892/rnr-demo.svg)
