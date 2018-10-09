@@ -7,7 +7,7 @@ pub fn create_app<'a>() -> App<'a, 'a> {
     App::new("rnr")
         .version("0.2.1")
         .author("Ismael González <ismgonval@gmail.com>")
-        .about("\nrnr is simple file renamer written in Rust.")
+        .about("\nrnr is a file renamer with regex support written in Rust.")
         .arg(
             Arg::with_name("EXPRESSION")
                 .help("Expression to match (can be a regex)")
