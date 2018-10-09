@@ -20,45 +20,45 @@ pub fn create_app<'a>() -> App<'a, 'a> {
                 .help("Expression replacement")
                 .required(true)
                 .validator_os(is_valid_string)
-                .index(2),
+                .index(2)
         )
         .arg(
             Arg::with_name("PATH(S)")
                 .help("Target paths")
-                .required(true)
                 .validator_os(is_valid_string)
-                .multiple(true),
+                .multiple(true)
+                .required(true)
         )
         .arg(
             Arg::with_name("dry-run")
                 .long("dry-run")
                 .short("n")
                 .help("Only show what would be done (default mode)")
-                .conflicts_with("force"),
+                .conflicts_with("force")
         )
         .arg(
             Arg::with_name("force")
                 .long("force")
                 .short("f")
-                .help("Make actual changes to files"),
+                .help("Make actual changes to files")
         )
         .arg(
             Arg::with_name("backup")
                 .long("backup")
                 .short("b")
-                .help("Generate file backups before renaming"),
+                .help("Generate file backups before renaming")
         )
         .arg(
             Arg::with_name("include-dirs")
                 .long("include-dirs")
                 .short("D")
-                .help("Rename matching directories"),
+                .help("Rename matching directories")
         )
         .arg(
             Arg::with_name("recursive")
                 .long("recursive")
                 .short("r")
-                .help("Recursive mode"),
+                .help("Recursive mode")
         )
         .arg(
             Arg::with_name("max-depth")
@@ -68,27 +68,27 @@ pub fn create_app<'a>() -> App<'a, 'a> {
                 .takes_value(true)
                 .value_name("LEVEL")
                 .validator(is_integer)
-                .help("Set max depth in recursive mode"),
+                .help("Set max depth in recursive mode")
         )
         .arg(
             Arg::with_name("hidden")
                 .requires("recursive")
                 .long("hidden")
                 .short("x")
-                .help("Include hidden files and directories"),
+                .help("Include hidden files and directories")
         )
         .arg(
             Arg::with_name("silent")
                 .long("silent")
                 .short("s")
-                .help("Do not print any information"),
+                .help("Do not print any information")
         )
         .arg(
             Arg::with_name("color")
                 .long("color")
                 .possible_values(&["always", "auto", "never"])
                 .default_value("auto")
-                .help("Set color output mode"),
+                .help("Set color output mode")
         )
 }
 
