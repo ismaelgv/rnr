@@ -75,15 +75,16 @@ impl Renamer {
             if target != *path {
                 if let Some(old_path) = rename_map.insert(target.clone(), path.clone()) {
                     // Targets cannot be duplicated by any reason
-                    error_string.push_str(&colors
-                        .error
-                        .paint(format!(
-                            "\n{0}->{2}\n{1}->{2}\n",
-                            old_path.display(),
-                            path.display(),
-                            target.display()
-                        ))
-                        .to_string());
+                    error_string.push_str(
+                        &colors
+                            .error
+                            .paint(format!(
+                                "\n{0}->{2}\n{1}->{2}\n",
+                                old_path.display(),
+                                path.display(),
+                                target.display()
+                            )).to_string(),
+                    );
                 }
             }
         }
@@ -127,7 +128,12 @@ impl Renamer {
             if let Err(err) = fs::rename(&source, &target) {
                 return Err(Error {
                     kind: ErrorKind::Rename,
-                    value: Some(format!("{} -> {}\n{}", source.display(), target.display(), err)),
+                    value: Some(format!(
+                        "{} -> {}\n{}",
+                        source.display(),
+                        target.display(),
+                        err
+                    )),
                 });
             } else {
                 printer.print(&format!(
