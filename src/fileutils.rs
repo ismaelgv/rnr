@@ -169,6 +169,7 @@ mod test {
             force: false,
             backup: false,
             dirs: false,
+            dump: false,
             mode: RunMode::Simple(mock_files),
             printer: Printer::colored(),
         };
@@ -249,6 +250,7 @@ mod test {
             force: false,
             backup: false,
             dirs: false,
+            dump: false,
             mode: RunMode::Recursive {
                 paths: vec![temp_path.clone()],
                 max_depth: None,
@@ -292,6 +294,7 @@ mod test {
             force: false,
             backup: false,
             dirs: false,
+            dump: false,
             mode: RunMode::Recursive {
                 paths: vec![temp_path.clone()],
                 max_depth: Some(2),
@@ -334,6 +337,7 @@ mod test {
             force: false,
             backup: false,
             dirs: false,
+            dump: false,
             mode: RunMode::Recursive {
                 paths: vec![temp_path.clone()],
                 max_depth: None,

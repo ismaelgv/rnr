@@ -90,6 +90,18 @@ pub fn create_app<'a>() -> App<'a, 'a> {
                 .default_value("auto")
                 .help("Set color output mode")
         )
+        .arg(
+            Arg::with_name("dump")
+                .long("dump")
+                .help("Force dumping operations into a file even in dry-run mode")
+                .conflicts_with("no-dump")
+        )
+        .arg(
+            Arg::with_name("no-dump")
+                .long("no-dump")
+                .help("Do not dump operations into a file")
+                .conflicts_with("dump")
+        )
 }
 
 #[allow(clippy)]

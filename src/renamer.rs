@@ -1,4 +1,5 @@
 use config::Config;
+use dumpfile::dump_to_file;
 use error::*;
 use fileutils::{cleanup_paths, create_backup, get_paths, PathList};
 use solver::{solve_rename_order, RenameMap};
@@ -30,6 +31,11 @@ impl Renamer {
 
         // Solve targets ordering to avoid renaming conflicts
         let rename_order = solve_rename_order(&rename_map)?;
+
+        // Dump operations to a file if required
+        if self.config.dump {
+            dump_to_file(&rename_order, &rename_map)?;
+        }
 
         // Execute actual renaming
         for target in &rename_order {
@@ -196,6 +202,7 @@ mod test {
             force: true,
             backup: true,
             dirs: false,
+            dump: false,
             mode: RunMode::Simple(mock_files),
             printer: Printer::colored(),
         });

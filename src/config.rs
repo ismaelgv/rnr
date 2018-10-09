@@ -13,6 +13,7 @@ pub struct Config {
     pub force: bool,
     pub backup: bool,
     pub dirs: bool,
+    pub dump: bool,
     pub mode: RunMode,
     pub printer: Printer,
 }
@@ -94,12 +95,20 @@ fn parse_arguments() -> Result<Config, String> {
         RunMode::Simple( input_paths )
     };
 
+    // Set dump defaults: write in force mode and do not in dry-run unless it is explicitly asked
+    let dump = if matches.is_present("force") {
+        !matches.is_present("no-dump")
+    } else {
+        matches.is_present("dump")
+    };
+
     Ok(Config {
         expression,
         replacement,
         force: matches.is_present("force"),
         backup: matches.is_present("backup"),
         dirs: matches.is_present("include-dirs"),
+        dump,
         mode,
         printer,
     })
