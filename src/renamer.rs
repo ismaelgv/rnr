@@ -196,7 +196,7 @@ mod test {
             force: true,
             backup: true,
             dirs: false,
-            mode: RunMode::FileList(mock_files),
+            mode: RunMode::Simple(mock_files),
             printer: Printer::colored(),
         });
 

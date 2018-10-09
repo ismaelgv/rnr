@@ -28,7 +28,7 @@ impl Config {
 }
 
 pub enum RunMode {
-    FileList(Vec<String>),
+    Simple(Vec<String>),
     Recursive {
         paths: Vec<String>,
         max_depth: Option<usize>,
@@ -91,7 +91,7 @@ fn parse_arguments() -> Result<Config, String> {
             hidden: matches.is_present("hidden"),
         }
     } else {
-        RunMode::FileList( input_paths )
+        RunMode::Simple( input_paths )
     };
 
     Ok(Config {

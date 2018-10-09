@@ -45,7 +45,7 @@ pub fn get_paths(config: &Config) -> PathList {
 
             path_list
         }
-        RunMode::FileList(path_list) => path_list.into_iter().map(PathBuf::from).collect(),
+        RunMode::Simple(path_list) => path_list.into_iter().map(PathBuf::from).collect(),
     }
 }
 
@@ -169,7 +169,7 @@ mod test {
             force: false,
             backup: false,
             dirs: false,
-            mode: RunMode::FileList(mock_files),
+            mode: RunMode::Simple(mock_files),
             printer: Printer::colored(),
         };
 
