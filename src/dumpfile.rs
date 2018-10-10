@@ -2,8 +2,8 @@ use chrono;
 use error::*;
 use fileutils::PathList;
 use serde_json;
-use std::fs::File;
 use solver::RenameMap;
+use std::fs::File;
 
 pub fn dump_to_file(rename_order: &PathList, rename_map: &RenameMap) -> Result<()> {
     // Get all operations in order
@@ -27,10 +27,22 @@ pub fn dump_to_file(rename_order: &PathList, rename_map: &RenameMap) -> Result<(
     let filename = "rnr-".to_string() + &now.format("%Y-%m-%d_%H%M%S").to_string() + ".json";
 
     // Dump info to a file
-    let file = File::create(filename).unwrap(); //FIXME: remove unwrap
-    serde_json::to_writer_pretty(file, &dump).unwrap(); //FIXME: remove unwrap
-
-    Ok(())
+    let file = match File::create(&filename) {
+        Ok(file) => file,
+        Err(_) => {
+            return Err(Error {
+                kind: ErrorKind::CreateFile,
+                value: Some(filename),
+            })
+        }
+    };
+    match serde_json::to_writer_pretty(file, &dump) {
+        Ok(_) => Ok(()),
+        Err(_) => Err(Error {
+            kind: ErrorKind::JsonParse,
+            value: Some(filename),
+        }),
+    }
 }
 
 // This struct stores required information about a rename operation
