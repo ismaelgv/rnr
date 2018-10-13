@@ -5,12 +5,14 @@
 extern crate ansi_term;
 extern crate atty;
 extern crate chrono;
-extern crate clap;
 extern crate path_abs;
 extern crate regex;
 extern crate serde;
 extern crate serde_json;
 extern crate walkdir;
+
+#[macro_use]
+extern crate clap;
 
 #[macro_use]
 extern crate serde_derive;

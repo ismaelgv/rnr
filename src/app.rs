@@ -4,11 +4,11 @@ use std::ffi::{OsStr, OsString};
 
 /// Create application using clap. It sets all options and command-line help.
 pub fn create_app<'a>() -> App<'a, 'a> {
-    App::new("rnr")
+    App::new(crate_name!())
         .setting(AppSettings::SubcommandsNegateReqs)
-        .version("0.2.1")
-        .author("Ismael González <ismgonval@gmail.com>")
-        .about("\nrnr is a file renamer with regex support written in Rust.")
+        .version(crate_version!())
+        .author(crate_authors!())
+        .about(crate_description!())
         .arg(
             Arg::with_name("EXPRESSION")
                 .help("Expression to match (can be a regex)")
