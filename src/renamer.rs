@@ -2,7 +2,7 @@ use config::Config;
 use dumpfile::dump_to_file;
 use error::*;
 use fileutils::{cleanup_paths, create_backup, get_paths, PathList};
-use solver::{solve_rename_order, RenameMap};
+use solver::{solve_rename_order, Operation, RenameMap};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -29,18 +29,17 @@ impl Renamer {
         // Relate original names with their targets
         let rename_map = self.get_rename_map()?;
 
-        // Solve targets ordering to avoid renaming conflicts
-        let rename_order = solve_rename_order(&rename_map)?;
+        // Solve renaming operation ordering to avoid conflicts
+        let operations = solve_rename_order(&rename_map)?;
 
-        // Dump operations to a file if required
+        // Dump operations into a file if required
         if self.config.dump {
-            dump_to_file(&rename_order, &rename_map)?;
+            dump_to_file(&operations)?;
         }
 
         // Execute actual renaming
-        for target in &rename_order {
-            let source = &rename_map[target];
-            self.rename(source, target)?;
+        for operation in operations {
+            self.rename(operation)?;
         }
 
         Ok(())
@@ -101,20 +100,20 @@ impl Renamer {
 
     /// Rename path in the filesystem or simply print renaming information. Checks if target
     /// filename exists before renaming.
-    fn rename(&self, source: &PathBuf, target: &PathBuf) -> Result<()> {
+    fn rename(&self, operation: Operation) -> Result<()> {
         let printer = &self.config.printer;
         let colors = &printer.colors;
 
         if self.config.force {
             // Create a backup before actual renaming
             if self.config.backup {
-                match create_backup(source) {
+                match create_backup(&operation.source) {
                     Ok(backup) => printer.print(&format!(
                         "{} Backup created - {}",
                         colors.info.paint("Info: "),
                         colors.source.paint(format!(
                             "{} -> {}",
-                            source.display(),
+                            operation.source.display(),
                             backup.display()
                         ))
                     )),
@@ -125,29 +124,37 @@ impl Renamer {
             }
 
             // Rename paths in the filesystem
-            if let Err(err) = fs::rename(&source, &target) {
+            if let Err(err) = fs::rename(&operation.source, &operation.target) {
                 return Err(Error {
                     kind: ErrorKind::Rename,
                     value: Some(format!(
                         "{} -> {}\n{}",
-                        source.display(),
-                        target.display(),
+                        operation.source.display(),
+                        operation.target.display(),
                         err
                     )),
                 });
             } else {
                 printer.print(&format!(
                     "{} -> {}",
-                    colors.source.paint(source.to_string_lossy().to_string()),
-                    colors.target.paint(target.to_string_lossy().to_string())
+                    colors
+                        .source
+                        .paint(operation.source.to_string_lossy().to_string()),
+                    colors
+                        .target
+                        .paint(operation.target.to_string_lossy().to_string())
                 ));
             }
         } else {
             // Just print info in dry-run mode
             printer.print(&format!(
                 "{} -> {}",
-                colors.source.paint(source.to_string_lossy().to_string()),
-                colors.target.paint(target.to_string_lossy().to_string())
+                colors
+                    .source
+                    .paint(operation.source.to_string_lossy().to_string()),
+                colors
+                    .target
+                    .paint(operation.target.to_string_lossy().to_string())
             ));
         }
 

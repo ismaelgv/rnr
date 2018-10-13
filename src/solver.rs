@@ -6,9 +6,18 @@ use std::path::PathBuf;
 
 pub type RenameMap = HashMap<PathBuf, PathBuf>;
 
-/// Solve renaming order to avoid file overwrite. Solver will order existing targets to avoid
-/// conflicts and adds remaining targets to the list.
-pub fn solve_rename_order(rename_map: &RenameMap) -> Result<PathList> {
+// This struct stores required information about a single renaming operation
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Operation {
+    pub source: PathBuf,
+    pub target: PathBuf,
+}
+
+pub type Operations = Vec<Operation>;
+
+/// Solve renaming order to avoid file overwrite. Solver will order the operations considering
+/// existing targets to avoid conflicts.
+pub fn solve_rename_order(rename_map: &RenameMap) -> Result<Operations> {
     // Get a list of path levels
     let mut level_list: Vec<usize> = rename_map
         .values()
@@ -30,23 +39,23 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<PathList> {
                 } else {
                     None
                 }
-            })
-            .collect();
+            }).collect();
 
         // Return existing targets in the list of original filenames
         let mut existing_targets = get_existing_targets(&level_targets, &rename_map)?;
 
         // Store first all non conflicting entries
-        rename_order.append(&mut level_targets
-            .iter()
-            .filter_map(|p| {
-                if !existing_targets.contains(p) {
-                    Some(p.clone())
-                } else {
-                    None
-                }
-            })
-            .collect());
+        rename_order.append(
+            &mut level_targets
+                .iter()
+                .filter_map(|p| {
+                    if !existing_targets.contains(p) {
+                        Some(p.clone())
+                    } else {
+                        None
+                    }
+                }).collect(),
+        );
 
         // Order and append the rest of entries
         match sort_existing_targets(&rename_map, &mut existing_targets) {
@@ -55,7 +64,16 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<PathList> {
         }
     }
 
-    Ok(rename_order)
+    // Construct a vector with the ordered operations
+    let mut operations = Operations::new();
+    for target in rename_order {
+        operations.push(Operation {
+            source: rename_map[&target].clone(),
+            target,
+        });
+    }
+
+    Ok(operations)
 }
 
 /// Check if targets exist in the filesystem and return a list of them. If they exist, these
@@ -258,13 +276,13 @@ mod test {
             .zip(mock_sources.into_iter())
             .collect();
 
-        let rename_order =
+        let operations =
             solve_rename_order(&mock_rename_map).expect("Failed to solve rename order.");
 
-        assert_eq!(rename_order[0], mock_targets[4]);
-        assert_eq!(rename_order[1], mock_targets[3]);
-        assert_eq!(rename_order[2], mock_targets[2]);
-        assert_eq!(rename_order[3], mock_targets[1]);
-        assert_eq!(rename_order[4], mock_targets[0]);
+        assert_eq!(operations[0].target, mock_targets[4]);
+        assert_eq!(operations[1].target, mock_targets[3]);
+        assert_eq!(operations[2].target, mock_targets[2]);
+        assert_eq!(operations[3].target, mock_targets[1]);
+        assert_eq!(operations[4].target, mock_targets[0]);
     }
 }

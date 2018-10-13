@@ -1,26 +1,14 @@
 use chrono;
 use error::*;
-use fileutils::PathList;
 use serde_json;
-use solver::RenameMap;
+use solver::Operations;
 use std::fs::File;
 
-pub fn dump_to_file(rename_order: &PathList, rename_map: &RenameMap) -> Result<()> {
-    // Get all operations in order
-    let mut operations: Vec<Operation> = Vec::new();
-    for target in rename_order {
-        let source = &rename_map[target];
-        let operation = Operation {
-            source: source.to_string_lossy().to_string(),
-            target: target.to_string_lossy().to_string(),
-        };
-        operations.push(operation);
-    }
-
+pub fn dump_to_file(operations: &Operations) -> Result<()> {
     let now = chrono::Local::now();
     let dump = DumpFormat {
         date: now.format("%Y-%m-%d %H:%M:%S").to_string(),
-        operations: operations,
+        operations: operations.clone(),
     };
 
     // Create filename with the following syntax: "rnr-<DATE>.json"
@@ -45,15 +33,8 @@ pub fn dump_to_file(rename_order: &PathList, rename_map: &RenameMap) -> Result<(
     }
 }
 
-// This struct stores required information about a rename operation
-#[derive(Serialize, Deserialize)]
-struct Operation {
-    source: String,
-    target: String,
-}
-
 #[derive(Serialize, Deserialize)]
 struct DumpFormat {
     date: String,
-    operations: Vec<Operation>,
+    operations: Operations,
 }
