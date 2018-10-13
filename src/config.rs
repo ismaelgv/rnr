@@ -85,16 +85,16 @@ fn parse_arguments() -> Result<Config, String> {
         };
 
         RunMode::FromFile {
-            path: String::from(submatches.value_of("DUMPFILE").unwrap()),
+            path: String::from(submatches.value_of("DUMPFILE").unwrap_or_default()),
         }
     } else if matches.is_present("recursive") {
         let max_depth = if matches.is_present("max-depth") {
             Some(
                 matches
                     .value_of("max-depth")
-                    .unwrap()
+                    .unwrap_or_default()
                     .parse::<usize>()
-                    .unwrap(),
+                    .unwrap_or_default(),
             )
         } else {
             None

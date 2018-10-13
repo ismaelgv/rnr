@@ -51,7 +51,7 @@ impl Renamer {
     /// Rename an operation batch
     pub fn batch_rename(&self, operations: Operations) -> Result<()> {
         for operation in operations {
-            self.rename(operation)?;
+            self.rename(&operation)?;
         }
         Ok(())
     }
@@ -111,7 +111,7 @@ impl Renamer {
 
     /// Rename path in the filesystem or simply print renaming information. Checks if target
     /// filename exists before renaming.
-    fn rename(&self, operation: Operation) -> Result<()> {
+    fn rename(&self, operation: &Operation) -> Result<()> {
         let printer = &self.config.printer;
         let colors = &printer.colors;
 
