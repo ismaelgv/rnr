@@ -81,7 +81,8 @@ SUBCOMMANDS:
 * Does not generate backups.
 * Output is *colored* (only ANSI terminals).
 * Ignore hidden files and directories.
-* Dump all operations to a file in force mode.
+* Dump all operations to a file in force mode. This dump file can be used to
+  undo these operations from `from-file` subcommand.
 
 # Demo
 [![Demo](https://cdn.rawgit.com/ChuckDaniels87/b0607fdaa44c6201cde398b6a9e23e4e/raw/59d43365d15c55d9c259edd29292609c06de21f7/rnr-demo.svg)](https://cdn.rawgit.com/ChuckDaniels87/b0607fdaa44c6201cde398b6a9e23e4e/raw/f29d84760f4225dce74bf81052180e12a287b892/rnr-demo.svg)
