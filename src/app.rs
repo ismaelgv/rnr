@@ -105,6 +105,11 @@ pub fn create_app<'a>() -> App<'a, 'a> {
                         .value_name("DUMPFILE")
                         .validator_os(is_valid_string)
                         .index(1),
+                ).arg(
+                    Arg::with_name("undo")
+                        .long("undo")
+                        .short("u")
+                        .help("Undo the operations from the dump file"),
                 ).about("Read operations from a dump file"),
         )
 }

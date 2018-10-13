@@ -76,6 +76,21 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<Operations> {
     Ok(operations)
 }
 
+/// Revert the given operations. Returns operations in reverse order and with source/target
+/// fields interchanged.
+pub fn revert_operations(operations: &Operations) -> Result<Operations> {
+    let mut reverse_operations = operations.clone();
+    reverse_operations.reverse();
+    let inverse_operations = reverse_operations
+        .into_iter()
+        .map(|Operation { source, target }| Operation {
+            source: target,
+            target: source,
+        }).collect();
+
+    Ok(inverse_operations)
+}
+
 /// Check if targets exist in the filesystem and return a list of them. If they exist, these
 /// targets must be contained in the original file list for the renaming problem to be solvable.
 fn get_existing_targets(targets: &PathList, rename_map: &RenameMap) -> Result<PathList> {

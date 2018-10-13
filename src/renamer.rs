@@ -2,7 +2,8 @@ use config::{Config, RunMode};
 use dumpfile;
 use error::*;
 use fileutils::{cleanup_paths, create_backup, get_paths, PathList};
-use solver::{solve_rename_order, Operation, Operations, RenameMap};
+use solver;
+use solver::{Operation, Operations, RenameMap};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -32,11 +33,16 @@ impl Renamer {
                 let rename_map = self.get_rename_map(&input_paths)?;
 
                 // Solve renaming operation ordering to avoid conflicts
-                solve_rename_order(&rename_map)?
+                solver::solve_rename_order(&rename_map)?
             }
-            RunMode::FromFile { ref path } => {
+            RunMode::FromFile { ref path, undo } => {
                 // Read operations from file
-                dumpfile::read_from_file(&PathBuf::from(path))?
+                let operations = dumpfile::read_from_file(&PathBuf::from(path))?;
+                if undo {
+                    solver::revert_operations(&operations)?
+                } else {
+                    operations
+                }
             }
         };
 

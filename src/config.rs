@@ -37,6 +37,7 @@ pub enum RunMode {
     },
     FromFile {
         path: String,
+        undo: bool,
     },
 }
 
@@ -86,6 +87,7 @@ fn parse_arguments() -> Result<Config, String> {
 
         RunMode::FromFile {
             path: String::from(submatches.value_of("DUMPFILE").unwrap_or_default()),
+            undo: submatches.is_present("undo"),
         }
     } else if matches.is_present("recursive") {
         let max_depth = if matches.is_present("max-depth") {
