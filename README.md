@@ -39,6 +39,7 @@ cargo install rnr
 ```
 USAGE:
     rnr [FLAGS] [OPTIONS] <EXPRESSION> <REPLACEMENT> <PATH(S)>...
+    rnr [FLAGS] [OPTIONS] <SUBCOMMAND>
 
 FLAGS:
     -b, --backup          Generate file backups before renaming
@@ -54,14 +55,17 @@ FLAGS:
     -V, --version         Prints version information
 
 OPTIONS:
-        --color <color>        Set color output mode [default: auto]
-                               [possible values: always, auto, never]
+        --color <color>        Set color output mode [default: auto]  [possible values: always, auto, never]
     -d, --max-depth <LEVEL>    Set max depth in recursive mode
 
 ARGS:
     <EXPRESSION>     Expression to match (can be a regex)
     <REPLACEMENT>    Expression replacement
     <PATH(S)>...     Target paths
+
+SUBCOMMANDS:
+    from-file    Read operations from a dump file
+    help         Prints this message or the help of the given subcommand(s)
 ```
 
 ## Default behavior

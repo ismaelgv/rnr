@@ -2,7 +2,10 @@
 #### Added
 * Dump operations to a file. This functionality can be activated and deactivated
   from command-line. It is activated in force mode by default.
+* New subcommand to read operations from a dump file. This subcommand overrides
+  requirements from default behavior.
 * New dependencies: `chrono`, `serde`, `serde_derive` and `serde_json`.
+
 
 # v0.2.1 (2018-08-23)
 ### Added
