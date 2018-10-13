@@ -1,5 +1,5 @@
-use config::Config;
-use dumpfile::dump_to_file;
+use config::{Config, RunMode};
+use dumpfile;
 use error::*;
 use fileutils::{cleanup_paths, create_backup, get_paths, PathList};
 use solver::{solve_rename_order, Operation, Operations, RenameMap};
@@ -20,21 +20,29 @@ impl Renamer {
 
     /// Process path batch
     pub fn process(&self) -> Result<Operations> {
-        // Get paths
-        let mut input_paths = get_paths(&self.config);
+        let operations = match self.config.mode {
+            RunMode::Simple(_) | RunMode::Recursive { .. } => {
+                // Get paths
+                let mut input_paths = get_paths(&self.config);
 
-        // Remove directories and on existing paths from the list
-        cleanup_paths(&mut input_paths, self.config.dirs);
+                // Remove directories and on existing paths from the list
+                cleanup_paths(&mut input_paths, self.config.dirs);
 
-        // Relate original names with their targets
-        let rename_map = self.get_rename_map(&input_paths)?;
+                // Relate original names with their targets
+                let rename_map = self.get_rename_map(&input_paths)?;
 
-        // Solve renaming operation ordering to avoid conflicts
-        let operations = solve_rename_order(&rename_map)?;
+                // Solve renaming operation ordering to avoid conflicts
+                solve_rename_order(&rename_map)?
+            }
+            RunMode::FromFile { ref path } => {
+                // Read operations from file
+                dumpfile::read_from_file(&PathBuf::from(path))?
+            }
+        };
 
         // Dump operations into a file if required
         if self.config.dump {
-            dump_to_file(&operations)?;
+            dumpfile::dump_to_file(&operations)?;
         }
 
         Ok(operations)

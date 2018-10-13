@@ -35,6 +35,9 @@ pub enum RunMode {
         max_depth: Option<usize>,
         hidden: bool,
     },
+    FromFile {
+        path: String,
+    },
 }
 
 /// Parse arguments and do some checking.
@@ -54,7 +57,7 @@ fn parse_arguments() -> Result<Config, String> {
     };
 
     // Get and validate regex expression and replacement from arguments
-    let expression = match Regex::new(matches.value_of("EXPRESSION").unwrap()) {
+    let expression = match Regex::new(matches.value_of("EXPRESSION").unwrap_or_default()) {
         Ok(expr) => expr,
         Err(err) => {
             return Err(format!(
@@ -64,16 +67,27 @@ fn parse_arguments() -> Result<Config, String> {
             ));
         }
     };
-    let replacement = String::from(matches.value_of("REPLACEMENT").unwrap());
+    let replacement = String::from(matches.value_of("REPLACEMENT").unwrap_or_default());
 
-    // Detect normal or recursive mode and set properly set its parameters
+    // Detect run mode and set parameters accordingly
     let input_paths: Vec<String> = matches
         .values_of("PATH(S)")
-        .unwrap()
+        .unwrap_or_default()
         .map(String::from)
         .collect();
 
-    let mode = if matches.is_present("recursive") {
+    let mode = if matches.is_present("from-file") {
+        let submatches = match matches.subcommand_matches("from-file") {
+            Some(matches) => matches,
+            None => return Err(format!(
+                "{}Empty from-file subcommand provided\n\n",
+                printer.colors.error.paint("Error: "))),
+        };
+
+        RunMode::FromFile {
+            path: String::from(submatches.value_of("DUMPFILE").unwrap()),
+        }
+    } else if matches.is_present("recursive") {
         let max_depth = if matches.is_present("max-depth") {
             Some(
                 matches

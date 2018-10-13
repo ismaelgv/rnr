@@ -52,7 +52,7 @@ fn main() {
         }
     };
 
-    // Process given paths
+    // Generate operations
     let operations = match renamer.process() {
         Ok(operations) => operations,
         Err(err) => {

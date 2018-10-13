@@ -1,10 +1,11 @@
 #![allow(unknown_lints)]
-use clap::{App, Arg};
+use clap::{App, Arg, SubCommand, AppSettings};
 use std::ffi::{OsStr, OsString};
 
 /// Create application using clap. It sets all options and command-line help.
 pub fn create_app<'a>() -> App<'a, 'a> {
     App::new("rnr")
+        .setting(AppSettings::SubcommandsNegateReqs)
         .version("0.2.1")
         .author("Ismael González <ismgonval@gmail.com>")
         .about("\nrnr is a file renamer with regex support written in Rust.")
@@ -14,53 +15,48 @@ pub fn create_app<'a>() -> App<'a, 'a> {
                 .required(true)
                 .validator_os(is_valid_string)
                 .index(1),
-        )
-        .arg(
+        ).arg(
             Arg::with_name("REPLACEMENT")
                 .help("Expression replacement")
                 .required(true)
                 .validator_os(is_valid_string)
-                .index(2)
-        )
-        .arg(
+                .index(2),
+        ).arg(
             Arg::with_name("PATH(S)")
                 .help("Target paths")
                 .validator_os(is_valid_string)
                 .multiple(true)
-                .required(true)
-        )
-        .arg(
+                .required(true),
+        ).arg(
             Arg::with_name("dry-run")
                 .long("dry-run")
                 .short("n")
                 .help("Only show what would be done (default mode)")
-                .conflicts_with("force")
-        )
-        .arg(
+                .global(true)
+                .conflicts_with("force"),
+        ).arg(
             Arg::with_name("force")
                 .long("force")
                 .short("f")
-                .help("Make actual changes to files")
-        )
-        .arg(
+                .global(true)
+                .help("Make actual changes to files"),
+        ).arg(
             Arg::with_name("backup")
                 .long("backup")
                 .short("b")
-                .help("Generate file backups before renaming")
-        )
-        .arg(
+                .global(true)
+                .help("Generate file backups before renaming"),
+        ).arg(
             Arg::with_name("include-dirs")
                 .long("include-dirs")
                 .short("D")
-                .help("Rename matching directories")
-        )
-        .arg(
+                .help("Rename matching directories"),
+        ).arg(
             Arg::with_name("recursive")
                 .long("recursive")
                 .short("r")
-                .help("Recursive mode")
-        )
-        .arg(
+                .help("Recursive mode"),
+        ).arg(
             Arg::with_name("max-depth")
                 .requires("recursive")
                 .long("max-depth")
@@ -68,39 +64,48 @@ pub fn create_app<'a>() -> App<'a, 'a> {
                 .takes_value(true)
                 .value_name("LEVEL")
                 .validator(is_integer)
-                .help("Set max depth in recursive mode")
-        )
-        .arg(
+                .help("Set max depth in recursive mode"),
+        ).arg(
             Arg::with_name("hidden")
                 .requires("recursive")
                 .long("hidden")
                 .short("x")
-                .help("Include hidden files and directories")
-        )
-        .arg(
+                .help("Include hidden files and directories"),
+        ).arg(
             Arg::with_name("silent")
                 .long("silent")
                 .short("s")
-                .help("Do not print any information")
-        )
-        .arg(
+                .global(true)
+                .help("Do not print any information"),
+        ).arg(
             Arg::with_name("color")
                 .long("color")
                 .possible_values(&["always", "auto", "never"])
                 .default_value("auto")
-                .help("Set color output mode")
-        )
-        .arg(
+                .global(true)
+                .help("Set color output mode"),
+        ).arg(
             Arg::with_name("dump")
                 .long("dump")
                 .help("Force dumping operations into a file even in dry-run mode")
-                .conflicts_with("no-dump")
-        )
-        .arg(
+                .global(true)
+                .conflicts_with("no-dump"),
+        ).arg(
             Arg::with_name("no-dump")
                 .long("no-dump")
                 .help("Do not dump operations into a file")
-                .conflicts_with("dump")
+                .global(true)
+                .conflicts_with("dump"),
+        ).subcommand(
+            SubCommand::with_name("from-file")
+                .arg(
+                    Arg::with_name("DUMPFILE")
+                        .takes_value(true)
+                        .required(true)
+                        .value_name("DUMPFILE")
+                        .validator_os(is_valid_string)
+                        .index(1),
+                ).about("Read operations from a dump file"),
         )
 }
 
