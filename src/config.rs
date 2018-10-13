@@ -92,7 +92,7 @@ fn parse_arguments() -> Result<Config, String> {
             hidden: matches.is_present("hidden"),
         }
     } else {
-        RunMode::Simple( input_paths )
+        RunMode::Simple(input_paths)
     };
 
     // Set dump defaults: write in force mode and do not in dry-run unless it is explicitly asked

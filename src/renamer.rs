@@ -2,7 +2,7 @@ use config::Config;
 use dumpfile::dump_to_file;
 use error::*;
 use fileutils::{cleanup_paths, create_backup, get_paths, PathList};
-use solver::{solve_rename_order, Operation, RenameMap};
+use solver::{solve_rename_order, Operation, Operations, RenameMap};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -22,7 +22,7 @@ impl Renamer {
     }
 
     /// Process path batch
-    pub fn process(&mut self) -> Result<()> {
+    pub fn process(&mut self) -> Result<Operations> {
         // Remove directories and on existing paths from the list
         cleanup_paths(&mut self.paths, self.config.dirs);
 
@@ -37,11 +37,14 @@ impl Renamer {
             dump_to_file(&operations)?;
         }
 
-        // Execute actual renaming
+        Ok(operations)
+    }
+
+    /// Rename an operation batch
+    pub fn batch_rename(&self, operations: Operations) -> Result<()> {
         for operation in operations {
             self.rename(operation)?;
         }
-
         Ok(())
     }
 
@@ -228,7 +231,14 @@ mod test {
                 process::exit(1);
             }
         };
-        if let Err(err) = renamer.process() {
+        let operations = match renamer.process() {
+            Ok(operations) => operations,
+            Err(err) => {
+                mock_config.printer.print_error(&err);
+                process::exit(1);
+            }
+        };
+        if let Err(err) = renamer.batch_rename(operations) {
             mock_config.printer.print_error(&err);
             process::exit(1);
         }

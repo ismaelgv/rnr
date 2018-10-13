@@ -52,8 +52,17 @@ fn main() {
         }
     };
 
-    // Process paths
-    if let Err(err) = renamer.process() {
+    // Process given paths
+    let operations = match renamer.process() {
+        Ok(operations) => operations,
+        Err(err) => {
+            config.printer.print_error(&err);
+            std::process::exit(1);
+        }
+    };
+
+    // Batch rename operations
+    if let Err(err) = renamer.batch_rename(operations) {
         config.printer.print_error(&err);
         std::process::exit(1);
     }
