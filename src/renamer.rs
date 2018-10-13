@@ -8,26 +8,26 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 pub struct Renamer {
-    paths: PathList,
     config: Arc<Config>,
 }
 
 impl Renamer {
     pub fn new(config: &Arc<Config>) -> Result<Renamer> {
-        let input_paths = get_paths(&config);
         Ok(Renamer {
-            paths: input_paths,
             config: config.clone(),
         })
     }
 
     /// Process path batch
-    pub fn process(&mut self) -> Result<Operations> {
+    pub fn process(&self) -> Result<Operations> {
+        // Get paths
+        let mut input_paths = get_paths(&self.config);
+
         // Remove directories and on existing paths from the list
-        cleanup_paths(&mut self.paths, self.config.dirs);
+        cleanup_paths(&mut input_paths, self.config.dirs);
 
         // Relate original names with their targets
-        let rename_map = self.get_rename_map()?;
+        let rename_map = self.get_rename_map(&input_paths)?;
 
         // Solve renaming operation ordering to avoid conflicts
         let operations = solve_rename_order(&rename_map)?;
@@ -64,14 +64,14 @@ impl Renamer {
     }
 
     /// Get hash map containing all replacements to be done
-    fn get_rename_map(&self) -> Result<RenameMap> {
+    fn get_rename_map(&self, paths: &PathList) -> Result<RenameMap> {
         let printer = &self.config.printer;
         let colors = &printer.colors;
 
         let mut rename_map = RenameMap::new();
         let mut error_string = String::new();
 
-        for path in &self.paths {
+        for path in paths {
             let target = self.replace_match(&path);
             // Discard paths with no changes
             if target != *path {
@@ -224,7 +224,7 @@ mod test {
         });
 
         // Run renamer
-        let mut renamer = match Renamer::new(&mock_config) {
+        let renamer = match Renamer::new(&mock_config) {
             Ok(renamer) => renamer,
             Err(err) => {
                 mock_config.printer.print_error(&err);

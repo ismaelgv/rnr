@@ -44,7 +44,7 @@ fn main() {
     }
 
     // Configure renamer
-    let mut renamer = match Renamer::new(&config) {
+    let renamer = match Renamer::new(&config) {
         Ok(renamer) => renamer,
         Err(err) => {
             config.printer.print_error(&err);
