@@ -1,4 +1,4 @@
-use config::{Config, RunMode};
+use config::RunMode;
 use error::*;
 use path_abs::PathAbs;
 use std::collections::HashMap;
@@ -8,9 +8,9 @@ use walkdir::{DirEntry, WalkDir};
 
 pub type PathList = Vec<PathBuf>;
 
-/// Return a list of paths for the given configuration.
-pub fn get_paths(config: &Config) -> PathList {
-    match &config.mode {
+/// Return a list of paths for the given run mode.
+pub fn get_paths(mode: &RunMode) -> PathList {
+    match mode {
         RunMode::Recursive {
             paths,
             max_depth,
@@ -104,8 +104,6 @@ pub fn cleanup_paths(paths: &mut PathList, keep_dirs: bool) {
 mod test {
     extern crate tempfile;
     use super::*;
-    use output::Printer;
-    use regex::Regex;
     use std::fs;
 
     #[test]
@@ -165,18 +163,9 @@ mod test {
             "test_file_3.txt".to_string(),
         ];
 
-        let mock_config = Config {
-            expression: Regex::new("test").unwrap(),
-            replacement: "passed".to_string(),
-            force: false,
-            backup: false,
-            dirs: false,
-            dump: false,
-            mode: RunMode::Simple(mock_files),
-            printer: Printer::colored(),
-        };
+        let mode =  RunMode::Simple(mock_files);
 
-        let files = get_paths(&mock_config);
+        let files = get_paths(&mode);
         assert!(files.contains(&PathBuf::from("test_file_1.txt")));
         assert!(files.contains(&PathBuf::from("test_file_2.txt")));
         assert!(files.contains(&PathBuf::from("test_file_3.txt")));
@@ -245,23 +234,14 @@ mod test {
     fn get_paths_recursive() {
         let (_tempdir, temp_path) = generate_recursive_tempdir();
 
-        // Create config with recursive search WITHOUT max depth
-        let mock_config = Config {
-            expression: Regex::new("test").unwrap(),
-            replacement: "passed".to_string(),
-            force: false,
-            backup: false,
-            dirs: false,
-            dump: false,
-            mode: RunMode::Recursive {
+        // Create mode with recursive search WITHOUT max depth
+        let mode =  RunMode::Recursive {
                 paths: vec![temp_path.clone()],
                 max_depth: None,
                 hidden: false,
-            },
-            printer: Printer::colored(),
         };
 
-        let files = get_paths(&mock_config);
+        let files = get_paths(&mode);
         // Must contain these files
         #[cfg_attr(rustfmt, rustfmt_skip)]
         let listed_files: PathList = vec![
@@ -289,23 +269,14 @@ mod test {
     fn get_paths_recursive_depth() {
         let (_tempdir, temp_path) = generate_recursive_tempdir();
 
-        // Create config with recursive search WITH max depth
-        let mock_config = Config {
-            expression: Regex::new("test").unwrap(),
-            replacement: "passed".to_string(),
-            force: false,
-            backup: false,
-            dirs: false,
-            dump: false,
-            mode: RunMode::Recursive {
+        // Create mode with recursive search WITH max depth
+        let mode = RunMode::Recursive {
                 paths: vec![temp_path.clone()],
                 max_depth: Some(2),
                 hidden: false,
-            },
-            printer: Printer::colored(),
         };
 
-        let files = get_paths(&mock_config);
+        let files = get_paths(&mode);
         // Must contain these files
         let listed_files: PathList = vec![
             [&temp_path, "test_file.txt"].iter().collect(),
@@ -332,23 +303,14 @@ mod test {
     fn get_paths_recursive_hidden() {
         let (_tempdir, temp_path) = generate_recursive_tempdir();
 
-        // Create config with recursive search WITHOUT max depth
-        let mock_config = Config {
-            expression: Regex::new("test").unwrap(),
-            replacement: "passed".to_string(),
-            force: false,
-            backup: false,
-            dirs: false,
-            dump: false,
-            mode: RunMode::Recursive {
+        // Create mode with recursive search WITHOUT max depth
+        let mode = RunMode::Recursive {
                 paths: vec![temp_path.clone()],
                 max_depth: None,
                 hidden: true,
-            },
-            printer: Printer::colored(),
         };
 
-        let files = get_paths(&mock_config);
+        let files = get_paths(&mode);
         // Must contain these files
         #[cfg_attr(rustfmt, rustfmt_skip)]
         let listed_files: PathList = vec![

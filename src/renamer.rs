@@ -24,7 +24,7 @@ impl Renamer {
         let operations = match self.config.mode {
             RunMode::Simple(_) | RunMode::Recursive { .. } => {
                 // Get paths
-                let mut input_paths = get_paths(&self.config);
+                let mut input_paths = get_paths(&self.config.mode);
 
                 // Remove directories and on existing paths from the list
                 cleanup_paths(&mut input_paths, self.config.dirs);
