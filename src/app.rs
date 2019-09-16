@@ -1,5 +1,4 @@
-#![allow(unknown_lints)]
-use clap::{App, Arg, SubCommand, AppSettings};
+use clap::{App, AppSettings, Arg, SubCommand};
 use std::ffi::{OsStr, OsString};
 
 /// Create application using clap. It sets all options and command-line help.
@@ -15,48 +14,56 @@ pub fn create_app<'a>() -> App<'a, 'a> {
                 .required(true)
                 .validator_os(is_valid_string)
                 .index(1),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("REPLACEMENT")
                 .help("Expression replacement")
                 .required(true)
                 .validator_os(is_valid_string)
                 .index(2),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("PATH(S)")
                 .help("Target paths")
                 .validator_os(is_valid_string)
                 .multiple(true)
                 .required(true),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("dry-run")
                 .long("dry-run")
                 .short("n")
                 .help("Only show what would be done (default mode)")
                 .global(true)
                 .conflicts_with("force"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("force")
                 .long("force")
                 .short("f")
                 .global(true)
                 .help("Make actual changes to files"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("backup")
                 .long("backup")
                 .short("b")
                 .global(true)
                 .help("Generate file backups before renaming"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("include-dirs")
                 .long("include-dirs")
                 .short("D")
                 .help("Rename matching directories"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("recursive")
                 .long("recursive")
                 .short("r")
                 .help("Recursive mode"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("max-depth")
                 .requires("recursive")
                 .long("max-depth")
@@ -65,38 +72,44 @@ pub fn create_app<'a>() -> App<'a, 'a> {
                 .value_name("LEVEL")
                 .validator(is_integer)
                 .help("Set max depth in recursive mode"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("hidden")
                 .requires("recursive")
                 .long("hidden")
                 .short("x")
                 .help("Include hidden files and directories"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("silent")
                 .long("silent")
                 .short("s")
                 .global(true)
                 .help("Do not print any information"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("color")
                 .long("color")
                 .possible_values(&["always", "auto", "never"])
                 .default_value("auto")
                 .global(true)
                 .help("Set color output mode"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("dump")
                 .long("dump")
                 .help("Force dumping operations into a file even in dry-run mode")
                 .global(true)
                 .conflicts_with("no-dump"),
-        ).arg(
+        )
+        .arg(
             Arg::with_name("no-dump")
                 .long("no-dump")
                 .help("Do not dump operations into a file")
                 .global(true)
                 .conflicts_with("dump"),
-        ).subcommand(
+        )
+        .subcommand(
             SubCommand::with_name("from-file")
                 .arg(
                     Arg::with_name("DUMPFILE")
@@ -105,15 +118,16 @@ pub fn create_app<'a>() -> App<'a, 'a> {
                         .value_name("DUMPFILE")
                         .validator_os(is_valid_string)
                         .index(1),
-                ).arg(
+                )
+                .arg(
                     Arg::with_name("undo")
                         .long("undo")
                         .short("u")
                         .help("Undo the operations from the dump file"),
-                ).about("Read operations from a dump file"),
+                )
+                .about("Read operations from a dump file"),
         )
 }
-
 #[allow(clippy::all)]
 /// Check if the input provided is valid unsigned integer
 fn is_integer(arg_value: String) -> Result<(), String> {
@@ -122,7 +136,6 @@ fn is_integer(arg_value: String) -> Result<(), String> {
         Err(_) => Err("Value provided is not an integer".to_string()),
     }
 }
-
 /// Check if the input provided is valid UTF-8
 fn is_valid_string(os_str: &OsStr) -> Result<(), OsString> {
     match os_str.to_str() {

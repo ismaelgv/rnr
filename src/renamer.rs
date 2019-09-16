@@ -99,12 +99,12 @@ impl Renamer {
                                 old_path.display(),
                                 path.display(),
                                 target.display()
-                            )).to_string(),
+                            ))
+                            .to_string(),
                     );
                 }
             }
         }
-
         if error_string.is_empty() {
             Ok(rename_map)
         } else {
