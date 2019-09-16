@@ -1,16 +1,16 @@
 use chrono;
 use error::*;
 use serde_json;
-use solver::Operations;
+use solver::{Operation, Operations};
 use std::fs::File;
 use std::path::PathBuf;
 
 /// Dump operations intto file in JSON format
-pub fn dump_to_file(operations: &Operations) -> Result<()> {
+pub fn dump_to_file(operations: &[Operation]) -> Result<()> {
     let now = chrono::Local::now();
     let dump = DumpFormat {
         date: now.format("%Y-%m-%d %H:%M:%S").to_string(),
-        operations: operations.clone(),
+        operations: operations.to_vec(),
     };
 
     // Create filename with the following syntax: "rnr-<DATE>.json"

@@ -31,7 +31,7 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<Operations> {
     let mut rename_order = PathList::new();
     for level in level_list {
         // Get all targets of this level
-        let level_targets = rename_map
+        let level_targets: Vec<PathBuf> = rename_map
             .keys()
             .filter_map(|p| {
                 if p.components().count() == level {
@@ -39,8 +39,8 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<Operations> {
                 } else {
                     None
                 }
-            }).collect();
-
+            })
+            .collect();
         // Return existing targets in the list of original filenames
         let mut existing_targets = get_existing_targets(&level_targets, &rename_map)?;
 
@@ -54,9 +54,9 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<Operations> {
                     } else {
                         None
                     }
-                }).collect(),
+                })
+                .collect(),
         );
-
         // Order and append the rest of entries
         match sort_existing_targets(&rename_map, &mut existing_targets) {
             Ok(mut targets) => rename_order.append(&mut targets),
@@ -78,22 +78,21 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<Operations> {
 
 /// Revert the given operations. Returns operations in reverse order and with source/target
 /// fields interchanged.
-pub fn revert_operations(operations: &Operations) -> Result<Operations> {
-    let mut reverse_operations = operations.clone();
+pub fn revert_operations(operations: &[Operation]) -> Result<Operations> {
+    let mut reverse_operations = operations.to_owned();
     reverse_operations.reverse();
     let inverse_operations = reverse_operations
         .into_iter()
         .map(|Operation { source, target }| Operation {
             source: target,
             target: source,
-        }).collect();
-
+        })
+        .collect();
     Ok(inverse_operations)
 }
-
 /// Check if targets exist in the filesystem and return a list of them. If they exist, these
 /// targets must be contained in the original file list for the renaming problem to be solvable.
-fn get_existing_targets(targets: &PathList, rename_map: &RenameMap) -> Result<PathList> {
+fn get_existing_targets(targets: &[PathBuf], rename_map: &RenameMap) -> Result<PathList> {
     let mut existing_targets: PathList = Vec::new();
     let sources: PathList = rename_map.values().cloned().collect();
 

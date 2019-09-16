@@ -1,7 +1,7 @@
 use config::{Config, RunMode};
 use dumpfile;
 use error::*;
-use fileutils::{cleanup_paths, create_backup, get_paths, PathList};
+use fileutils::{cleanup_paths, create_backup, get_paths};
 use solver;
 use solver::{Operation, Operations, RenameMap};
 use std::fs;
@@ -78,7 +78,7 @@ impl Renamer {
     }
 
     /// Get hash map containing all replacements to be done
-    fn get_rename_map(&self, paths: &PathList) -> Result<RenameMap> {
+    fn get_rename_map(&self, paths: &[PathBuf]) -> Result<RenameMap> {
         let printer = &self.config.printer;
         let colors = &printer.colors;
 
