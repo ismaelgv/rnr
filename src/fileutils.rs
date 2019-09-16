@@ -167,8 +167,7 @@ mod test {
             "test_file_3.txt".to_string(),
         ];
 
-        let mode =  RunMode::Simple(mock_files);
-
+        let mode = RunMode::Simple(mock_files);
         let files = get_paths(&mode);
         assert!(files.contains(&PathBuf::from("test_file_1.txt")));
         assert!(files.contains(&PathBuf::from("test_file_2.txt")));
@@ -205,14 +204,14 @@ mod test {
         //                 - test_file.txt
         //
         //
-        #[cfg_attr(rustfmt, rustfmt_skip)]
+        #[rustfmt::skip]
         let mock_dirs: PathList = vec![
             [&temp_path, ".hidden_mock_dir"].iter().collect(),
             [&temp_path, "mock_dir_1"].iter().collect(),
             [&temp_path, "mock_dir_1", "mock_dir_2"].iter().collect(),
             [&temp_path, "mock_dir_1", "mock_dir_2", "mock_dir_3"].iter().collect(),
         ];
-        #[cfg_attr(rustfmt, rustfmt_skip)]
+        #[rustfmt::skip]
         let mock_files: PathList = vec![
             [&temp_path, "test_file.txt"].iter().collect(),
             [&temp_path, ".hidden_test_file.txt"].iter().collect(),
@@ -239,15 +238,14 @@ mod test {
         let (_tempdir, temp_path) = generate_recursive_tempdir();
 
         // Create mode with recursive search WITHOUT max depth
-        let mode =  RunMode::Recursive {
-                paths: vec![temp_path.clone()],
-                max_depth: None,
-                hidden: false,
+        let mode = RunMode::Recursive {
+            paths: vec![temp_path.clone()],
+            max_depth: None,
+            hidden: false,
         };
-
         let files = get_paths(&mode);
         // Must contain these files
-        #[cfg_attr(rustfmt, rustfmt_skip)]
+        #[rustfmt::skip]
         let listed_files: PathList = vec![
             [&temp_path, "test_file.txt"].iter().collect(),
             [&temp_path, "mock_dir_1", "test_file.txt"].iter().collect(),
@@ -259,7 +257,7 @@ mod test {
             assert!(files.contains(file));
         }
         // Must NOT contain these files
-        #[cfg_attr(rustfmt, rustfmt_skip)]
+        #[rustfmt::skip]
         let non_listed_files: PathList = vec![
             [&temp_path, ".hidden_test_file.txt"].iter().collect(),
             [&temp_path, ".hidden_mock_dir", "test_file.txt"].iter().collect(),
@@ -275,11 +273,10 @@ mod test {
 
         // Create mode with recursive search WITH max depth
         let mode = RunMode::Recursive {
-                paths: vec![temp_path.clone()],
-                max_depth: Some(2),
-                hidden: false,
+            paths: vec![temp_path.clone()],
+            max_depth: Some(2),
+            hidden: false,
         };
-
         let files = get_paths(&mode);
         // Must contain these files
         let listed_files: PathList = vec![
@@ -290,7 +287,7 @@ mod test {
             assert!(files.contains(file));
         }
         // Must NOT contain these files
-        #[cfg_attr(rustfmt, rustfmt_skip)]
+        #[rustfmt::skip]
         let non_listed_files: PathList = vec![
             [&temp_path, "mock_dir_1", "mock_dir_2", "test_file.txt"].iter().collect(),
             [&temp_path, "mock_dir_1", "mock_dir_2", "mock_dir_3", "test_file.txt"]
@@ -309,14 +306,13 @@ mod test {
 
         // Create mode with recursive search WITHOUT max depth
         let mode = RunMode::Recursive {
-                paths: vec![temp_path.clone()],
-                max_depth: None,
-                hidden: true,
+            paths: vec![temp_path.clone()],
+            max_depth: None,
+            hidden: true,
         };
-
         let files = get_paths(&mode);
         // Must contain these files
-        #[cfg_attr(rustfmt, rustfmt_skip)]
+        #[rustfmt::skip]
         let listed_files: PathList = vec![
             [&temp_path, "test_file.txt"].iter().collect(),
             [&temp_path, "mock_dir_1", "test_file.txt"].iter().collect(),
@@ -357,7 +353,7 @@ mod test {
             [temp_path, "mock_dir_1"].iter().collect(),
             [temp_path, "mock_dir_1", "mock_dir_2"].iter().collect(),
         ];
-        #[cfg_attr(rustfmt, rustfmt_skip)]
+        #[rustfmt::skip]
         let mock_files: PathList = vec![
             [temp_path, "test_file.txt"].iter().collect(),
             [&mock_dirs[0], &PathBuf::from("test_file.txt")].iter().collect(),
@@ -387,7 +383,7 @@ mod test {
         // Directories
         mock_paths.append(&mut mock_dirs.clone());
         // False files
-        #[cfg_attr(rustfmt, rustfmt_skip)]
+        #[rustfmt::skip]
         let false_files: PathList = vec![
             [temp_path, "false_file.txt"].iter().collect(),
             [&mock_dirs[0], &PathBuf::from("false_file.txt")].iter().collect(),
@@ -413,7 +409,7 @@ mod test {
         }
 
         // Must NOT contain these files/directories
-        #[cfg_attr(rustfmt, rustfmt_skip)]
+        #[rustfmt::skip]
         let mut non_listed_files = PathList::new();
         non_listed_files.append(&mut mock_dirs.clone());
         non_listed_files.append(&mut false_files.clone());
