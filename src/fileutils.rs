@@ -45,7 +45,7 @@ pub fn get_paths(mode: &RunMode) -> PathList {
 
             path_list
         }
-        RunMode::Simple(path_list) => path_list.into_iter().map(PathBuf::from).collect(),
+        RunMode::Simple(path_list) => path_list.iter().map(PathBuf::from).collect(),
         // Return an empty PathList otherwise
         _ => PathList::new(),
     }
