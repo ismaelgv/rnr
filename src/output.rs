@@ -79,7 +79,7 @@ impl Printer {
     }
 
     pub fn print_error(&self, error: &Error) {
-        let error_value = error.value.clone().unwrap_or_else(|| "".to_string());
+        let error_value = error.value.to_owned().unwrap_or("".to_string());
 
         self.eprint(&format!(
             "{}{}{}",
