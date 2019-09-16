@@ -83,12 +83,16 @@ pub fn create_backup(path: &PathBuf) -> Result<PathBuf> {
 /// too if dirs parameters is set to false.
 pub fn cleanup_paths(paths: &mut PathList, keep_dirs: bool) {
     paths.retain(|path| {
-        // Path must exist or be a symlink
-        (path.exists() || path.read_link().is_ok())
-            // Non-directories are OK
-            && (!path.is_dir()
-                // Directories are excluded if keep option is not set
-                || (path.is_dir() && keep_dirs && path.file_name().is_some()))
+        // Path must exists before performing other checks
+        if !(path.exists() || path.read_link().is_ok()) {
+            return false;
+        }
+
+        if path.is_dir() {
+            keep_dirs && path.file_name().is_some()
+        } else {
+            true
+        }
     });
 
     // Deduplicate paths generating their absolute path and inserting them in a Hashmap. Replace
