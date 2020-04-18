@@ -69,7 +69,7 @@ SUBCOMMANDS:
 ```
 
 ## Default behavior
-* Checks all operations to avoid overwritting existing files.
+* Checks all operations to avoid overwriting existing files.
 * *Dry-run* by default.
 * Only **UTF-8 valid** input arguments and filenames.
 * Works on files and symlinks (ignores directories).
