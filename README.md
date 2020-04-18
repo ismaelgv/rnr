@@ -4,7 +4,7 @@
 [![Crates.io](https://img.shields.io/crates/v/rnr.svg)](https://crates.io/crates/rnr)
 [![License](https://img.shields.io/crates/l/rnr.svg)](https://github.com/ChuckDaniels87/rnr/blob/master/LICENSE)
 
-*RnR* is a command-line tool to rename multiple files and directories that
+*RnR* is a command-line tool to securely rename multiple files and directories that
 supports regular expressions.
 
 # Install
@@ -69,6 +69,7 @@ SUBCOMMANDS:
 ```
 
 ## Default behavior
+* Checks all operations to avoid overwritting existing files.
 * *Dry-run* by default.
 * Only **UTF-8 valid** input arguments and filenames.
 * Works on files and symlinks (ignores directories).
