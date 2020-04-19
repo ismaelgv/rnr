@@ -7,6 +7,18 @@
 *RnR* is a command-line tool to securely rename multiple files and directories that
 supports regular expressions.
 
+# Features
+* Batch rename files and directories.
+* Automated checks to avoid unwanted file collisions, removals or overwrites.
+* Use regexp, including capture groups.
+* Include directories recursively.
+* Create backup files.
+* Create and read operations from dump file.
+* Undo operations from dump file.
+* Exclude/include hidden files.
+* Linux, Mac and Windows support, including terminal coloring.
+* Extensive unit testing.
+
 # Install
 
 ## Binaries
