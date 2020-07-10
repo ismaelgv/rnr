@@ -306,7 +306,7 @@ rnr from-file -f rnr-[timestamp].json
 ```
 
 ### Create backup files before renaming
-`rnr` can create backup files before renaming for any operation passing `-b` option. The backup files names are ensured to be unique and won't be overwritten if another backup is created. Be aware that files will be duplicated if you are working with many large files.
+`rnr` can create backup files before renaming for any operation passing `-b` option. The backup files names are ensured to be unique and won't be overwritten if another backup is created. If you are working with many large files, take into account that files will be duplicated.
 
 ```sh
 rnr -f -b file renamed ./*
