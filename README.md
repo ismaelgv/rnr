@@ -121,13 +121,13 @@ rnr -f file renamed ./file-01.txt ./one/file-02.txt ./one/file-03.txt
 *Renamed tree*
 ```
 .
-├── file-01.txt
+├── renamed-01.txt
 ├── file-02.txt
 ├── file-03.txt
 └── one
     ├── file-01.txt
-    ├── file-02.txt
-    └── file-03.txt
+    ├── renamed-02.txt
+    └── renamed-03.txt
 ```
 
 #### Include directories
