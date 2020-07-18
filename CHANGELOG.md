@@ -1,3 +1,9 @@
+# v0.2.3 (2020-07-18)
+### Changed
+* Update README with examples.
+* Refactor several parts.
+* Update dependencies
+
 # v0.2.2 (2018-10-13)
 #### Added
 * Dump operations into a file. This functionality can be activated and
