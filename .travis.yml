@@ -2,43 +2,34 @@ language: rust
 cache: cargo
 matrix:
   include:
-  # Linux - Stable
   - os: linux
     rust: stable
     env: TARGET=x86_64-unknown-linux-gnu
   - os: linux
     rust: beta
     env: TARGET=x86_64-unknown-linux-gnu
-  # OSX
   - os: osx
     rust: stable
     env: TARGET=x86_64-apple-darwin
-
 env:
   global:
   - HOST=x86_64-unknown-linux-gnu
   - PROJECT_NAME="rnr"
-
 script:
 - cargo build --target $TARGET --verbose
 - cargo test  --target $TARGET --verbose
-
 install:
-- if [[ $TRAVIS_OS_NAME = linux && $HOST != $TARGET ]]; then rustup target add $TARGET; fi
-
+- if [[ $TRAVIS_OS_NAME = linux && $HOST != $TARGET ]]; then rustup target add $TARGET;
+  fi
 before_deploy: bash ci/before_deploy.sh
-
 deploy:
   provider: releases
-  api_key:
-    secure: YOlw1YipXXVRu60Jtoe34fTFCdxsSNUi2liFuZnrIFngmz9WDLYPGjUPthDe6z5c+ntYETJol/7bzh9n+Sq4jfySKE2tl9A40DhD46k3CS5MAQdR12wliSQEOOJpnInvpIpYAaK1p+ouV8r/UHrEEmZ4Er8CQpGIg+3XFYcbcG1xjcE0XgO/Y2Jgyvv0oFXzjjKtL7cbEZ3JDgPU1BwpaINSiB2YstlNa6l6ZLob2UCALZDpVPV3Wv9WopqjekJHxvvm5Q8rw/Rhgcw0sexxPMHGI93dXGB3ObTiOx9b4besi9tGtBFfH4W/eLtD+Td2xV1vfkqAobtbEqSm+uGJY5H6jyWHjHMjAYnYVbtc4UnVgIQ50+CGPkC+kR/Ior1jbVurF8ybwwLbmHyQCR5nZDhQ6oF4ffjmfnk5ubFYet0834aiQS+CWH3U7yoTqgx3QicROmQM9DNKMX76z7v3UpRfZbdM60NH/1IFoUoWgalOpe0cvl6nJbHX6a7Knc5Ylm2V7Z4afym74/350q7lUpsT/1s8AF+X0CxeeXlbKC5NBvbXAnZJkA9CXeBoKbU7/5ipoufEiQuEX6/LZ7BBCqMM/2T0eoFHf5oh0/pgo37B+NcalIdoCmmyNRuQqESs+mWSOlK/sFtNS8SwsR5nVWtfurbRdfr+eAQNaKdtvMA=
-  skip_cleanup: true
-  file_glob: true
-  file: $PROJECT_NAME-$TRAVIS_TAG-$TARGET.*
+  token:
+    secure: NCzp0rr1pwpg6/JTrJntSOxyrRIlDZ3RgsbqPbwdqU3bkN4JyFJXdrzH64TF7UJ0KTA6fZbFDuDIyvifU7G1WFRVw7ntEXCRwVk69pLwfgwLEsn7EZPhe7vQQXWwXn/eliqg6w/FZCTRztvTWR7S+FxXGqqh4UsGv7DVHTmR2SYWHE9H05OT+pL4GoeTBDTtXhMxvTTdQq8WUfqbf5vQ1GmB1SE0AK4kkPkPp0WulG9M4lJ8pRMqQLkaOApNoGk6pgqNe+Jp57HBy1fc77FEogVy2SqomLS+d3dpPkeUP5BDMa0pLUalAz9ypJQ5jtORva/uFpyGu7b4yUX82Q4DFWeddnCwlQhuD9cFBunqQ28DN7RiY5nXz7oKqZV4+GlYrGe+gaSc3QlwOzoiEVR4RXUwo9u/Jf8/2rJN6sZvrGS4EBQcXwgcTEJN8IuCwZ0XfkVGdpQu6ghssGuQOU7S/fjA9m+noThzpZzRFOj1ke4DOBk6R/nl6YTpjV3otrTw5FviD5kQtjrV4TRT1vg0riZFpzWF6SyoPYCziEIkQVa1fRA0mbpJBAIxRHJJYxnKPRBW4Y0dd7cjAgwzsT0nudbGD0p0HR4bgn0CeuN13d+dE1HplH0ZswL38mziJqlbbE6Sk+zBvK1KHh7SMdJEiBKNHgp4W1EWbYD7Nl8jhLw=
+  file: "$PROJECT_NAME-$TRAVIS_TAG-$TARGET.*"
   on:
-    tags: true
-    condition: $TRAVIS_RUST_VERSION = stable
-
+    repo: ChuckDaniels87/rnr
+  cleanup: 'false'
 notifications:
   email:
     on_success: never
