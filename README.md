@@ -102,6 +102,20 @@ SUBCOMMANDS:
 [![Demo](https://cdn.rawgit.com/ChuckDaniels87/b0607fdaa44c6201cde398b6a9e23e4e/raw/59d43365d15c55d9c259edd29292609c06de21f7/rnr-demo.svg)](https://cdn.rawgit.com/ChuckDaniels87/b0607fdaa44c6201cde398b6a9e23e4e/raw/f29d84760f4225dce74bf81052180e12a287b892/rnr-demo.svg)
 
 ## Examples
+* [Rename a list of files](#rename-a-list-of-files)
+    * [Include directories](#include-directories)
+    * [Combination with other UNIX tools](#combination-with-other-unix-tools)
+* [Recursive rename](#recursive-rename)
+    * [Recursive rename with max directory depth](#recursive-rename-with-max-directory-depth)
+    * [Recursive rename including directories and hidden files](#recursive-rename-including-directories-and-hidden-files)
+* [Undo/redo operations using dump file](#undoredo-operations-using-dump-file)
+* [Create backup files before renaming](#create-backup-files-before-renaming)
+* [Advanced regex examples](#advanced-regex-examples)
+    * [Replace extensions](#replace-extensions)
+    * [Replace numbers](#replace-numbers)
+    * [Capture groups](#capture-groups)
+    * [Capture several named groups and swap them](#capture-several-named-groups-and-swap-them)
+
 ### Rename a list of files
 You can pass a list of files to be renamed as arguments:
 ```sh
