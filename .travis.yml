@@ -29,6 +29,9 @@ deploy:
   file: "$PROJECT_NAME-$TRAVIS_TAG-$TARGET.*"
   on:
     repo: ChuckDaniels87/rnr
+    tags: true
+    condition: $TRAVIS_RUST_VERSION = stable
+
   cleanup: 'false'
 notifications:
   email:
