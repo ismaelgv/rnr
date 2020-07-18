@@ -27,12 +27,12 @@ deploy:
   token:
     secure: NCzp0rr1pwpg6/JTrJntSOxyrRIlDZ3RgsbqPbwdqU3bkN4JyFJXdrzH64TF7UJ0KTA6fZbFDuDIyvifU7G1WFRVw7ntEXCRwVk69pLwfgwLEsn7EZPhe7vQQXWwXn/eliqg6w/FZCTRztvTWR7S+FxXGqqh4UsGv7DVHTmR2SYWHE9H05OT+pL4GoeTBDTtXhMxvTTdQq8WUfqbf5vQ1GmB1SE0AK4kkPkPp0WulG9M4lJ8pRMqQLkaOApNoGk6pgqNe+Jp57HBy1fc77FEogVy2SqomLS+d3dpPkeUP5BDMa0pLUalAz9ypJQ5jtORva/uFpyGu7b4yUX82Q4DFWeddnCwlQhuD9cFBunqQ28DN7RiY5nXz7oKqZV4+GlYrGe+gaSc3QlwOzoiEVR4RXUwo9u/Jf8/2rJN6sZvrGS4EBQcXwgcTEJN8IuCwZ0XfkVGdpQu6ghssGuQOU7S/fjA9m+noThzpZzRFOj1ke4DOBk6R/nl6YTpjV3otrTw5FviD5kQtjrV4TRT1vg0riZFpzWF6SyoPYCziEIkQVa1fRA0mbpJBAIxRHJJYxnKPRBW4Y0dd7cjAgwzsT0nudbGD0p0HR4bgn0CeuN13d+dE1HplH0ZswL38mziJqlbbE6Sk+zBvK1KHh7SMdJEiBKNHgp4W1EWbYD7Nl8jhLw=
   file: $PROJECT_NAME-$TRAVIS_TAG-$TARGET.*
+  skip_cleanup: true
+  file_glob: true
   on:
     repo: ChuckDaniels87/rnr
     tags: true
     condition: $TRAVIS_RUST_VERSION = stable
-
-  skip_cleanup: true
 notifications:
   email:
     on_success: never
