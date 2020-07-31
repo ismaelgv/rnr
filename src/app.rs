@@ -109,6 +109,16 @@ pub fn create_app<'a>() -> App<'a, 'a> {
                 .global(true)
                 .conflicts_with("dump"),
         )
+        .arg(
+            Arg::with_name("replace-limit")
+                .long("replace-limit")
+                .short("l")
+                .takes_value(true)
+                .value_name("LIMIT")
+                .default_value("1")
+                .validator(is_integer)
+                .help("Limit of replacements, all matches if set to 0"),
+        )
         .subcommand(
             SubCommand::with_name("from-file")
                 .arg(

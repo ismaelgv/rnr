@@ -70,7 +70,7 @@ impl Renamer {
         let file_name = path.file_name().unwrap().to_str().unwrap();
         let parent = path.parent();
 
-        let target_name = expression.replace(file_name, &replacement[..]);
+        let target_name = expression.replacen(file_name, self.config.limit, &replacement[..]);
         match parent {
             None => PathBuf::from(target_name.to_string()),
             Some(path) => path.join(Path::new(&target_name.into_owned())),
@@ -219,6 +219,7 @@ mod test {
             dump: false,
             mode: RunMode::Simple(mock_files),
             printer: Printer::color(),
+            limit: 1,
         });
 
         // Run renamer
