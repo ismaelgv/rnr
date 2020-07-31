@@ -1,3 +1,7 @@
+# v0.2.4 (Unreleased)
+### Added
+* Add diff to operation output.
+
 # v0.2.3 (2020-07-18)
 ### Changed
 * Update README with examples.
