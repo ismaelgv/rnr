@@ -152,27 +152,11 @@ impl Renamer {
                     )),
                 });
             } else {
-                printer.print(&format!(
-                    "{} -> {}",
-                    colors
-                        .source
-                        .paint(operation.source.to_string_lossy().to_string()),
-                    colors
-                        .target
-                        .paint(operation.target.to_string_lossy().to_string())
-                ));
+                printer.print_operation(&operation.source, &operation.target);
             }
         } else {
             // Just print info in dry-run mode
-            printer.print(&format!(
-                "{} -> {}",
-                colors
-                    .source
-                    .paint(operation.source.to_string_lossy().to_string()),
-                colors
-                    .target
-                    .paint(operation.target.to_string_lossy().to_string())
-            ));
+            printer.print_operation(&operation.source, &operation.target);
         }
 
         Ok(())
