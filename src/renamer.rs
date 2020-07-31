@@ -254,4 +254,51 @@ mod test {
         assert!(Path::new(&format!("{}/test_file_1.txt.bk", mock_dir)).exists());
         assert!(Path::new(&format!("{}/test_file_2.txt.bk", mock_dir)).exists());
     }
+
+    #[test]
+    fn replace_limit() {
+        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
+        println!("Running test in '{:?}'", tempdir);
+        let temp_path = tempdir.path().to_str().unwrap();
+
+        let mock_files: Vec<String> = vec![
+            format!("{}/replace_all_aaaaa.txt", temp_path),];
+        for file in &mock_files {
+            fs::File::create(&file).expect("Error creating mock file...");
+        }
+
+        let mock_config = Arc::new(Config {
+            expression: Regex::new("a").unwrap(),
+            replacement: "A".to_string(),
+            force: true,
+            backup: false,
+            dirs: false,
+            dump: false,
+            mode: RunMode::Simple(mock_files),
+            printer: Printer::color(),
+            limit: 0,
+        });
+
+        let renamer = match Renamer::new(&mock_config) {
+            Ok(renamer) => renamer,
+            Err(err) => {
+                mock_config.printer.print_error(&err);
+                process::exit(1);
+            }
+        };
+        let operations = match renamer.process() {
+            Ok(operations) => operations,
+            Err(err) => {
+                mock_config.printer.print_error(&err);
+                process::exit(1);
+            }
+        };
+        if let Err(err) = renamer.batch_rename(operations) {
+            mock_config.printer.print_error(&err);
+            process::exit(1);
+        }
+
+        // Check renamed files
+        assert!(Path::new(&format!("{}/replAce_All_AAAAA.txt", temp_path)).exists());
+    }
 }
