@@ -218,7 +218,7 @@ mod test {
             dirs: false,
             dump: false,
             mode: RunMode::Simple(mock_files),
-            printer: Printer::colored(),
+            printer: Printer::color(),
         });
 
         // Run renamer

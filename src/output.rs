@@ -4,9 +4,16 @@ use difference::{Changeset, Difference};
 use error::*;
 use std::path::PathBuf;
 
+#[derive(PartialEq)]
+enum PrinterMode {
+    Silent,
+    NoColor,
+    Color,
+}
+
 pub struct Printer {
     pub colors: Colors,
-    silent: bool,
+    mode: PrinterMode,
 }
 
 pub struct Colors {
@@ -20,7 +27,7 @@ pub struct Colors {
 
 impl Printer {
     /// Return a printer configured to colorize output
-    pub fn colored() -> Printer {
+    pub fn color() -> Printer {
         let colors = Colors {
             info: Style::default().bold(),
             warn: Style::from(Yellow),
@@ -32,12 +39,12 @@ impl Printer {
 
         Printer {
             colors,
-            silent: false,
+            mode: PrinterMode::Color,
         }
     }
 
     /// Return a printer configured to not use colors
-    pub fn no_colored() -> Printer {
+    pub fn no_color() -> Printer {
         let colors = Colors {
             info: Style::default(),
             warn: Style::default(),
@@ -49,7 +56,7 @@ impl Printer {
 
         Printer {
             colors,
-            silent: false,
+            mode: PrinterMode::NoColor,
         }
     }
 
@@ -66,21 +73,27 @@ impl Printer {
 
         Printer {
             colors,
-            silent: true,
+            mode: PrinterMode::Silent,
         }
     }
 
     /// Print string to Stdout when printer is not in silent mode
     pub fn print(&self, message: &str) {
-        if !self.silent {
-            println!("{}", message);
+        match self.mode {
+            PrinterMode::Color | PrinterMode::NoColor => {
+                println!("{}", message);
+            }
+            PrinterMode::Silent => {}
         }
     }
 
     /// Print string to Stderr when printer is not in silent mode
     pub fn eprint(&self, message: &str) {
-        if !self.silent {
-            eprintln!("{}", message);
+        match self.mode {
+            PrinterMode::Color | PrinterMode::NoColor => {
+                eprintln!("{}", message);
+            }
+            PrinterMode::Silent => {}
         }
     }
 
@@ -98,27 +111,32 @@ impl Printer {
 
     /// Pretty print operation
     pub fn print_operation(&self, source: &PathBuf, target: &PathBuf) {
-        // Avoid any additional processing costs in silent mode
-        if self.silent {
-            return;
+        // Avoid any additional processing costs if silent mode
+        if self.mode == PrinterMode::Silent {
+            return
         }
 
         let source_parent = source.parent().unwrap().to_string_lossy().to_string();
         let source_name = source.file_name().unwrap().to_string_lossy().to_string();
         let target_parent = target.parent().unwrap().to_string_lossy().to_string();
-        let target_name = target.file_name().unwrap().to_string_lossy().to_string();
+        let mut target_name = target.file_name().unwrap().to_string_lossy().to_string();
+
+        // Avoid diffing if not coloring output
+        if self.mode == PrinterMode::Color {
+                target_name = self.string_diff(
+                    &source_name,
+                    &target_name,
+                    self.colors.target,
+                    self.colors.highlight,
+                )
+        }
 
         self.print(&format!(
             "{}{} -> {}{}",
             self.colors.source.paint(format!("{}/", source_parent)),
             self.colors.source.paint(&source_name),
             self.colors.target.paint(format!("{}/", target_parent)),
-            self.string_diff(
-                &source_name,
-                &target_name,
-                self.colors.target,
-                self.colors.highlight
-            ),
+            target_name
         ));
     }
 

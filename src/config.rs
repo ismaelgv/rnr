@@ -51,8 +51,8 @@ fn parse_arguments() -> Result<Config, String> {
         Printer::silent()
     } else {
         match matches.value_of("color").unwrap_or("auto") {
-            "always" => Printer::colored(),
-            "never" => Printer::no_colored(),
+            "always" => Printer::color(),
+            "never" => Printer::no_color(),
             "auto" | _ => detect_output_color(),
         }
     };
@@ -135,18 +135,18 @@ fn detect_output_color() -> Printer {
     if atty::is(atty::Stream::Stdout) {
         #[cfg(not(windows))]
         {
-            Printer::colored()
+            Printer::color()
         }
         // Enable color support for Windows 10
         #[cfg(windows)]
         {
             use ansi_term;
             match ansi_term::enable_ansi_support() {
-                Ok(_) => Printer::colored(),
-                Err(_) => Printer::no_colored(),
+                Ok(_) => Printer::color(),
+                Err(_) => Printer::no_color(),
             }
         }
     } else {
-        Printer::no_colored()
+        Printer::no_color()
     }
 }
