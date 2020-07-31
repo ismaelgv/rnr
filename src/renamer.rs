@@ -269,7 +269,7 @@ mod test {
 
         let mock_config = Arc::new(Config {
             expression: Regex::new("a").unwrap(),
-            replacement: "A".to_string(),
+            replacement: "b".to_string(),
             force: true,
             backup: false,
             dirs: false,
@@ -299,6 +299,6 @@ mod test {
         }
 
         // Check renamed files
-        assert!(Path::new(&format!("{}/replAce_All_AAAAA.txt", temp_path)).exists());
+        assert!(Path::new(&format!("{}/replbce_bll_bbbbb.txt", temp_path)).exists());
     }
 }
