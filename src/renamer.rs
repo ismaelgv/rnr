@@ -70,7 +70,7 @@ impl Renamer {
         let file_name = path.file_name().unwrap().to_str().unwrap();
         let parent = path.parent();
 
-        let target_name = expression.replace(file_name, &replacement[..]);
+        let target_name = expression.replacen(file_name, self.config.limit, &replacement[..]);
         match parent {
             None => PathBuf::from(target_name.to_string()),
             Some(path) => path.join(Path::new(&target_name.into_owned())),
@@ -219,6 +219,7 @@ mod test {
             dump: false,
             mode: RunMode::Simple(mock_files),
             printer: Printer::color(),
+            limit: 1,
         });
 
         // Run renamer
@@ -252,5 +253,52 @@ mod test {
         assert!(Path::new(&format!("{}/test_file_2.txt.bk", temp_path)).exists());
         assert!(Path::new(&format!("{}/test_file_1.txt.bk", mock_dir)).exists());
         assert!(Path::new(&format!("{}/test_file_2.txt.bk", mock_dir)).exists());
+    }
+
+    #[test]
+    fn replace_limit() {
+        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
+        println!("Running test in '{:?}'", tempdir);
+        let temp_path = tempdir.path().to_str().unwrap();
+
+        let mock_files: Vec<String> = vec![
+            format!("{}/replace_all_aaaaa.txt", temp_path),];
+        for file in &mock_files {
+            fs::File::create(&file).expect("Error creating mock file...");
+        }
+
+        let mock_config = Arc::new(Config {
+            expression: Regex::new("a").unwrap(),
+            replacement: "b".to_string(),
+            force: true,
+            backup: false,
+            dirs: false,
+            dump: false,
+            mode: RunMode::Simple(mock_files),
+            printer: Printer::color(),
+            limit: 0,
+        });
+
+        let renamer = match Renamer::new(&mock_config) {
+            Ok(renamer) => renamer,
+            Err(err) => {
+                mock_config.printer.print_error(&err);
+                process::exit(1);
+            }
+        };
+        let operations = match renamer.process() {
+            Ok(operations) => operations,
+            Err(err) => {
+                mock_config.printer.print_error(&err);
+                process::exit(1);
+            }
+        };
+        if let Err(err) = renamer.batch_rename(operations) {
+            mock_config.printer.print_error(&err);
+            process::exit(1);
+        }
+
+        // Check renamed files
+        assert!(Path::new(&format!("{}/replbce_bll_bbbbb.txt", temp_path)).exists());
     }
 }

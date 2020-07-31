@@ -18,6 +18,7 @@ supports regular expressions.
 * Exclude/include hidden files.
 * Linux, Mac and Windows support, including terminal coloring.
 * Extensive unit testing.
+* Select limit of replacements.
 
 # Install
 
@@ -70,6 +71,7 @@ FLAGS:
 OPTIONS:
         --color <color>        Set color output mode [default: auto]  [possible values: always, auto, never]
     -d, --max-depth <LEVEL>    Set max depth in recursive mode
+    -l, --replace-limit <LIMIT>    Limit of replacements, all matches if set to 0 [default: 1]
 
 ARGS:
     <EXPRESSION>     Expression to match (can be a regex)
@@ -97,6 +99,7 @@ SUBCOMMANDS:
 * Ignore hidden files and directories.
 * Dump all operations into a file in force mode. This dump file can be used to
   undo these operations from `from-file` subcommand.
+* Number of replacements set to one.
 
 ## Demo
 [![Demo](https://cdn.rawgit.com/ChuckDaniels87/b0607fdaa44c6201cde398b6a9e23e4e/raw/59d43365d15c55d9c259edd29292609c06de21f7/rnr-demo.svg)](https://cdn.rawgit.com/ChuckDaniels87/b0607fdaa44c6201cde398b6a9e23e4e/raw/f29d84760f4225dce74bf81052180e12a287b892/rnr-demo.svg)
@@ -146,7 +149,7 @@ rnr -f file renamed ./file-01.txt ./one/file-02.txt ./one/file-03.txt
 
 #### Include directories
 Directories are ignored by default but you can also include them to be renamed using the option `-D`.
-```
+```sh
 rnr -f -D foo bar ./*
 ```
 *Original tree*
@@ -162,6 +165,29 @@ rnr -f -D foo bar ./*
 ├── bar
 │   └── foo.txt
 └── bar.txt
+```
+
+#### Multiple replacements
+The replacement limit is set to 1 by default, but you can configure this limit
+to replace multiple non-overlapping matches. All matches will be replaced if
+this option is set to 0.
+
+```sh
+rnr -f -l 0 o u ./*
+```
+*Original tree*
+```
+.
+├── foo
+│   └── foo.txt
+└── foo.txt
+```
+*Renamed tree*
+```
+.
+├── foo
+│   └── fuu.txt
+└── fuu.txt
 ```
 
 #### Combination with other UNIX tools

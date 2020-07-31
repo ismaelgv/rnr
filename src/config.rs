@@ -16,6 +16,7 @@ pub struct Config {
     pub dump: bool,
     pub mode: RunMode,
     pub printer: Printer,
+    pub limit: usize,
 }
 
 impl Config {
@@ -80,9 +81,12 @@ fn parse_arguments() -> Result<Config, String> {
     let mode = if matches.is_present("from-file") {
         let submatches = match matches.subcommand_matches("from-file") {
             Some(matches) => matches,
-            None => return Err(format!(
-                "{}Empty from-file subcommand provided\n\n",
-                printer.colors.error.paint("Error: "))),
+            None => {
+                return Err(format!(
+                    "{}Empty from-file subcommand provided\n\n",
+                    printer.colors.error.paint("Error: ")
+                ))
+            }
         };
 
         RunMode::FromFile {
@@ -118,6 +122,12 @@ fn parse_arguments() -> Result<Config, String> {
         matches.is_present("dump")
     };
 
+    let limit = matches
+            .value_of("replace-limit")
+            .unwrap_or_default()
+            .parse::<usize>()
+            .unwrap_or_default();
+
     Ok(Config {
         expression,
         replacement,
@@ -127,6 +137,7 @@ fn parse_arguments() -> Result<Config, String> {
         dump,
         mode,
         printer,
+        limit,
     })
 }
 
