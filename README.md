@@ -107,6 +107,7 @@ SUBCOMMANDS:
 ## Examples
 * [Rename a list of files](#rename-a-list-of-files)
     * [Include directories](#include-directories)
+    * [Multiple replacements](#multiple-replacements)
     * [Combination with other UNIX tools](#combination-with-other-unix-tools)
 * [Recursive rename](#recursive-rename)
     * [Recursive rename with max directory depth](#recursive-rename-with-max-directory-depth)
@@ -178,16 +179,18 @@ rnr -f -l 0 o u ./*
 *Original tree*
 ```
 .
-├── foo
-│   └── foo.txt
-└── foo.txt
+├── foo.txt
+├── foofoo.txt
+├── foofoofoo.txt
+└── foofoofoofoo.txt
 ```
 *Renamed tree*
 ```
 .
-├── foo
-│   └── fuu.txt
-└── fuu.txt
+├── fuu.txt
+├── fuufuu.txt
+├── fuufuufuu.txt
+└── fuufuufuufuu.txt
 ```
 
 #### Combination with other UNIX tools
