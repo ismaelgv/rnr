@@ -1,7 +1,10 @@
-# v0.2.4 (Unreleased)
+# v0.2.4 (2020-08-01)
 ### Added
 * Add diff to operation output.
 * Add replace limit option.
+
+### Changed
+* Internal refactor of printer.
 
 # v0.2.3 (2020-07-18)
 ### Changed

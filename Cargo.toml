@@ -1,6 +1,6 @@
 [package]
 name = "rnr"
-version = "0.2.3"
+version = "0.2.4"
 authors = ["Ismael González Valverde <ismgonval@gmail.com>"]
 description = """
 RnR is a command-line tool to rename multiple files and directories that
