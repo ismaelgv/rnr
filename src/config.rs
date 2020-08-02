@@ -123,10 +123,10 @@ fn parse_arguments() -> Result<Config, String> {
     };
 
     let limit = matches
-            .value_of("replace-limit")
-            .unwrap_or_default()
-            .parse::<usize>()
-            .unwrap_or_default();
+        .value_of("replace-limit")
+        .unwrap_or_default()
+        .parse::<usize>()
+        .unwrap_or_default();
 
     Ok(Config {
         expression,

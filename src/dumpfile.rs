@@ -37,7 +37,7 @@ pub fn dump_to_file(operations: &[Operation]) -> Result<()> {
 
 /// Read operations from a dump file and generate a Operations vector
 pub fn read_from_file(filepath: &PathBuf) -> Result<Operations> {
-    let file = match File::open(&filepath){
+    let file = match File::open(&filepath) {
         Ok(file) => file,
         Err(_) => {
             return Err(Error {
@@ -48,10 +48,12 @@ pub fn read_from_file(filepath: &PathBuf) -> Result<Operations> {
     };
     let dump: DumpFormat = match serde_json::from_reader(file) {
         Ok(dump) => dump,
-        Err(_) => return Err(Error {
-            kind: ErrorKind::JsonParse,
-            value: Some(filepath.to_string_lossy().to_string()),
-        }),
+        Err(_) => {
+            return Err(Error {
+                kind: ErrorKind::JsonParse,
+                value: Some(filepath.to_string_lossy().to_string()),
+            })
+        }
     };
     Ok(dump.operations)
 }

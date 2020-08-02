@@ -261,8 +261,7 @@ mod test {
         println!("Running test in '{:?}'", tempdir);
         let temp_path = tempdir.path().to_str().unwrap();
 
-        let mock_files: Vec<String> = vec![
-            format!("{}/replace_all_aaaaa.txt", temp_path),];
+        let mock_files: Vec<String> = vec![format!("{}/replace_all_aaaaa.txt", temp_path)];
         for file in &mock_files {
             fs::File::create(&file).expect("Error creating mock file...");
         }

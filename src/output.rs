@@ -113,7 +113,7 @@ impl Printer {
     pub fn print_operation(&self, source: &PathBuf, target: &PathBuf) {
         // Avoid any additional processing costs if silent mode
         if self.mode == PrinterMode::Silent {
-            return
+            return;
         }
 
         let source_parent = source.parent().unwrap().to_string_lossy().to_string();
@@ -123,12 +123,12 @@ impl Printer {
 
         // Avoid diffing if not coloring output
         if self.mode == PrinterMode::Color {
-                target_name = self.string_diff(
-                    &source_name,
-                    &target_name,
-                    self.colors.target,
-                    self.colors.highlight,
-                )
+            target_name = self.string_diff(
+                &source_name,
+                &target_name,
+                self.colors.target,
+                self.colors.highlight,
+            )
         }
 
         self.print(&format!(
