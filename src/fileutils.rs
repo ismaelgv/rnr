@@ -176,7 +176,15 @@ mod test {
             fs::File::create(&file).expect("Error creating mock file...");
         }
 
-        let new_file: PathBuf = [temp_path, "test_file_1.3"].iter().collect();
+        let symlink = PathBuf::from(format!("{}/test_file_1.3", temp_path));
+        create_symlink(&mock_files[0], &symlink)
+                .expect("Error creating symlink.");
+
+        let broken_symlink = PathBuf::from(format!("{}/test_file_1.4", temp_path));
+        create_symlink(&PathBuf::from("broken_link"), &broken_symlink)
+                .expect("Error creating broken symlink.");
+
+        let new_file: PathBuf = [temp_path, "test_file_1.5"].iter().collect();
         assert_eq!(get_unique_filename(&mock_files[0], ""), new_file);
     }
 
