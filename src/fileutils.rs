@@ -79,12 +79,12 @@ pub fn create_backup(path: &PathBuf) -> Result<PathBuf> {
     }
 }
 
-/// Clean paths that does not exists, broken links and duplicated entries. It remove directories
-/// too if dirs parameters is set to false.
+/// Clean paths that does not exists and duplicated entries. It remove directories too if dirs
+/// parameters is set to false.
 pub fn cleanup_paths(paths: &mut PathList, keep_dirs: bool) {
     paths.retain(|path| {
         // Path must exists before performing other checks
-        if !(path.exists() || path.read_link().is_ok()) {
+        if path.symlink_metadata().is_err() {
             return false;
         }
 
@@ -341,6 +341,8 @@ mod test {
         //     |
         //     - test_link -> test_file.txt
         //     |
+        //     - test_broken_link -> broken_link
+        //     |
         //     - mock_dir_1
         //         |
         //         - test_file.txt
@@ -368,18 +370,29 @@ mod test {
             fs::File::create(&file).expect("Error creating mock file...");
         }
         let symlink: PathBuf = [temp_path, "test_link"].iter().collect();
+        let broken_symlink: PathBuf = [temp_path, "test_broken_link"].iter().collect();
         #[cfg(windows)]
-        ::std::os::windows::fs::symlink_file(&mock_files[0], &symlink)
-            .expect("Error creating symlink.");
+        {
+            ::std::os::windows::fs::symlink_file(&mock_files[0], &symlink)
+                .expect("Error creating symlink.");
+            ::std::os::windows::fs::symlink_file("broken_symlink", &broken_symlink)
+                .expect("Error creating symlink.");
+        }
         #[cfg(unix)]
-        ::std::os::unix::fs::symlink(&mock_files[0], &symlink).expect("Error creating symlink.");
+        {
+            ::std::os::unix::fs::symlink(&mock_files[0], &symlink)
+                .expect("Error creating symlink.");
+            ::std::os::unix::fs::symlink("broken_symlink", &broken_symlink)
+                .expect("Error creating symlink.");
+        }
 
         // Create mock_paths from files, symlink, directories, false files and duplicated files
         // Existing files
         let mut mock_paths = PathList::new();
         mock_paths.append(&mut mock_files.clone());
-        // Symlink
+        // Symlinks
         mock_paths.push(symlink.clone());
+        mock_paths.push(broken_symlink.clone());
         // Directories
         mock_paths.append(&mut mock_dirs.clone());
         // False files
@@ -401,6 +414,7 @@ mod test {
         let mut listed_files = PathList::new();
         listed_files.append(&mut mock_files.clone());
         listed_files.push(symlink.clone());
+        listed_files.push(broken_symlink.clone());
 
         for file in &listed_files {
             assert!(mock_paths.contains(file));
