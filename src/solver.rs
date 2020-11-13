@@ -160,6 +160,7 @@ mod test {
     extern crate tempfile;
     use super::*;
     use std::fs;
+    use fileutils::create_symlink;
 
     #[test]
     fn test_existing_targets() {
@@ -218,21 +219,11 @@ mod test {
         ];
         // Create files in the filesystem
         fs::File::create(&mock_sources[0]).expect("Error creating mock file...");
-
-        #[cfg(not(windows))]
-        {
-            ::std::os::unix::fs::symlink(&mock_sources[0], &mock_sources[1])
-                .expect("Error creating mock symlink...");
-            ::std::os::unix::fs::symlink("broken_link", &mock_sources[2])
-                .expect("Error creating mock symlink...");
-        }
-        #[cfg(windows)]
-        {
-            ::std::os::windows::fs::symlink_file(&mock_sources[0], &mock_sources[1])
-                .expect("Error creating mock symlink...");
-            ::std::os::windows::fs::symlink("broken_link", &mock_sources[2])
-                .expect("Error creating mock symlink...");
-        }
+        // Create symlinks
+        create_symlink(&mock_sources[0], &mock_sources[1])
+                .expect("Error creating symlink.");
+        create_symlink(&PathBuf::from("broken_link"), &mock_sources[2])
+                .expect("Error creating broken symlink.");
 
         // Add one 'a' to the beginning of the filename
         let mock_targets: PathList = vec![

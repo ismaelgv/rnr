@@ -16,6 +16,7 @@ pub struct Error {
 pub enum ErrorKind {
     CreateBackup,
     CreateFile,
+    CreateSymlink,
     ExistingPath,
     JsonParse,
     ReadFile,
@@ -30,6 +31,7 @@ impl Error {
         match self.kind {
             CreateBackup => "Cannot create a backup of ",
             CreateFile => "Cannot create file ",
+            CreateSymlink => "Cannot create symlink ",
             ExistingPath => "Conflict with existing path ",
             JsonParse => "Cannot parse JSON file ",
             ReadFile => "Cannot open/read file ",

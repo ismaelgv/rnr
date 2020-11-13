@@ -104,6 +104,27 @@ pub fn cleanup_paths(paths: &mut PathList, keep_dirs: bool) {
     paths.append(&mut abs_path_map.values().cloned().collect());
 }
 
+
+/// Wrapper to create symlink files without considering the OS explicitly
+pub fn create_symlink(source: &PathBuf, symlink_file: &PathBuf) -> Result<()> {
+    #[cfg(windows)]
+    match ::std::os::windows::fs::symlink_file(source, symlink_file) {
+        Ok(_) => Ok(()),
+        Err(_) => Err(Error {
+            kind: ErrorKind::CreateSymlink,
+            value: Some(symlink_file.to_string_lossy().to_string())
+        })
+    }
+    #[cfg(unix)]
+    match ::std::os::unix::fs::symlink(source, symlink_file) {
+        Ok(_) => Ok(()),
+        Err(_) => Err(Error {
+            kind: ErrorKind::CreateSymlink,
+            value: Some(symlink_file.to_string_lossy().to_string())
+        })
+    }
+}
+
 #[cfg(test)]
 mod test {
     extern crate tempfile;
@@ -172,6 +193,28 @@ mod test {
         assert!(files.contains(&PathBuf::from("test_file_1.txt")));
         assert!(files.contains(&PathBuf::from("test_file_2.txt")));
         assert!(files.contains(&PathBuf::from("test_file_3.txt")));
+    }
+
+    #[test]
+    fn test_create_symlinks() {
+        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
+        println!("Running test in '{:?}'", tempdir);
+        let temp_path = tempdir.path().to_string_lossy().to_string().clone();
+
+        let file = PathBuf::from(format!("{}/test_file", temp_path));
+        fs::File::create(&file).expect("Error creating mock file...");
+
+        let symlink = PathBuf::from(format!("{}/test_link", temp_path));
+        create_symlink(&file, &symlink)
+                .expect("Error creating symlink.");
+
+        let broken_symlink = PathBuf::from(format!("{}/test_broken_link", temp_path));
+        create_symlink(&PathBuf::from("broken_link"), &broken_symlink)
+                .expect("Error creating broken symlink.");
+
+        assert!(file.symlink_metadata().is_ok());
+        assert!(symlink.symlink_metadata().is_ok());
+        assert!(broken_symlink.symlink_metadata().is_ok());
     }
 
     // Generate directory tree and files for recursive tests
@@ -371,20 +414,10 @@ mod test {
         }
         let symlink: PathBuf = [temp_path, "test_link"].iter().collect();
         let broken_symlink: PathBuf = [temp_path, "test_broken_link"].iter().collect();
-        #[cfg(windows)]
-        {
-            ::std::os::windows::fs::symlink_file(&mock_files[0], &symlink)
+        create_symlink(&mock_files[0], &symlink)
                 .expect("Error creating symlink.");
-            ::std::os::windows::fs::symlink_file("broken_symlink", &broken_symlink)
-                .expect("Error creating symlink.");
-        }
-        #[cfg(unix)]
-        {
-            ::std::os::unix::fs::symlink(&mock_files[0], &symlink)
-                .expect("Error creating symlink.");
-            ::std::os::unix::fs::symlink("broken_symlink", &broken_symlink)
-                .expect("Error creating symlink.");
-        }
+        create_symlink(&PathBuf::from("broken_link"), &broken_symlink)
+                .expect("Error creating broken symlink.");
 
         // Create mock_paths from files, symlink, directories, false files and duplicated files
         // Existing files
