@@ -2,7 +2,6 @@ use error::*;
 use fileutils::PathList;
 use path_abs::PathAbs;
 use std::collections::HashMap;
-use std::fs;
 use std::path::PathBuf;
 
 pub type RenameMap = HashMap<PathBuf, PathBuf>;
@@ -98,7 +97,7 @@ fn get_existing_targets(targets: &[PathBuf], rename_map: &RenameMap) -> Result<P
     let sources: PathList = rename_map.values().cloned().collect();
 
     for target in targets {
-        if fs::symlink_metadata(&target).is_ok() {
+        if target.symlink_metadata().is_ok() {
             if !sources.contains(&target) {
                 let source = rename_map.get(target).cloned().unwrap();
                 return Err(Error {
@@ -160,10 +159,7 @@ fn sort_existing_targets(
 mod test {
     extern crate tempfile;
     use super::*;
-    #[cfg(not(windows))]
-    use std::os::unix::fs::symlink;
-    #[cfg(windows)]
-    use std::os::windows::fs::symlink_file;
+    use std::fs;
 
     #[test]
     fn test_existing_targets() {
@@ -225,14 +221,17 @@ mod test {
 
         #[cfg(not(windows))]
         {
-            symlink(&mock_sources[0], &mock_sources[1]).expect("Error creating mock symlink...");
-            symlink("broken_link", &mock_sources[2]).expect("Error creating mock symlink...");
+            ::std::os::unix::fs::symlink(&mock_sources[0], &mock_sources[1])
+                .expect("Error creating mock symlink...");
+            ::std::os::unix::fs::symlink("broken_link", &mock_sources[2])
+                .expect("Error creating mock symlink...");
         }
         #[cfg(windows)]
         {
-            symlink_file(&mock_sources[0], &mock_sources[1])
+            ::std::os::windows::fs::symlink_file(&mock_sources[0], &mock_sources[1])
                 .expect("Error creating mock symlink...");
-            symlink("broken_link", &mock_sources[2]).expect("Error creating mock symlink...");
+            ::std::os::windows::fs::symlink("broken_link", &mock_sources[2])
+                .expect("Error creating mock symlink...");
         }
 
         // Add one 'a' to the beginning of the filename
