@@ -2,6 +2,7 @@ use error::*;
 use fileutils::PathList;
 use path_abs::PathAbs;
 use std::collections::HashMap;
+use std::fs;
 use std::path::PathBuf;
 
 pub type RenameMap = HashMap<PathBuf, PathBuf>;
@@ -97,16 +98,15 @@ fn get_existing_targets(targets: &[PathBuf], rename_map: &RenameMap) -> Result<P
     let sources: PathList = rename_map.values().cloned().collect();
 
     for target in targets {
-        if target.exists() {
+        if fs::symlink_metadata(&target).is_ok() {
             if !sources.contains(&target) {
                 let source = rename_map.get(target).cloned().unwrap();
                 return Err(Error {
                     kind: ErrorKind::ExistingPath,
                     value: Some(format!("{} -> {}", source.display(), target.display())),
                 });
-            } else {
-                existing_targets.push(target.clone());
             }
+            existing_targets.push(target.clone());
         }
     }
     Ok(existing_targets)
@@ -160,7 +160,10 @@ fn sort_existing_targets(
 mod test {
     extern crate tempfile;
     use super::*;
-    use std::fs;
+    #[cfg(not(windows))]
+    use std::os::unix::fs::symlink;
+    #[cfg(windows)]
+    use std::os::windows::fs::symlink_file;
 
     #[test]
     fn test_existing_targets() {
@@ -204,6 +207,51 @@ mod test {
         assert!(existing_targets.contains(&mock_targets[3]));
         assert!(!existing_targets.contains(&mock_targets[4]));
         assert!(!existing_targets.contains(&mock_targets[5]));
+    }
+
+    #[test]
+    fn test_existing_targets_symlinks() {
+        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
+        println!("Running test in '{:?}'", tempdir);
+        let temp_path = tempdir.path().to_str().unwrap();
+
+        let mock_sources: PathList = vec![
+            [temp_path, "a.txt"].iter().collect(),
+            [temp_path, "aa.txt"].iter().collect(),
+            [temp_path, "aaa.txt"].iter().collect(),
+        ];
+        // Create files in the filesystem
+        fs::File::create(&mock_sources[0]).expect("Error creating mock file...");
+
+        #[cfg(not(windows))]
+        {
+            symlink(&mock_sources[0], &mock_sources[1]).expect("Error creating mock symlink...");
+            symlink("broken_link", &mock_sources[2]).expect("Error creating mock symlink...");
+        }
+        #[cfg(windows)]
+        {
+            symlink_file(&mock_sources[0], &mock_sources[1])
+                .expect("Error creating mock symlink...");
+            symlink("broken_link", &mock_sources[2]).expect("Error creating mock symlink...");
+        }
+
+        // Add one 'a' to the beginning of the filename
+        let mock_targets: PathList = vec![
+            [temp_path, "aa.txt"].iter().collect(),
+            [temp_path, "aaa.txt"].iter().collect(),
+            [temp_path, "aaaa.txt"].iter().collect(),
+        ];
+        let mock_rename_map: RenameMap = mock_targets
+            .clone()
+            .into_iter()
+            .zip(mock_sources.into_iter())
+            .collect();
+        let existing_targets = get_existing_targets(&mock_targets, &mock_rename_map)
+            .expect("Error getting existing targets.");
+
+        assert!(existing_targets.contains(&mock_targets[0]));
+        assert!(existing_targets.contains(&mock_targets[1]));
+        assert!(!existing_targets.contains(&mock_targets[2]));
     }
 
     #[test]
