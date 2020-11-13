@@ -59,7 +59,7 @@ pub fn get_unique_filename(path: &PathBuf, suffix: &str) -> PathBuf {
     unique_name.set_file_name(&base_name);
 
     let mut index = 0;
-    while unique_name.exists() {
+    while unique_name.symlink_metadata().is_ok() {
         index += 1;
         unique_name.set_file_name(format!("{}.{}", base_name, index));
     }
