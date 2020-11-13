@@ -105,6 +105,7 @@ pub fn cleanup_paths(paths: &mut PathList, keep_dirs: bool) {
 }
 
 /// Wrapper to create symlink files without considering the OS explicitly
+#[allow(dead_code)]
 pub fn create_symlink(source: &PathBuf, symlink_file: &PathBuf) -> Result<()> {
     #[cfg(windows)]
     match ::std::os::windows::fs::symlink_file(source, symlink_file) {
