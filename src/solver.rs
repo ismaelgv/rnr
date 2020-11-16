@@ -159,8 +159,8 @@ fn sort_existing_targets(
 mod test {
     extern crate tempfile;
     use super::*;
-    use std::fs;
     use fileutils::create_symlink;
+    use std::fs;
 
     #[test]
     fn test_existing_targets() {
@@ -220,10 +220,9 @@ mod test {
         // Create files in the filesystem
         fs::File::create(&mock_sources[0]).expect("Error creating mock file...");
         // Create symlinks
-        create_symlink(&mock_sources[0], &mock_sources[1])
-                .expect("Error creating symlink.");
+        create_symlink(&mock_sources[0], &mock_sources[1]).expect("Error creating symlink.");
         create_symlink(&PathBuf::from("broken_link"), &mock_sources[2])
-                .expect("Error creating broken symlink.");
+            .expect("Error creating broken symlink.");
 
         // Add one 'a' to the beginning of the filename
         let mock_targets: PathList = vec![
