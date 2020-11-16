@@ -125,11 +125,41 @@ pub fn create_symlink(source: &PathBuf, symlink_file: &PathBuf) -> Result<()> {
     }
 }
 
+/// Check if the paths references the same file. This is useful in case insensitive systems.
+pub fn is_same_file(source: &PathBuf, target: &PathBuf) -> bool {
+    // Only perform a more exhaustive check for platform that support case insensitive and case
+    // preserving file systems by default.
+    #[cfg(any(windows, target_os = "macos"))]
+    {
+        let source_metadata = fs::File::open(&source).unwrap().metadata().unwrap();
+        let target_metadata = fs::File::open(&target).unwrap().metadata().unwrap();
+        let low_source = source.to_string_lossy().to_string().to_lowercase();
+        let low_target = source.to_string_lossy().to_string().to_lowercase();
+
+        if low_source != low_target {
+            return false;
+        } else if source_metadata.file_type() != target_metadata.file_type() {
+            return false;
+        } else if source_metadata.len() != target_metadata.len() {
+            return false;
+        } else if source_metadata.created().unwrap() != target_metadata.created().unwrap() {
+            return false;
+        } else if source_metadata.modified().unwrap() != target_metadata.modified().unwrap() {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    source == target
+}
+
 #[cfg(test)]
 mod test {
     extern crate tempfile;
     use super::*;
     use std::fs;
+    use std::io::prelude::*;
 
     #[test]
     fn backup() {
@@ -221,6 +251,50 @@ mod test {
         assert!(file.symlink_metadata().is_ok());
         assert!(symlink.symlink_metadata().is_ok());
         assert!(broken_symlink.symlink_metadata().is_ok());
+    }
+
+    #[test]
+    fn test_same_file() {
+        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
+        println!("Running test in '{:?}'", tempdir);
+        let temp_path = tempdir.path().to_str().unwrap();
+
+        let mock_files: PathList = vec![
+            [temp_path, "test_FILE"].iter().collect(),
+            [temp_path, "test_File"].iter().collect(),
+            [temp_path, "test_file"].iter().collect(),
+        ];
+
+        let other_file = PathBuf::from(format!("{}/other_file", temp_path));
+
+        for file in &mock_files {
+            fs::File::create(&file)
+                .expect("Error creating mock file...")
+                .write_all(b"Hello, world!")
+                .expect("Error writting in the mock file...");
+        }
+
+        fs::File::create(&other_file)
+            .expect("Error creating mock file...")
+            .write_all(b"Hello, world!")
+            .expect("Error writting in the mock file...");
+
+        #[cfg(any(windows, target_os = "macos"))]
+        {
+            assert!(is_same_file(&mock_files[0], &mock_files[0]));
+            assert!(is_same_file(&mock_files[0], &mock_files[1]));
+            assert!(is_same_file(&mock_files[0], &mock_files[2]));
+            assert!(is_same_file(&mock_files[1], &mock_files[2]));
+            assert!(!is_same_file(&mock_files[0], &other_file));
+        }
+        #[cfg(not(any(windows, target_os = "macos")))]
+        {
+            assert!(is_same_file(&mock_files[0], &mock_files[0]));
+            assert!(!is_same_file(&mock_files[0], &mock_files[1]));
+            assert!(!is_same_file(&mock_files[0], &mock_files[2]));
+            assert!(!is_same_file(&mock_files[1], &mock_files[2]));
+            assert!(!is_same_file(&mock_files[0], &other_file));
+        }
     }
 
     // Generate directory tree and files for recursive tests
