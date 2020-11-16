@@ -134,7 +134,7 @@ pub fn is_same_file(source: &PathBuf, target: &PathBuf) -> bool {
         let source_metadata = fs::File::open(&source).unwrap().metadata().unwrap();
         let target_metadata = fs::File::open(&target).unwrap().metadata().unwrap();
         let low_source = source.to_string_lossy().to_string().to_lowercase();
-        let low_target = source.to_string_lossy().to_string().to_lowercase();
+        let low_target = target.to_string_lossy().to_string().to_lowercase();
 
         if low_source != low_target {
             return false;
