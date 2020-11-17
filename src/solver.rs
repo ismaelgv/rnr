@@ -1,5 +1,5 @@
 use error::*;
-use fileutils::PathList;
+use fileutils::{is_same_file, PathList};
 use path_abs::PathAbs;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -90,6 +90,7 @@ pub fn revert_operations(operations: &[Operation]) -> Result<Operations> {
         .collect();
     Ok(inverse_operations)
 }
+
 /// Check if targets exist in the filesystem and return a list of them. If they exist, these
 /// targets must be contained in the original file list for the renaming problem to be solvable.
 fn get_existing_targets(targets: &[PathBuf], rename_map: &RenameMap) -> Result<PathList> {
@@ -100,6 +101,13 @@ fn get_existing_targets(targets: &[PathBuf], rename_map: &RenameMap) -> Result<P
         if target.symlink_metadata().is_ok() {
             if !sources.contains(&target) {
                 let source = rename_map.get(target).cloned().unwrap();
+
+                // The source and the target may be the same file in some conditions like case
+                // insensitive but case-preserving file systems.
+                if is_same_file(&source, &target) {
+                    continue;
+                }
+
                 return Err(Error {
                     kind: ErrorKind::ExistingPath,
                     value: Some(format!("{} -> {}", source.display(), target.display())),
