@@ -136,19 +136,11 @@ pub fn is_same_file(source: &PathBuf, target: &PathBuf) -> bool {
         let low_source = source.to_string_lossy().to_string().to_lowercase();
         let low_target = target.to_string_lossy().to_string().to_lowercase();
 
-        if low_source != low_target {
-            return false;
-        } else if source_metadata.file_type() != target_metadata.file_type() {
-            return false;
-        } else if source_metadata.len() != target_metadata.len() {
-            return false;
-        } else if source_metadata.created().unwrap() != target_metadata.created().unwrap() {
-            return false;
-        } else if source_metadata.modified().unwrap() != target_metadata.modified().unwrap() {
-            return false;
-        } else {
-            return true;
-        }
+        return low_source == low_target
+            && source_metadata.file_type() == target_metadata.file_type()
+            && source_metadata.len() == target_metadata.len()
+            && source_metadata.created().unwrap() == target_metadata.created().unwrap()
+            && source_metadata.modified().unwrap() == target_metadata.modified().unwrap();
     }
 
     source == target
