@@ -1,4 +1,5 @@
 # RnR
+[![Build Status](https://github.com/ChuckDaniels87/rnr/workflows/RnR/badge.svg)](https://github.com/ChuckDaniels87/rnr/actions?query=workflow%3ARnR)
 [![Build Status](https://travis-ci.org/ChuckDaniels87/rnr.svg?branch=master)](https://travis-ci.org/ChuckDaniels87/rnr)
 [![Build status](https://ci.appveyor.com/api/projects/status/97e28mxlakxbeqex/branch/master?svg=true)](https://ci.appveyor.com/project/ChuckDaniels87/rnr/branch/master)
 [![Crates.io](https://img.shields.io/crates/v/rnr.svg)](https://crates.io/crates/rnr)
