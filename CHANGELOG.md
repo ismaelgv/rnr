@@ -1,3 +1,13 @@
+# v0.3.0 (2020-11-21)
+### Added
+* Support for case-insensitive case-preserving file systems for MacOS and
+  Windows.
+* Check if the file is actually the same in case of rename conflict.
+
+### Changed
+* Include symlinks in existing file checks.
+* Include symlinks when generating an unique file name.
+
 # v0.2.4 (2020-08-01)
 ### Added
 * Add diff to operation output.
