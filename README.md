@@ -1,5 +1,6 @@
-
-<img src="https://user-images.githubusercontent.com/8478202/107156909-59030580-6981-11eb-9374-95959b6ec067.png" width="300" height="300">
+<p align="center">
+<img src="https://user-images.githubusercontent.com/8478202/107156909-59030580-6981-11eb-9374-95959b6ec067.png" width="350" height="350">
+</p>
 
 ---
 [![Build Status](https://github.com/ChuckDaniels87/rnr/workflows/RnR/badge.svg)](https://github.com/ChuckDaniels87/rnr/actions?query=workflow%3ARnR)
