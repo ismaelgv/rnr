@@ -1,16 +1,24 @@
 <p align="center">
-<img src="https://user-images.githubusercontent.com/8478202/107156909-59030580-6981-11eb-9374-95959b6ec067.png" width="350" height="350">
+<img src="https://user-images.githubusercontent.com/8478202/107156909-59030580-6981-11eb-9374-95959b6ec067.png" width="350" height="350" alt="rnr">
 </p>
 
----
-[![Build Status](https://github.com/ChuckDaniels87/rnr/workflows/RnR/badge.svg)](https://github.com/ChuckDaniels87/rnr/actions?query=workflow%3ARnR)
-[![Build Status](https://travis-ci.org/ChuckDaniels87/rnr.svg?branch=master)](https://travis-ci.org/ChuckDaniels87/rnr)
-[![Build status](https://ci.appveyor.com/api/projects/status/97e28mxlakxbeqex/branch/master?svg=true)](https://ci.appveyor.com/project/ChuckDaniels87/rnr/branch/master)
-[![Crates.io](https://img.shields.io/crates/v/rnr.svg)](https://crates.io/crates/rnr)
-[![License](https://img.shields.io/crates/l/rnr.svg)](https://github.com/ChuckDaniels87/rnr/blob/master/LICENSE)
+<p align="center">
+    <a href="https://github.com/ChuckDaniels87/rnr/actions?query=workflow%3ARnR">
+        <img src="https://github.com/ChuckDaniels87/rnr/workflows/RnR/badge.svg" alt="Build Status"></a>
+    <a href="https://travis-ci.org/ChuckDaniels87/rnr">
+        <img src="https://travis-ci.org/ChuckDaniels87/rnr.svg?branch=master" alt="Travis Build Status"></a>
+    <a href="https://ci.appveyor.com/project/ChuckDaniels87/rnr/branch/master">
+        <img src="https://ci.appveyor.com/api/projects/status/97e28mxlakxbeqex/branch/master?svg=true" alt="App Veyor Build Status"></a>
+    <a href="https://crates.io/crates/rnr">
+        <img src="https://img.shields.io/crates/v/rnr.svg" alt="Crates.io"></a>
+    <a href="https://github.com/ChuckDaniels87/rnr/blob/master/LICENSE">
+        <img src="https://img.shields.io/crates/l/rnr.svg" alt="License"></a>
+</p>
 
-*RnR* is a command-line tool to **securely rename** multiple files and directories that
-supports regular expressions.
+<p align="center">
+    <b>RnR</b> is a command-line tool to <b>securely rename</b> multiple files
+    and directories that supports regular expressions.
+</p>
 
 ## Features
 * Batch rename files and directories.
