@@ -318,7 +318,7 @@ rnr -f -r -d 2 file renamed ./
 #### Recursive rename including directories and hidden files
 `rnr` ignore hidden files by default to speed up the operations and avoid problems with some particular directories like `.git/` or `.local/`. You can include hidden files passing `-x` option. Also, you can use include directories `-D` option with `-r` too.
 ```sh
-rnr -f -r 
+rnr -f -r -D -x foo bar
 ```
 *Original tree*
 ```
