@@ -45,7 +45,7 @@ executable and other additional content such as completion files (*Bash*, *Zsh*,
 *fish* and *PowerShell*).
 
 ### Arch Linux
-A package is available in the AUR 
+A package is available in the AUR
 ([`rnr`](https://aur.archlinux.org/packages/rnr/)) to install latest version of
 *RnR* on Arch Linux.
 
@@ -218,7 +218,7 @@ find . -type f +mtime 1 | xargs rnr -f file renamed
 
 ##### Read list of files from a file
 ```sh
-cat file_list.txt | xargs rnr -f file rename 
+cat file_list.txt | xargs rnr -f file rename
 ```
 
 `file_list.txt` content:
@@ -392,7 +392,7 @@ rnr -f -b file renamed ./*
 More info about regex used [in the `regex` package](https://docs.rs/regex).
 #### Replace extensions
 ```
-rnr -f '\..*$' '.txt' ./* 
+rnr -f '\..*$' '.txt' ./*
 ```
 *Original tree*
 ```
