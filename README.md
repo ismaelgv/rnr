@@ -133,7 +133,7 @@ SUBCOMMANDS:
     * [Capture groups](#capture-groups)
     * [Capture several named groups and swap them](#capture-several-named-groups-and-swap-them)
 
-*__WINDOWS NOTE:__ In the examples that use `*`, you need to expand the wildcard in PowerShell, for example: `rnr a b (Get-Item ./*)`. This is not supported in `cmd.exe`.*
+__WINDOWS NOTE:__ In the examples that use `*`, you need to expand the wildcard in PowerShell, for example: `rnr a b (Get-Item ./*)`. This is not supported in `cmd.exe`.
 
 ### Rename a list of files
 You can pass a list of files to be renamed as arguments:
