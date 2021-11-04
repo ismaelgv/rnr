@@ -8,8 +8,8 @@ supports regular expressions
 """
 categories = ["command-line-utilities"]
 license = "MIT"
-homepage = "https://github.com/ChuckDaniels87/rnr"
-repository = "https://github.com/ChuckDaniels87/rnr"
+homepage = "https://github.com/ismaelgv/rnr"
+repository = "https://github.com/ismaelgv/rnr"
 build = "build.rs"
 readme = "README.md"
 
@@ -31,5 +31,5 @@ difference = "2.0.0"
 clap = "~2.32"
 
 [badges]
-travis-ci = { repository = "ChuckDaniels87/rnr", branch = "master" }
-appveyor = { repository = "ChuckDaniels87/rnr", branch = "master" }
+travis-ci = { repository = "ismaelgv/rnr", branch = "master" }
+appveyor = { repository = "ismaelgv/rnr", branch = "master" }

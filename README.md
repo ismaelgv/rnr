@@ -3,15 +3,11 @@
 </p>
 
 <p align="center">
-    <a href="https://github.com/ChuckDaniels87/rnr/actions?query=workflow%3ARnR">
-        <img src="https://github.com/ChuckDaniels87/rnr/workflows/RnR/badge.svg" alt="Build Status"></a>
-    <a href="https://travis-ci.org/ChuckDaniels87/rnr">
-        <img src="https://travis-ci.org/ChuckDaniels87/rnr.svg?branch=master" alt="Travis Build Status"></a>
-    <a href="https://ci.appveyor.com/project/ChuckDaniels87/rnr/branch/master">
-        <img src="https://ci.appveyor.com/api/projects/status/97e28mxlakxbeqex/branch/master?svg=true" alt="App Veyor Build Status"></a>
+    <a href="https://github.com/ismaelgv/rnr/actions?query=workflow%3ARnR">
+        <img src="https://github.com/ismaelgv/rnr/workflows/RnR/badge.svg" alt="Build Status"></a>
     <a href="https://crates.io/crates/rnr">
         <img src="https://img.shields.io/crates/v/rnr.svg" alt="Crates.io"></a>
-    <a href="https://github.com/ChuckDaniels87/rnr/blob/master/LICENSE">
+    <a href="https://github.com/ismaelgv/rnr/blob/master/LICENSE">
         <img src="https://img.shields.io/crates/l/rnr.svg" alt="License"></a>
 </p>
 
@@ -39,7 +35,7 @@
 
 ### GitHub Releases
 You can download binaries from [latest release
-page](https://github.com/ChuckDaniels87/rnr/releases), choose the compressed
+page](https://github.com/ismaelgv/rnr/releases), choose the compressed
 file corresponding to your platform. These compressed files contain the
 executable and other additional content such as completion files (*Bash*, *Zsh*,
 *fish* and *PowerShell*).
@@ -54,7 +50,7 @@ A package is available in the AUR
 
 ### From git repository
 ```sh
-git clone https://github.com/ChuckDaniels87/rnr .
+git clone https://github.com/ismaelgv/rnr .
 cargo install
 ```
 ### From Crates.io
@@ -113,9 +109,6 @@ SUBCOMMANDS:
 * Dump all operations into a file in force mode. This dump file can be used to
   undo these operations from `from-file` subcommand.
 * Number of replacements set to one.
-
-## Demo
-[![Demo](https://cdn.rawgit.com/ChuckDaniels87/b0607fdaa44c6201cde398b6a9e23e4e/raw/59d43365d15c55d9c259edd29292609c06de21f7/rnr-demo.svg)](https://cdn.rawgit.com/ChuckDaniels87/b0607fdaa44c6201cde398b6a9e23e4e/raw/f29d84760f4225dce74bf81052180e12a287b892/rnr-demo.svg)
 
 ## Examples
 * [Rename a list of files](#rename-a-list-of-files)
