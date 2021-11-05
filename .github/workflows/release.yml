@@ -76,6 +76,7 @@ jobs:
           rm -r "${tempdir}"
 
       - name: Store artifacts
+        run: echo TODO
 
   publish-release:
     name: Build a release artifacts
@@ -88,8 +89,10 @@ jobs:
           echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
 
       - name: Fetch artifacts
+        run: echo TODO
 
       - name: Publish new release
+        run: echo TODO
       #  uses: softprops/action-gh-release@v1
       #  with:
       #    name: ${{ steps.version.outputs.version }}
