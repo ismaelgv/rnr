@@ -1,0 +1,31 @@
+name: RnR
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  verify:
+    name: Verify the project
+    if: startsWith(github.ref, 'refs/head/') # Only commits
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macOS-latest, windows-latest]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build project
+        shell: bash
+        run: cargo build --verbose
+
+      - name: Run tests
+        shell: bash
+        run: cargo test --verbose

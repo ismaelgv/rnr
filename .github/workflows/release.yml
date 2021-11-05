@@ -1,0 +1,97 @@
+name: Release
+
+on:
+  push:
+    tags: ["*"]
+
+env:
+  PROJECT_NAME: rnr
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-artifacts:
+    name: Build a release artifacts
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - x86_64-unknown-linux-gnu
+          - x86_64-unknown-linux-musl
+          - aarch64-unknown-linux-gnu
+          - armv7-unknown-linux-gnueabihf
+          - x86_64-pc-windows-gnu
+          - x86_64-pc-windows-msvc
+          - x86_64-apple-darwin
+    env:
+      BUILD_DIR: "build"
+      TARGET: ${{ matrix.target }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Get the version
+        id: version
+        shell: bash
+        run: |
+          echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
+
+      - name: Configure toolchain
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          target: ${{ env.TARGET }}
+
+      - name: Build
+        shell: bash
+        run: |
+          cargo build --target=${TARGET} --release --verbose
+
+      - name: Create package
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          out_dir=${GITHUB_WORKSPACE}
+          package_name="${PROJECT_NAME}-${VERSION}-${TARGET}"
+          deploy_dir="${BUILD_DIR}/${package_name}"
+
+          # Create deployment directory
+          mkdir "${deploy_dir}"
+          mkdir "${deploy_dir}/completion"
+
+          # Copy files
+          cp "target/${TARGET}/release/${PROJECT_NAME}" "${deploy_dir}/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"_rnr" "${deploy_dir}/completion/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr.bash" "${deploy_dir}/completion/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr.fish" "${deploy_dir}/completion/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"_rnr.ps1" "${deploy_dir}/completion/"
+          cp README.md "${deploy_dir}"
+          cp LICENSE "${deploy_dir}"
+
+          # Archive
+          pushd "${tempdir}"
+          tar czf "${out_dir}/${package_name}.tar.gz" "${package_name}"/*
+          popd
+          rm -r "${tempdir}"
+
+      - name: Store artifacts
+
+  publish-release:
+    name: Build a release artifacts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the version
+        id: version
+        shell: bash
+        run: |
+          echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
+
+      - name: Fetch artifacts
+
+      - name: Publish new release
+      #  uses: softprops/action-gh-release@v1
+      #  with:
+      #    name: ${{ steps.version.outputs.version }}
+      #    artifacts: ""
+      #    body: ""
