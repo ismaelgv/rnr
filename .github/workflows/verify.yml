@@ -12,7 +12,6 @@ env:
 jobs:
   verify:
     name: Verify the project
-    if: startsWith(github.ref, 'refs/head/') # Only commits
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
