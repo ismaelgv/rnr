@@ -39,6 +39,7 @@ jobs:
       - name: Configure toolchain
         uses: actions-rs/toolchain@v1
         with:
+          toolchain: stable
           profile: minimal
           target: ${{ env.TARGET }}
 
@@ -79,7 +80,7 @@ jobs:
         run: echo TODO
 
   publish-release:
-    name: Build a release artifacts
+    name: Publish a new release
     runs-on: ubuntu-latest
     steps:
       - name: Get the version
