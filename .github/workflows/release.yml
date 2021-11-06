@@ -50,7 +50,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Get the version
+      - name: Get version
         id: version
         shell: bash
         run: |
@@ -130,5 +130,6 @@ jobs:
       - name: Publish new release
         uses: softprops/action-gh-release@v1
         with:
-          name: ${{ steps.version.outputs.version }}
+          name: "Release ${{ steps.version.outputs.version }}"
           files: "${{ env.ARTIFACT_NAME }}/*"
+          draft: true
