@@ -7,6 +7,7 @@ on:
 env:
   PROJECT_NAME: rnr
   CARGO_TERM_COLOR: always
+  ARTIFACT_NAME: artifacts
 
 jobs:
   build-artifacts:
@@ -42,6 +43,7 @@ jobs:
           toolchain: stable
           profile: minimal
           target: ${{ env.TARGET }}
+          override: true
 
       - name: Build
         shell: bash
@@ -49,39 +51,46 @@ jobs:
           cargo build --target=${TARGET} --release --verbose
 
       - name: Create package
+        id: package
         shell: bash
         env:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          out_dir=${GITHUB_WORKSPACE}
           package_name="${PROJECT_NAME}-${VERSION}-${TARGET}"
+          ext=".tag.gz"
           deploy_dir="${BUILD_DIR}/${package_name}"
 
           # Create deployment directory
-          mkdir "${deploy_dir}"
-          mkdir "${deploy_dir}/completion"
+          mkdir -p "${deploy_dir}"
+          mkdir -p "${deploy_dir}/completion"
 
           # Copy files
-          cp "target/${TARGET}/release/${PROJECT_NAME}" "${deploy_dir}/"
-          cp "target/${TARGET}/release/build/rnr"-*/out/"_rnr" "${deploy_dir}/completion/"
-          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr.bash" "${deploy_dir}/completion/"
-          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr.fish" "${deploy_dir}/completion/"
-          cp "target/${TARGET}/release/build/rnr"-*/out/"_rnr.ps1" "${deploy_dir}/completion/"
+          cp "target/${TARGET}/release/${PROJECT_NAME}"             "${deploy_dir}/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"_rnr"      "${deploy_dir}/completion/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr.bash"  "${deploy_dir}/completion/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr.fish"  "${deploy_dir}/completion/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"_rnr.ps1"  "${deploy_dir}/completion/"
           cp README.md "${deploy_dir}"
           cp LICENSE "${deploy_dir}"
 
           # Archive
           pushd "${tempdir}"
-          tar czf "${out_dir}/${package_name}.tar.gz" "${package_name}"/*
+          tar czf "${GITHUB_WORKSPACE}/${package_name}${ext}" "${package_name}"/*
           popd
           rm -r "${tempdir}"
 
+          echo ::set-output name=name::${package_name}${ext}
+
       - name: Store artifacts
-        run: echo TODO
+        uses: actions/upload-artifact@v2
+        with:
+          name: artifacts
+          path: ${steps.package.outputs.name}
 
   publish-release:
     name: Publish a new release
     runs-on: ubuntu-latest
+    needs: build-artifacts
     steps:
       - name: Get the version
         id: version
@@ -90,12 +99,12 @@ jobs:
           echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
 
       - name: Fetch artifacts
-        run: echo TODO
+        uses: actions/download-artifact@v2
+        with:
+          name: artifacts
 
       - name: Publish new release
-        run: echo TODO
-      #  uses: softprops/action-gh-release@v1
-      #  with:
-      #    name: ${{ steps.version.outputs.version }}
-      #    artifacts: ""
-      #    body: ""
+        uses: softprops/action-gh-release@v1
+        with:
+          name: ${{ steps.version.outputs.version }}
+          artifacts: ${{ env.ARTIFACT_NAME }}
