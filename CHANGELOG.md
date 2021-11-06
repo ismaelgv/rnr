@@ -1,3 +1,8 @@
+# v0.3.1 (2021-11-06)
+### Changed
+* Update references from `ChuckDaniels87/rnr` to `ismaelgv/rnr`.
+* Migrate full CI to GitHub Actions.
+
 # v0.3.0 (2020-11-21)
 ### Added
 * Support for case-insensitive case-preserving file systems for MacOS and
