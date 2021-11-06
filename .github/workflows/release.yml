@@ -77,10 +77,9 @@ jobs:
         env:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
-          workflow_dir=$(pwd) # Avoid ${GITHUB_WORKFLOW} since Windows mixes path styles.
-          package_name="${PROJECT_NAME}-${VERSION}-${TARGET}"
-          ext=".tag.gz"
-          deploy_dir="${BUILD_DIR}/${package_name}"
+          base_name="${PROJECT_NAME}-${VERSION}-${TARGET}"
+          package_name="${package_name}.tar.gz"
+          deploy_dir="${BUILD_DIR}/${base_name}"
 
           # Create deployment directory
           mkdir -p "${deploy_dir}"
@@ -96,12 +95,9 @@ jobs:
           cp LICENSE "${deploy_dir}"
 
           # Archive
-          pushd "${BUILD_DIR}"
-          tar czf "${workflow_dir}/${package_name}${ext}" "${package_name}"/*
-          popd
-          rm -r "${BUILD_DIR}"
+          tar czf "${package_name}" -C "${BUILD_DIR}" "${base_name}"/*
 
-          echo ::set-output name=name::${package_name}${ext}
+          echo ::set-output name=name::${package_name}
 
       - name: Store artifacts
         uses: actions/upload-artifact@v2
@@ -130,4 +126,4 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           name: ${{ steps.version.outputs.version }}
-          artifacts: "${{ env.ARTIFACT_NAME }}/*"
+          files: "${{ env.ARTIFACT_NAME }}/*"
