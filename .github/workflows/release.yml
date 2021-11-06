@@ -50,7 +50,7 @@ jobs:
         with:
           use-cross: true
           command: build
-          args:: --target=${TARGET} --release --verbose
+          args: --target=${{ env.TARGET }} --release --verbose
 
       - name: Create package
         id: package
