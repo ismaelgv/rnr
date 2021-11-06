@@ -78,7 +78,6 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           base_name="${PROJECT_NAME}-${VERSION}-${TARGET}"
-          package_name="${package_name}.tar.gz"
           deploy_dir="${BUILD_DIR}/${base_name}"
 
           # Create deployment directory
@@ -95,7 +94,13 @@ jobs:
           cp LICENSE "${deploy_dir}"
 
           # Archive
-          tar czf "${package_name}" -C "${BUILD_DIR}" "${base_name}"/*
+          if [[ "${TARGET}" == *"-windows-"* ]]; then
+            package_name="${base_name}.zip"
+            7z a "${package_name}" "./${BUILD_DIR}/${base_name}"
+          else
+            package_name="${base_name}.tar.gz"
+            tar czf "${package_name}" -C "${BUILD_DIR}" "${base_name}"
+          fi
 
           echo ::set-output name=name::${package_name}
 
