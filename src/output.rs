@@ -116,10 +116,11 @@ impl Printer {
             return;
         }
 
-        let source_parent = source.parent().unwrap().to_string_lossy().to_string();
-        let source_name = source.file_name().unwrap().to_string_lossy().to_string();
-        let target_parent = target.parent().unwrap().to_string_lossy().to_string();
+        let mut source_parent = source.parent().unwrap().to_string_lossy().to_string();
+        let mut source_name = source.file_name().unwrap().to_string_lossy().to_string();
+        let mut target_parent = target.parent().unwrap().to_string_lossy().to_string();
         let mut target_name = target.file_name().unwrap().to_string_lossy().to_string();
+
 
         // Avoid diffing if not coloring output
         if self.mode == PrinterMode::Color {
@@ -131,11 +132,20 @@ impl Printer {
             )
         }
 
+        source_name = self.colors.source.paint(&source_name).to_string();
+
+        if source_parent != "" {
+            source_parent = self.colors.source.paint(format!("{}/", source_parent)).to_string();
+        }
+        if target_parent != "" {
+            target_parent = self.colors.target.paint(format!("{}/", target_parent)).to_string();
+        }
+
         self.print(&format!(
             "{}{} -> {}{}",
-            self.colors.source.paint(format!("{}/", source_parent)),
-            self.colors.source.paint(&source_name),
-            self.colors.target.paint(format!("{}/", target_parent)),
+            source_parent,
+            source_name,
+            target_parent,
             target_name
         ));
     }
