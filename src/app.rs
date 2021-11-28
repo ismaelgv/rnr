@@ -1,8 +1,98 @@
 use clap::{App, AppSettings, Arg, SubCommand};
 use std::ffi::{OsStr, OsString};
 
+/// From file subcommand name.
+const FROM_FILE_SUBCOMMAND: &str = "from-file";
+
+/// To ASCII subcommand name.
+const TO_ASCII_SUBCOMMAND: &str = "to-ascii";
+
+/// Application commands
+#[derive(Debug, PartialEq)]
+pub enum AppCommand {
+    Root,
+    FromFile,
+    ToASCII,
+}
+
+impl AppCommand {
+    pub fn from_str(name: &str) -> Result<AppCommand, String> {
+        match name {
+            "" => Ok(AppCommand::Root),
+            FROM_FILE_SUBCOMMAND => Ok(AppCommand::FromFile),
+            TO_ASCII_SUBCOMMAND => Ok(AppCommand::ToASCII),
+            _ => Err(format!("Non-registered subcommand '{}'", name)),
+        }
+    }
+}
+
 /// Create application using clap. It sets all options and command-line help.
 pub fn create_app<'a>() -> App<'a, 'a> {
+    // These commons args are shared by all commands.
+    let common_args = [
+        Arg::with_name("dry-run")
+            .long("dry-run")
+            .short("n")
+            .help("Only show what would be done (default mode)")
+            .conflicts_with("force"),
+        Arg::with_name("force")
+            .long("force")
+            .short("f")
+            .help("Make actual changes to files"),
+        Arg::with_name("backup")
+            .long("backup")
+            .short("b")
+            .help("Generate file backups before renaming"),
+        Arg::with_name("silent")
+            .long("silent")
+            .short("s")
+            .help("Do not print any information"),
+        Arg::with_name("color")
+            .long("color")
+            .possible_values(&["always", "auto", "never"])
+            .default_value("auto")
+            .help("Set color output mode"),
+        Arg::with_name("dump")
+            .long("dump")
+            .help("Force dumping operations into a file even in dry-run mode")
+            .conflicts_with("no-dump"),
+        Arg::with_name("no-dump")
+            .long("no-dump")
+            .help("Do not dump operations into a file")
+            .conflicts_with("dump"),
+    ];
+
+    // Path related arguments.
+    let path_args = [
+        Arg::with_name("PATH(S)")
+            .help("Target paths")
+            .validator_os(is_valid_string)
+            .multiple(true)
+            .required(true),
+        Arg::with_name("include-dirs")
+            .long("include-dirs")
+            .short("D")
+            .group("TEST")
+            .help("Rename matching directories"),
+        Arg::with_name("recursive")
+            .long("recursive")
+            .short("r")
+            .help("Recursive mode"),
+        Arg::with_name("max-depth")
+            .requires("recursive")
+            .long("max-depth")
+            .short("d")
+            .takes_value(true)
+            .value_name("LEVEL")
+            .validator(is_integer)
+            .help("Set max depth in recursive mode"),
+        Arg::with_name("hidden")
+            .requires("recursive")
+            .long("hidden")
+            .short("x")
+            .help("Include hidden files and directories"),
+    ];
+
     App::new(crate_name!())
         .setting(AppSettings::SubcommandsNegateReqs)
         .version(crate_version!())
@@ -23,93 +113,6 @@ pub fn create_app<'a>() -> App<'a, 'a> {
                 .index(2),
         )
         .arg(
-            Arg::with_name("PATH(S)")
-                .help("Target paths")
-                .validator_os(is_valid_string)
-                .multiple(true)
-                .required(true),
-        )
-        .arg(
-            Arg::with_name("dry-run")
-                .long("dry-run")
-                .short("n")
-                .help("Only show what would be done (default mode)")
-                .global(true)
-                .conflicts_with("force"),
-        )
-        .arg(
-            Arg::with_name("force")
-                .long("force")
-                .short("f")
-                .global(true)
-                .help("Make actual changes to files"),
-        )
-        .arg(
-            Arg::with_name("backup")
-                .long("backup")
-                .short("b")
-                .global(true)
-                .help("Generate file backups before renaming"),
-        )
-        .arg(
-            Arg::with_name("include-dirs")
-                .long("include-dirs")
-                .short("D")
-                .help("Rename matching directories"),
-        )
-        .arg(
-            Arg::with_name("recursive")
-                .long("recursive")
-                .short("r")
-                .help("Recursive mode"),
-        )
-        .arg(
-            Arg::with_name("max-depth")
-                .requires("recursive")
-                .long("max-depth")
-                .short("d")
-                .takes_value(true)
-                .value_name("LEVEL")
-                .validator(is_integer)
-                .help("Set max depth in recursive mode"),
-        )
-        .arg(
-            Arg::with_name("hidden")
-                .requires("recursive")
-                .long("hidden")
-                .short("x")
-                .help("Include hidden files and directories"),
-        )
-        .arg(
-            Arg::with_name("silent")
-                .long("silent")
-                .short("s")
-                .global(true)
-                .help("Do not print any information"),
-        )
-        .arg(
-            Arg::with_name("color")
-                .long("color")
-                .possible_values(&["always", "auto", "never"])
-                .default_value("auto")
-                .global(true)
-                .help("Set color output mode"),
-        )
-        .arg(
-            Arg::with_name("dump")
-                .long("dump")
-                .help("Force dumping operations into a file even in dry-run mode")
-                .global(true)
-                .conflicts_with("no-dump"),
-        )
-        .arg(
-            Arg::with_name("no-dump")
-                .long("no-dump")
-                .help("Do not dump operations into a file")
-                .global(true)
-                .conflicts_with("dump"),
-        )
-        .arg(
             Arg::with_name("replace-limit")
                 .long("replace-limit")
                 .short("l")
@@ -119,24 +122,31 @@ pub fn create_app<'a>() -> App<'a, 'a> {
                 .validator(is_integer)
                 .help("Limit of replacements, all matches if set to 0"),
         )
-        .subcommand(
-            SubCommand::with_name("from-file")
-                .arg(
-                    Arg::with_name("DUMPFILE")
-                        .takes_value(true)
-                        .required(true)
-                        .value_name("DUMPFILE")
-                        .validator_os(is_valid_string)
-                        .index(1),
-                )
-                .arg(
-                    Arg::with_name("undo")
-                        .long("undo")
-                        .short("u")
-                        .help("Undo the operations from the dump file"),
-                )
-                .about("Read operations from a dump file"),
+        .args(&common_args)
+        .args(&path_args)
+        .subcommand(SubCommand::with_name(FROM_FILE_SUBCOMMAND)
+            .args(&common_args)
+            .arg(
+                Arg::with_name("DUMPFILE")
+                    .takes_value(true)
+                    .required(true)
+                    .value_name("DUMPFILE")
+                    .validator_os(is_valid_string)
+                    .index(1),
+            )
+            .arg(
+                Arg::with_name("undo")
+                    .long("undo")
+                    .short("u")
+                    .help("Undo the operations from the dump file"),
+            )
+            .about("Read operations from a dump file"),
         )
+        .subcommand(SubCommand::with_name(TO_ASCII_SUBCOMMAND)
+            .args(&common_args)
+            .args(&path_args)
+            .about("Replace all file name chars with ASCII chars. This operation is extremely lossy.")
+    )
 }
 #[allow(clippy::all)]
 /// Check if the input provided is valid unsigned integer
@@ -155,4 +165,25 @@ fn is_valid_string(os_str: &OsStr) -> Result<(), OsString> {
 }
 
 #[cfg(test)]
-mod test {}
+mod test {
+    use super::*;
+
+    #[test]
+    fn app_command_from_str() {
+        assert_eq!(AppCommand::from_str("").unwrap(), AppCommand::Root);
+        assert_eq!(
+            AppCommand::from_str(FROM_FILE_SUBCOMMAND).unwrap(),
+            AppCommand::FromFile
+        );
+        assert_eq!(
+            AppCommand::from_str(TO_ASCII_SUBCOMMAND).unwrap(),
+            AppCommand::ToASCII
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn app_command_from_str_unknown_error() {
+        AppCommand::from_str("this-command-does-not-exists").unwrap();
+    }
+}

@@ -21,6 +21,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "any_ascii"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2ff4eacbbe7430f589efd00fde89220646ada6e1a81b0ea220bf88ac62b5d615"
+
+[[package]]
 name = "atty"
 version = "0.2.14"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -261,6 +267,7 @@ name = "rnr"
 version = "0.3.1"
 dependencies = [
  "ansi_term",
+ "any_ascii",
  "atty",
  "chrono",
  "clap",

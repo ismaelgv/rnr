@@ -1,4 +1,5 @@
-use config::{Config, RunMode};
+use any_ascii::any_ascii;
+use config::{Config, ReplaceMode, RunMode};
 use dumpfile;
 use error::*;
 use fileutils::{cleanup_paths, create_backup, get_paths};
@@ -21,10 +22,10 @@ impl Renamer {
 
     /// Process path batch
     pub fn process(&self) -> Result<Operations> {
-        let operations = match self.config.mode {
+        let operations = match self.config.run_mode {
             RunMode::Simple(_) | RunMode::Recursive { .. } => {
                 // Get paths
-                let mut input_paths = get_paths(&self.config.mode);
+                let mut input_paths = get_paths(&self.config.run_mode);
 
                 // Remove directories and on existing paths from the list
                 cleanup_paths(&mut input_paths, self.config.dirs);
@@ -62,18 +63,25 @@ impl Renamer {
         Ok(())
     }
 
-    /// Replace expression match in the given path using stored config.
+    /// Replace file name matches in the given path using stored config.
     fn replace_match(&self, path: &PathBuf) -> PathBuf {
-        let expression = &self.config.expression;
-        let replacement = &self.config.replacement;
-
         let file_name = path.file_name().unwrap().to_str().unwrap();
         let parent = path.parent();
 
-        let target_name = expression.replacen(file_name, self.config.limit, &replacement[..]);
+        let target_name = match &self.config.replace_mode {
+            ReplaceMode::RegExp {
+                expression,
+                replacement,
+                limit,
+            } => expression
+                .replacen(file_name, *limit, &replacement[..])
+                .to_string(),
+            ReplaceMode::ToASCII => any_ascii(file_name),
+        };
+
         match parent {
-            None => PathBuf::from(target_name.to_string()),
-            Some(path) => path.join(Path::new(&target_name.into_owned())),
+            None => PathBuf::from(target_name),
+            Some(path) => path.join(Path::new(&target_name)),
         }
     }
 
@@ -211,15 +219,17 @@ mod test {
 
         // Create config
         let mock_config = Arc::new(Config {
-            expression: Regex::new("test").unwrap(),
-            replacement: "passed".to_string(),
             force: true,
             backup: true,
             dirs: false,
             dump: false,
-            mode: RunMode::Simple(mock_files),
+            run_mode: RunMode::Simple(mock_files),
+            replace_mode: ReplaceMode::RegExp {
+                expression: Regex::new("test").unwrap(),
+                replacement: "passed".to_string(),
+                limit: 1,
+            },
             printer: Printer::color(),
-            limit: 1,
         });
 
         // Run renamer
@@ -267,15 +277,17 @@ mod test {
         }
 
         let mock_config = Arc::new(Config {
-            expression: Regex::new("a").unwrap(),
-            replacement: "b".to_string(),
             force: true,
             backup: false,
             dirs: false,
             dump: false,
-            mode: RunMode::Simple(mock_files),
+            run_mode: RunMode::Simple(mock_files),
+            replace_mode: ReplaceMode::RegExp {
+                expression: Regex::new("a").unwrap(),
+                replacement: "b".to_string(),
+                limit: 0,
+            },
             printer: Printer::color(),
-            limit: 0,
         });
 
         let renamer = match Renamer::new(&mock_config) {
@@ -299,5 +311,53 @@ mod test {
 
         // Check renamed files
         assert!(Path::new(&format!("{}/replbce_bll_bbbbb.txt", temp_path)).exists());
+    }
+
+    #[test]
+    fn to_ascii() {
+        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
+        println!("Running test in '{:?}'", tempdir);
+        let temp_path = tempdir.path().to_str().unwrap();
+
+        let mock_files: Vec<String> = vec![
+            format!("{}/ǹön-âścîı-lower.txt", temp_path),
+            format!("{}/ǸÖN-ÂŚCÎI-UPPER.txt", temp_path),
+        ];
+        for file in &mock_files {
+            fs::File::create(&file).expect("Error creating mock file...");
+        }
+
+        let mock_config = Arc::new(Config {
+            force: true,
+            backup: false,
+            dirs: false,
+            dump: false,
+            run_mode: RunMode::Simple(mock_files),
+            replace_mode: ReplaceMode::ToASCII,
+            printer: Printer::color(),
+        });
+
+        let renamer = match Renamer::new(&mock_config) {
+            Ok(renamer) => renamer,
+            Err(err) => {
+                mock_config.printer.print_error(&err);
+                process::exit(1);
+            }
+        };
+        let operations = match renamer.process() {
+            Ok(operations) => operations,
+            Err(err) => {
+                mock_config.printer.print_error(&err);
+                process::exit(1);
+            }
+        };
+        if let Err(err) = renamer.batch_rename(operations) {
+            mock_config.printer.print_error(&err);
+            process::exit(1);
+        }
+
+        // Check renamed files
+        assert!(Path::new(&format!("{}/non-ascii-lower.txt", temp_path)).exists());
+        assert!(Path::new(&format!("{}/NON-ASCII-UPPER.txt", temp_path)).exists());
     }
 }
