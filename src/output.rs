@@ -2,7 +2,7 @@ use ansi_term::Colour::*;
 use ansi_term::Style;
 use difference::{Changeset, Difference};
 use error::*;
-use std::path::PathBuf;
+use std::path::Path;
 
 #[derive(PartialEq)]
 enum PrinterMode {
@@ -99,7 +99,7 @@ impl Printer {
 
     /// Print error pretty printed
     pub fn print_error(&self, error: &Error) {
-        let error_value = error.value.to_owned().unwrap_or("".to_string());
+        let error_value = error.value.to_owned().unwrap_or_else(|| String::from(""));
 
         self.eprint(&format!(
             "{}{}{}",
@@ -110,7 +110,7 @@ impl Printer {
     }
 
     /// Pretty print operation
-    pub fn print_operation(&self, source: &PathBuf, target: &PathBuf) {
+    pub fn print_operation(&self, source: &Path, target: &Path) {
         // Avoid any additional processing costs if silent mode
         if self.mode == PrinterMode::Silent {
             return;
@@ -133,14 +133,14 @@ impl Printer {
 
         source_name = self.colors.source.paint(&source_name).to_string();
 
-        if source_parent != "" {
+        if !source_parent.is_empty() {
             source_parent = self
                 .colors
                 .source
                 .paint(format!("{}/", source_parent))
                 .to_string();
         }
-        if target_parent != "" {
+        if !target_parent.is_empty() {
             target_parent = self
                 .colors
                 .target
@@ -157,8 +157,8 @@ impl Printer {
     /// Generate a colored diff from the given strings
     fn string_diff(
         &self,
-        original: &String,
-        changed: &String,
+        original: &str,
+        changed: &str,
         base_color: Style,
         diff_color: Style,
     ) -> String {

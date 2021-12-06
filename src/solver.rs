@@ -23,7 +23,7 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<Operations> {
         .values()
         .map(|p| p.components().count())
         .collect();
-    level_list.sort();
+    level_list.sort_unstable();
     level_list.dedup();
     level_list.reverse();
 
@@ -42,7 +42,7 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<Operations> {
             })
             .collect();
         // Return existing targets in the list of original filenames
-        let mut existing_targets = get_existing_targets(&level_targets, &rename_map)?;
+        let mut existing_targets = get_existing_targets(&level_targets, rename_map)?;
 
         // Store first all non conflicting entries
         rename_order.append(
@@ -58,7 +58,7 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<Operations> {
                 .collect(),
         );
         // Order and append the rest of entries
-        match sort_existing_targets(&rename_map, &mut existing_targets) {
+        match sort_existing_targets(rename_map, &mut existing_targets) {
             Ok(mut targets) => rename_order.append(&mut targets),
             Err(err) => return Err(err),
         }
@@ -95,26 +95,28 @@ pub fn revert_operations(operations: &[Operation]) -> Result<Operations> {
 /// targets must be contained in the original file list for the renaming problem to be solvable.
 fn get_existing_targets(targets: &[PathBuf], rename_map: &RenameMap) -> Result<PathList> {
     let mut existing_targets: PathList = Vec::new();
-    let sources: PathList = rename_map.values().cloned().collect();
 
     for target in targets {
-        if target.symlink_metadata().is_ok() {
-            if !sources.contains(&target) {
-                let source = rename_map.get(target).cloned().unwrap();
-
-                // The source and the target may be the same file in some conditions like case
-                // insensitive but case-preserving file systems.
-                if is_same_file(&source, &target) {
-                    continue;
-                }
-
-                return Err(Error {
-                    kind: ErrorKind::ExistingPath,
-                    value: Some(format!("{} -> {}", source.display(), target.display())),
-                });
-            }
-            existing_targets.push(target.clone());
+        if target.symlink_metadata().is_err() {
+            continue;
         }
+
+        if !rename_map.values().any(|x| x == target) {
+            let source = rename_map.get(target).cloned().unwrap();
+
+            // The source and the target may be the same file in some conditions like case
+            // insensitive but case-preserving file systems.
+            if is_same_file(&source, target) {
+                continue;
+            }
+
+            return Err(Error {
+                kind: ErrorKind::ExistingPath,
+                value: Some(format!("{} -> {}", source.display(), target.display())),
+            });
+        }
+
+        existing_targets.push(target.clone());
     }
     Ok(existing_targets)
 }
@@ -131,17 +133,19 @@ fn sort_existing_targets(
     while !existing_targets.is_empty() {
         // Track selected index to extract value
         let mut selected_index: Option<usize> = None;
+
         // Create a vector with all sources from existing targets using absolute paths
+        #[allow(clippy::needless_collect)] // Benchmark shows no diff, code is clearer this way.
         let sources: PathList = existing_targets
             .iter()
             .map(|x| rename_map.get(x).cloned().unwrap())
             .map(|p| PathAbs::new(p).unwrap().to_path_buf())
             .collect();
+
         // Select targets without conflicts in sources
         for (index, target) in existing_targets.iter().enumerate() {
-            if sources.contains(&PathAbs::new(target).unwrap().to_path_buf()) {
-                continue;
-            } else {
+            let absolute_target = PathAbs::new(target).unwrap().to_path_buf();
+            if !sources.contains(&absolute_target) {
                 selected_index = Some(index);
                 break;
             }

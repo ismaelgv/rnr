@@ -64,7 +64,7 @@ impl Renamer {
     }
 
     /// Replace file name matches in the given path using stored config.
-    fn replace_match(&self, path: &PathBuf) -> PathBuf {
+    fn replace_match(&self, path: &Path) -> PathBuf {
         let file_name = path.file_name().unwrap().to_str().unwrap();
         let parent = path.parent();
 
@@ -94,7 +94,7 @@ impl Renamer {
         let mut error_string = String::new();
 
         for path in paths {
-            let target = self.replace_match(&path);
+            let target = self.replace_match(path);
             // Discard paths with no changes
             if target != *path {
                 if let Some(old_path) = rename_map.insert(target.clone(), path.clone()) {

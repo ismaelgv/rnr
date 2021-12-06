@@ -3,7 +3,7 @@ use error::*;
 use serde_json;
 use solver::{Operation, Operations};
 use std::fs::File;
-use std::path::PathBuf;
+use std::path::Path;
 
 /// Dump operations intto file in JSON format
 pub fn dump_to_file(operations: &[Operation]) -> Result<()> {
@@ -36,7 +36,7 @@ pub fn dump_to_file(operations: &[Operation]) -> Result<()> {
 }
 
 /// Read operations from a dump file and generate a Operations vector
-pub fn read_from_file(filepath: &PathBuf) -> Result<Operations> {
+pub fn read_from_file(filepath: &Path) -> Result<Operations> {
     let file = match File::open(&filepath) {
         Ok(file) => file,
         Err(_) => {

@@ -1,3 +1,4 @@
+use std::path::Path;
 use config::RunMode;
 use error::*;
 use path_abs::PathAbs;
@@ -53,9 +54,9 @@ pub fn get_paths(mode: &RunMode) -> PathList {
 
 /// Generate a non-existing name adding numbers to the end of the file name. It also supports adding a
 /// suffix to the original name.
-pub fn get_unique_filename(path: &PathBuf, suffix: &str) -> PathBuf {
+pub fn get_unique_filename(path: &Path, suffix: &str) -> PathBuf {
     let base_name = format!("{}{}", path.file_name().unwrap().to_string_lossy(), suffix);
-    let mut unique_name = path.clone();
+    let mut unique_name = path.to_path_buf();
     unique_name.set_file_name(&base_name);
 
     let mut index = 0;
@@ -68,7 +69,7 @@ pub fn get_unique_filename(path: &PathBuf, suffix: &str) -> PathBuf {
 }
 
 /// Create a backup of the file
-pub fn create_backup(path: &PathBuf) -> Result<PathBuf> {
+pub fn create_backup(path: &Path) -> Result<PathBuf> {
     let backup = get_unique_filename(path, ".bk");
     match fs::copy(path, &backup) {
         Ok(_) => Ok(backup),
@@ -106,7 +107,7 @@ pub fn cleanup_paths(paths: &mut PathList, keep_dirs: bool) {
 
 /// Wrapper to create symlink files without considering the OS explicitly
 #[allow(dead_code)]
-pub fn create_symlink(source: &PathBuf, symlink_file: &PathBuf) -> Result<()> {
+pub fn create_symlink(source: &Path, symlink_file: &Path) -> Result<()> {
     #[cfg(windows)]
     match ::std::os::windows::fs::symlink_file(source, symlink_file) {
         Ok(_) => Ok(()),
@@ -126,7 +127,7 @@ pub fn create_symlink(source: &PathBuf, symlink_file: &PathBuf) -> Result<()> {
 }
 
 /// Check if the paths references the same file. This is useful in case insensitive systems.
-pub fn is_same_file(source: &PathBuf, target: &PathBuf) -> bool {
+pub fn is_same_file(source: &Path, target: &Path) -> bool {
     // Only perform a more exhaustive check for platform that support case insensitive and case
     // preserving file systems by default.
     #[cfg(any(windows, target_os = "macos"))]
@@ -167,7 +168,7 @@ mod test {
 
         for file in &mock_files {
             fs::File::create(&file).expect("Error creating mock file...");
-            create_backup(&file).expect("Error generating backup file...");
+            create_backup(file).expect("Error generating backup file...");
         }
 
         let backup_files: PathList = vec![

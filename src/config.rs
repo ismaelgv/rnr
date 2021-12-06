@@ -151,7 +151,7 @@ fn parse_arguments() -> Result<Config, String> {
         match matches.value_of("color").unwrap_or("auto") {
             "always" => Printer::color(),
             "never" => Printer::no_color(),
-            "auto" | _ => detect_output_color(),
+            _ => detect_output_color(), // Ignore non-valid values and use auto.
         }
     };
 
