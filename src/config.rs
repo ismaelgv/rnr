@@ -1,4 +1,4 @@
-use app::{create_app, AppCommand};
+use app::{create_app, FROM_FILE_SUBCOMMAND, TO_ASCII_SUBCOMMAND};
 use atty;
 use clap::ArgMatches;
 use output::Printer;
@@ -48,6 +48,25 @@ pub enum ReplaceMode {
         limit: usize,
     },
     ToASCII,
+}
+
+/// Application commands
+#[derive(Debug, PartialEq)]
+pub enum AppCommand {
+    Root,
+    FromFile,
+    ToASCII,
+}
+
+impl AppCommand {
+    pub fn from_str(name: &str) -> Result<AppCommand, String> {
+        match name {
+            "" => Ok(AppCommand::Root),
+            FROM_FILE_SUBCOMMAND => Ok(AppCommand::FromFile),
+            TO_ASCII_SUBCOMMAND => Ok(AppCommand::ToASCII),
+            _ => Err(format!("Non-registered subcommand '{}'", name)),
+        }
+    }
 }
 
 struct ArgumentParser<'a> {
@@ -193,5 +212,29 @@ fn detect_output_color() -> Printer {
         }
     } else {
         Printer::no_color()
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn app_command_from_str() {
+        assert_eq!(AppCommand::from_str("").unwrap(), AppCommand::Root);
+        assert_eq!(
+            AppCommand::from_str(FROM_FILE_SUBCOMMAND).unwrap(),
+            AppCommand::FromFile
+        );
+        assert_eq!(
+            AppCommand::from_str(TO_ASCII_SUBCOMMAND).unwrap(),
+            AppCommand::ToASCII
+        );
+    }
+
+    #[test]
+    #[should_panic]
+    fn app_command_from_str_unknown_error() {
+        AppCommand::from_str("this-command-does-not-exists").unwrap();
     }
 }

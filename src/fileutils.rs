@@ -1,9 +1,9 @@
-use std::path::Path;
 use config::RunMode;
 use error::*;
 use path_abs::PathAbs;
 use std::collections::HashMap;
 use std::fs;
+use std::path::Path;
 use std::path::PathBuf;
 use walkdir::{DirEntry, WalkDir};
 

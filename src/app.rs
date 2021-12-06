@@ -2,29 +2,10 @@ use clap::{App, AppSettings, Arg, SubCommand};
 use std::ffi::{OsStr, OsString};
 
 /// From file subcommand name.
-const FROM_FILE_SUBCOMMAND: &str = "from-file";
+pub const FROM_FILE_SUBCOMMAND: &str = "from-file";
 
 /// To ASCII subcommand name.
-const TO_ASCII_SUBCOMMAND: &str = "to-ascii";
-
-/// Application commands
-#[derive(Debug, PartialEq)]
-pub enum AppCommand {
-    Root,
-    FromFile,
-    ToASCII,
-}
-
-impl AppCommand {
-    pub fn from_str(name: &str) -> Result<AppCommand, String> {
-        match name {
-            "" => Ok(AppCommand::Root),
-            FROM_FILE_SUBCOMMAND => Ok(AppCommand::FromFile),
-            TO_ASCII_SUBCOMMAND => Ok(AppCommand::ToASCII),
-            _ => Err(format!("Non-registered subcommand '{}'", name)),
-        }
-    }
-}
+pub const TO_ASCII_SUBCOMMAND: &str = "to-ascii";
 
 /// Create application using clap. It sets all options and command-line help.
 pub fn create_app<'a>() -> App<'a, 'a> {
@@ -124,31 +105,33 @@ pub fn create_app<'a>() -> App<'a, 'a> {
         )
         .args(&common_args)
         .args(&path_args)
-        .subcommand(SubCommand::with_name(FROM_FILE_SUBCOMMAND)
-            .args(&common_args)
-            .arg(
-                Arg::with_name("DUMPFILE")
-                    .takes_value(true)
-                    .required(true)
-                    .value_name("DUMPFILE")
-                    .validator_os(is_valid_string)
-                    .index(1),
-            )
-            .arg(
-                Arg::with_name("undo")
-                    .long("undo")
-                    .short("u")
-                    .help("Undo the operations from the dump file"),
-            )
-            .about("Read operations from a dump file"),
+        .subcommand(
+            SubCommand::with_name(FROM_FILE_SUBCOMMAND)
+                .args(&common_args)
+                .arg(
+                    Arg::with_name("DUMPFILE")
+                        .takes_value(true)
+                        .required(true)
+                        .value_name("DUMPFILE")
+                        .validator_os(is_valid_string)
+                        .index(1),
+                )
+                .arg(
+                    Arg::with_name("undo")
+                        .long("undo")
+                        .short("u")
+                        .help("Undo the operations from the dump file"),
+                )
+                .about("Read operations from a dump file"),
         )
-        .subcommand(SubCommand::with_name(TO_ASCII_SUBCOMMAND)
-            .args(&common_args)
-            .args(&path_args)
-            .about("Replace file name UTF-8 chars with ASCII chars representation.")
-    )
+        .subcommand(
+            SubCommand::with_name(TO_ASCII_SUBCOMMAND)
+                .args(&common_args)
+                .args(&path_args)
+                .about("Replace file name UTF-8 chars with ASCII chars representation."),
+        )
 }
-#[allow(clippy::all)]
+
 /// Check if the input provided is valid unsigned integer
 fn is_integer(arg_value: String) -> Result<(), String> {
     match arg_value.parse::<usize>() {
@@ -156,34 +139,11 @@ fn is_integer(arg_value: String) -> Result<(), String> {
         Err(_) => Err("Value provided is not an integer".to_string()),
     }
 }
+
 /// Check if the input provided is valid UTF-8
 fn is_valid_string(os_str: &OsStr) -> Result<(), OsString> {
     match os_str.to_str() {
         Some(_) => Ok(()),
         None => Err(OsString::from("Value provided is not a valid UTF-8 string")),
-    }
-}
-
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn app_command_from_str() {
-        assert_eq!(AppCommand::from_str("").unwrap(), AppCommand::Root);
-        assert_eq!(
-            AppCommand::from_str(FROM_FILE_SUBCOMMAND).unwrap(),
-            AppCommand::FromFile
-        );
-        assert_eq!(
-            AppCommand::from_str(TO_ASCII_SUBCOMMAND).unwrap(),
-            AppCommand::ToASCII
-        );
-    }
-
-    #[test]
-    #[should_panic]
-    fn app_command_from_str_unknown_error() {
-        AppCommand::from_str("this-command-does-not-exists").unwrap();
     }
 }
