@@ -28,6 +28,7 @@
 * Linux, Mac and Windows support, including terminal coloring.
 * Extensive unit testing.
 * Select limit of replacements.
+* Convert UTF-8 file names to ASCII representation.
 
 # Install
 
@@ -78,8 +79,8 @@ FLAGS:
     -V, --version         Prints version information
 
 OPTIONS:
-        --color <color>        Set color output mode [default: auto]  [possible values: always, auto, never]
-    -d, --max-depth <LEVEL>    Set max depth in recursive mode
+        --color <color>            Set color output mode [default: auto]  [possible values: always, auto, never]
+    -d, --max-depth <LEVEL>        Set max depth in recursive mode
     -l, --replace-limit <LIMIT>    Limit of replacements, all matches if set to 0 [default: 1]
 
 ARGS:
@@ -90,6 +91,7 @@ ARGS:
 SUBCOMMANDS:
     from-file    Read operations from a dump file
     help         Prints this message or the help of the given subcommand(s)
+    to-ascii     Replace all file name chars with ASCII chars. This operation is extremely lossy.
 ```
 
 ## Default behavior
@@ -120,6 +122,7 @@ SUBCOMMANDS:
     * [Recursive rename including directories and hidden files](#recursive-rename-including-directories-and-hidden-files)
 * [Undo/redo operations using dump file](#undoredo-operations-using-dump-file)
 * [Create backup files before renaming](#create-backup-files-before-renaming)
+* [Convert UTF-8 file names to ASCII](#convert-utf-8-file names-to-ascii)
 * [Advanced regex examples](#advanced-regex-examples)
     * [Replace extensions](#replace-extensions)
     * [Replace numbers](#replace-numbers)
@@ -379,6 +382,35 @@ rnr -f -b file renamed ./*
 ├── renamed-01.txt
 ├── renamed-02.txt
 └── renamed-03.txt
+```
+
+### Convert UTF-8 file names to ASCII
+`rnr`can convert UTF-8 file names to their ASCII representation. This feature uses
+[AnyAscii library](https://github.com/anyascii/anyascii) to perform the
+transliteration.
+
+You can run:
+```sh
+rnr to-ascii ./*
+```
+Or:
+```sh
+rnr to-ascii -r .
+```
+
+*Original tree*
+```
+.
+├── fïlé-01.ext1
+├── FïĹÊ-02.ext2
+└── file-03.ext3
+```
+*Renamed tree*
+```
+.
+├── file-01.txt
+├── FILE-02.txt
+└── file-03.txt
 ```
 
 ### Advanced regex examples

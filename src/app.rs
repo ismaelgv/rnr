@@ -145,7 +145,7 @@ pub fn create_app<'a>() -> App<'a, 'a> {
         .subcommand(SubCommand::with_name(TO_ASCII_SUBCOMMAND)
             .args(&common_args)
             .args(&path_args)
-            .about("Replace all file name chars with ASCII chars. This operation is extremely lossy.")
+            .about("Replace file name UTF-8 chars with ASCII chars representation.")
     )
 }
 #[allow(clippy::all)]
