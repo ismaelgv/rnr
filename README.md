@@ -122,7 +122,7 @@ SUBCOMMANDS:
     * [Recursive rename including directories and hidden files](#recursive-rename-including-directories-and-hidden-files)
 * [Undo/redo operations using dump file](#undoredo-operations-using-dump-file)
 * [Create backup files before renaming](#create-backup-files-before-renaming)
-* [Convert UTF-8 file names to ASCII](#convert-utf-8-file names-to-ascii)
+* [Convert UTF-8 file names to ASCII](#convert-utf-8-file-names-to-ascii)
 * [Advanced regex examples](#advanced-regex-examples)
     * [Replace extensions](#replace-extensions)
     * [Replace numbers](#replace-numbers)
