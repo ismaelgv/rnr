@@ -1,3 +1,15 @@
+# v0.4.0 (2021-12-06)
+### Added
+* New `to-ascii` command to translate UTF-8 file names to ASCII
+  representation.
+### Changed
+* Refactor interal app and config modules to ease the addition of
+  new commands.
+* Update dependencies.
+### Fixed
+* Remove additional prefix on path printing.
+* Clippy lints and potential perfomance pitfalls.
+
 # v0.3.1 (2021-11-06)
 ### Changed
 * Update references from `ChuckDaniels87/rnr` to `ismaelgv/rnr`.
