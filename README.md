@@ -401,9 +401,9 @@ rnr to-ascii -r .
 *Original tree*
 ```
 .
-├── fïlé-01.ext1
-├── FïĹÊ-02.ext2
-└── file-03.ext3
+├── fïlé-01.txt
+├── FïĹÊ-02.txt
+└── file-03.txt
 ```
 *Renamed tree*
 ```
