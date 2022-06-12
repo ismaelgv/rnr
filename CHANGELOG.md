@@ -1,3 +1,7 @@
+# v0.4.1 (2022-06-12)
+### Fixed
+* Upgrade dependencies to fix some possible security issues.
+
 # v0.4.0 (2021-12-06)
 ### Added
 * New `to-ascii` command to translate UTF-8 file names to ASCII
