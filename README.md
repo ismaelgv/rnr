@@ -46,6 +46,11 @@ A package is available in the AUR
 ([`rnr`](https://aur.archlinux.org/packages/rnr/)) to install latest version of
 *RnR* on Arch Linux.
 
+### macOS
+```sh
+brew install rnr
+```
+
 ## From Source
 *RnR* is written in Rust. You can build it from source using Cargo.
 
