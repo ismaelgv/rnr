@@ -1,3 +1,7 @@
+# v0.4.2 (2023-02-26)
+### Fixed
+* Upgrade dependencies to fix some possible security issues.
+
 # v0.4.1 (2022-06-12)
 ### Fixed
 * Upgrade dependencies to fix some possible security issues.
