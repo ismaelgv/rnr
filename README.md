@@ -46,7 +46,8 @@ A package is available in the AUR
 ([`rnr`](https://aur.archlinux.org/packages/rnr/)) to install latest version of
 *RnR* on Arch Linux.
 
-### macOS
+### Homebrew
+You can use [Homebrew package manager](https://brew.sh) to install this tool in macOS or Linux systems.
 ```sh
 brew install rnr
 ```
