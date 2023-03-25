@@ -5,6 +5,8 @@ use output::Printer;
 use regex::Regex;
 use std::sync::Arc;
 
+use crate::app::ENUMERATE_SUBCOMMAND;
+
 /// This module is defined Config struct to carry application configuration. This struct is created
 /// from the parsed arguments from command-line input using `clap`. Only UTF-8 valid arguments are
 /// considered.
@@ -56,6 +58,7 @@ pub enum AppCommand {
     Root,
     FromFile,
     ToASCII,
+    Enumerate,
 }
 
 impl AppCommand {
@@ -64,6 +67,7 @@ impl AppCommand {
             "" => Ok(AppCommand::Root),
             FROM_FILE_SUBCOMMAND => Ok(AppCommand::FromFile),
             TO_ASCII_SUBCOMMAND => Ok(AppCommand::ToASCII),
+            ENUMERATE_SUBCOMMAND => Ok(AppCommand::Enumerate),
             _ => Err(format!("Non-registered subcommand '{}'", name)),
         }
     }
@@ -229,6 +233,10 @@ mod test {
         assert_eq!(
             AppCommand::from_str(TO_ASCII_SUBCOMMAND).unwrap(),
             AppCommand::ToASCII
+        );
+        assert_eq!(
+            AppCommand::from_str(ENUMERATE_SUBCOMMAND).unwrap(),
+            AppCommand::Enumerate
         );
     }
 
