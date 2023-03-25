@@ -77,7 +77,7 @@ impl Renamer {
                 .replacen(file_name, *limit, &replacement[..])
                 .to_string(),
             ReplaceMode::ToASCII => any_ascii(file_name),
-            ReplaceMode::None => file_name.to_string(),
+            ReplaceMode::Skip => file_name.to_string(),
         };
 
         match parent {

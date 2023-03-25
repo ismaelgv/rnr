@@ -44,13 +44,13 @@ pub enum RunMode {
 }
 
 pub enum ReplaceMode {
-    None,
     RegExp {
         expression: Regex,
         replacement: String,
         limit: usize,
     },
     ToASCII,
+    Skip,
 }
 
 /// Application commands
@@ -155,7 +155,7 @@ impl ArgumentParser<'_> {
                     limit,
                 })
             }
-            AppCommand::FromFile => return Ok(ReplaceMode::None),
+            AppCommand::FromFile => return Ok(ReplaceMode::Skip),
             AppCommand::ToASCII => return Ok(ReplaceMode::ToASCII),
             AppCommand::Enumerate => todo!(),
         }
