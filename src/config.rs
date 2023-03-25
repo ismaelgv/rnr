@@ -5,6 +5,8 @@ use output::Printer;
 use regex::Regex;
 use std::sync::Arc;
 
+use crate::app::ENUMERATE_SUBCOMMAND;
+
 /// This module is defined Config struct to carry application configuration. This struct is created
 /// from the parsed arguments from command-line input using `clap`. Only UTF-8 valid arguments are
 /// considered.
@@ -48,6 +50,7 @@ pub enum ReplaceMode {
         limit: usize,
     },
     ToASCII,
+    Skip,
 }
 
 /// Application commands
@@ -56,6 +59,7 @@ pub enum AppCommand {
     Root,
     FromFile,
     ToASCII,
+    Enumerate,
 }
 
 impl AppCommand {
@@ -64,6 +68,7 @@ impl AppCommand {
             "" => Ok(AppCommand::Root),
             FROM_FILE_SUBCOMMAND => Ok(AppCommand::FromFile),
             TO_ASCII_SUBCOMMAND => Ok(AppCommand::ToASCII),
+            ENUMERATE_SUBCOMMAND => Ok(AppCommand::Enumerate),
             _ => Err(format!("Non-registered subcommand '{}'", name)),
         }
     }
@@ -115,14 +120,9 @@ impl ArgumentParser<'_> {
         }
     }
 
-    fn parse_replace_mode(&self) -> Result<ReplaceMode, String> {
-        if let AppCommand::ToASCII = self.command {
-            return Ok(ReplaceMode::ToASCII);
-        }
-
-        // Get and validate regex expression and replacement from arguments
-        let expression = match Regex::new(self.matches.value_of("EXPRESSION").unwrap_or_default()) {
-            Ok(expr) => expr,
+    fn parse_regex_expression(&self, expression: &str) -> Result<Regex, String> {
+        match Regex::new(expression) {
+            Ok(expr) => return Ok(expr),
             Err(err) => {
                 return Err(format!(
                     "{}Bad expression provided\n\n{}",
@@ -130,21 +130,35 @@ impl ArgumentParser<'_> {
                     self.printer.colors.error.paint(err.to_string())
                 ));
             }
-        };
-        let replacement = String::from(self.matches.value_of("REPLACEMENT").unwrap_or_default());
+        }
+    }
 
-        let limit = self
-            .matches
-            .value_of("replace-limit")
-            .unwrap_or_default()
-            .parse::<usize>()
-            .unwrap_or_default();
+    fn parse_replace_mode(&self) -> Result<ReplaceMode, String> {
+        let expression =
+            self.parse_regex_expression(self.matches.value_of("EXPRESSION").unwrap_or_default())?;
 
-        Ok(ReplaceMode::RegExp {
-            expression,
-            replacement,
-            limit,
-        })
+        match self.command {
+            AppCommand::Root => {
+                let replacement =
+                    String::from(self.matches.value_of("REPLACEMENT").unwrap_or_default());
+
+                let limit = self
+                    .matches
+                    .value_of("replace-limit")
+                    .unwrap_or_default()
+                    .parse::<usize>()
+                    .unwrap_or_default();
+
+                Ok(ReplaceMode::RegExp {
+                    expression,
+                    replacement,
+                    limit,
+                })
+            }
+            AppCommand::FromFile => return Ok(ReplaceMode::Skip),
+            AppCommand::ToASCII => return Ok(ReplaceMode::ToASCII),
+            AppCommand::Enumerate => todo!(),
+        }
     }
 }
 
@@ -229,6 +243,10 @@ mod test {
         assert_eq!(
             AppCommand::from_str(TO_ASCII_SUBCOMMAND).unwrap(),
             AppCommand::ToASCII
+        );
+        assert_eq!(
+            AppCommand::from_str(ENUMERATE_SUBCOMMAND).unwrap(),
+            AppCommand::Enumerate
         );
     }
 

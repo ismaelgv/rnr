@@ -7,6 +7,9 @@ pub const FROM_FILE_SUBCOMMAND: &str = "from-file";
 /// To ASCII subcommand name.
 pub const TO_ASCII_SUBCOMMAND: &str = "to-ascii";
 
+/// Enumerate subcommand name.
+pub const ENUMERATE_SUBCOMMAND: &str = "enumerate";
+
 /// Create application using clap. It sets all options and command-line help.
 pub fn create_app<'a>() -> App<'a, 'a> {
     // These commons args are shared by all commands.
@@ -55,6 +58,15 @@ pub fn create_app<'a>() -> App<'a, 'a> {
             .short("D")
             .group("TEST")
             .help("Rename matching directories"),
+        Arg::with_name("hidden")
+            .requires("recursive")
+            .long("hidden")
+            .short("x")
+            .help("Include hidden files and directories"),
+    ];
+
+    // Recursive search related arguments.
+    let recursive_args = [
         Arg::with_name("recursive")
             .long("recursive")
             .short("r")
@@ -67,11 +79,28 @@ pub fn create_app<'a>() -> App<'a, 'a> {
             .value_name("LEVEL")
             .validator(is_integer)
             .help("Set max depth in recursive mode"),
-        Arg::with_name("hidden")
-            .requires("recursive")
-            .long("hidden")
-            .short("x")
-            .help("Include hidden files and directories"),
+    ];
+
+    // Regular expression replacement arguments.
+    let regex_args = [
+        Arg::with_name("EXPRESSION")
+            .help("Expression to match (can be a regex)")
+            .required(true)
+            .validator_os(is_valid_string)
+            .index(1),
+        Arg::with_name("REPLACEMENT")
+            .help("Expression replacement")
+            .required(true)
+            .validator_os(is_valid_string)
+            .index(2),
+        Arg::with_name("replace-limit")
+            .long("replace-limit")
+            .short("l")
+            .takes_value(true)
+            .value_name("LIMIT")
+            .default_value("1")
+            .validator(is_integer)
+            .help("Limit of replacements, all matches if set to 0"),
     ];
 
     App::new(crate_name!())
@@ -79,32 +108,10 @@ pub fn create_app<'a>() -> App<'a, 'a> {
         .version(crate_version!())
         .author(crate_authors!())
         .about(crate_description!())
-        .arg(
-            Arg::with_name("EXPRESSION")
-                .help("Expression to match (can be a regex)")
-                .required(true)
-                .validator_os(is_valid_string)
-                .index(1),
-        )
-        .arg(
-            Arg::with_name("REPLACEMENT")
-                .help("Expression replacement")
-                .required(true)
-                .validator_os(is_valid_string)
-                .index(2),
-        )
-        .arg(
-            Arg::with_name("replace-limit")
-                .long("replace-limit")
-                .short("l")
-                .takes_value(true)
-                .value_name("LIMIT")
-                .default_value("1")
-                .validator(is_integer)
-                .help("Limit of replacements, all matches if set to 0"),
-        )
+        .args(&regex_args)
         .args(&common_args)
         .args(&path_args)
+        .args(&recursive_args)
         .subcommand(
             SubCommand::with_name(FROM_FILE_SUBCOMMAND)
                 .args(&common_args)
@@ -128,7 +135,14 @@ pub fn create_app<'a>() -> App<'a, 'a> {
             SubCommand::with_name(TO_ASCII_SUBCOMMAND)
                 .args(&common_args)
                 .args(&path_args)
-                .about("Replace file name UTF-8 chars with ASCII chars representation."),
+                .args(&recursive_args)
+                .about("Replace file name UTF-8 chars with ASCII chars representation"),
+        )
+        .subcommand(
+            SubCommand::with_name(ENUMERATE_SUBCOMMAND)
+                .args(&common_args)
+                .args(&path_args)
+                .about("Enumerate files and directories"),
         )
 }
 
