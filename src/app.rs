@@ -88,7 +88,7 @@ pub fn create_app<'a>() -> App<'a, 'a> {
         )
         .arg(
             Arg::with_name("REPLACEMENT")
-                .help("Expression replacement")
+                .help("Expression replacement. Enclose in single quotes to prevent variable expansion")
                 .required(true)
                 .validator_os(is_valid_string)
                 .index(2),
