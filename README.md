@@ -478,6 +478,7 @@ rnr -f '(\w+)-(\d+).(\w+)' '${2}-${1}.${3}' ./*
 ├── 02-file.txt
 └── 03-file.txt
 ```
+__SHELL NOTE:__ In shells like Bash and zsh, make sure to wrap the `REPLACEMENT` pattern in single quotes. Otherwise, capture group indices will be replaced by expanded shell variables.
 #### Capture several named groups and swap them
 1. Capture two digits as `number`.
 2. Capture extension as `ext`.
