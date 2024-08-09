@@ -128,7 +128,25 @@ pub fn create_app<'a>() -> App<'a, 'a> {
             SubCommand::with_name(TO_ASCII_SUBCOMMAND)
                 .args(&common_args)
                 .args(&path_args)
-                .about("Replace file name UTF-8 chars with ASCII chars representation."),
+                .about("Replace UTF-8 chars in file names with approximate ASCII equivalents.")
+                .long_about(
+                    "Replaces UTF-8 chars in file names with approximate ASCII equivalents.\n\
+                    \n\
+                    Non-ASCII Unicode characters are replaced with ASCII characters in an ad-hoc\n\
+                    fashion. Here are some example transformations:\n\
+                    \n\
+                    άνθρωποι -> anthropoi\n\
+                    深圳     -> ShenZhen\n\
+                    Борис    -> Boris\n\
+                    トヨタ   -> toyota\n\
+                    👑       -> :crown:\n\
+                    ♯        -> #\n\
+                    \n\
+                    Unknown characters and some known characters are replaced with an empty string\n\
+                    and removed. These include (but are not limited to) non-ASCII control\n\
+                    characters like U+0080, Private Use Area codepoints like U+E000, and\n\
+                    noncharacters like U+FFFF.\
+                    "),
         )
 }
 
