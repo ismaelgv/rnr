@@ -2,7 +2,12 @@ use app::{create_app, FROM_FILE_SUBCOMMAND, TO_ASCII_SUBCOMMAND};
 use clap::ArgMatches;
 use output::Printer;
 use regex::Regex;
-use std::{io::{self, IsTerminal}, sync::Arc};
+use std::{
+    io::{self, IsTerminal},
+    sync::Arc,
+};
+
+use crate::renamer::TextTransformation;
 
 /// This module is defined Config struct to carry application configuration. This struct is created
 /// from the parsed arguments from command-line input using `clap`. Only UTF-8 valid arguments are
@@ -45,6 +50,7 @@ pub enum ReplaceMode {
         expression: Regex,
         replacement: String,
         limit: usize,
+        transform: TextTransformation,
     },
     ToASCII,
 }
@@ -139,10 +145,17 @@ impl ArgumentParser<'_> {
             .parse::<usize>()
             .unwrap_or_default();
 
+        let transform: TextTransformation = self
+            .matches
+            .value_of("replace-transform")
+            .unwrap_or_default()
+            .into();
+
         Ok(ReplaceMode::RegExp {
             expression,
             replacement,
             limit,
+            transform,
         })
     }
 }

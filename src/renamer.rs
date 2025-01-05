@@ -3,6 +3,7 @@ use config::{Config, ReplaceMode, RunMode};
 use dumpfile;
 use error::*;
 use fileutils::{cleanup_paths, create_backup, get_paths};
+use regex::Replacer;
 use solver;
 use solver::{Operation, Operations, RenameMap};
 use std::fs;
@@ -73,9 +74,16 @@ impl Renamer {
                 expression,
                 replacement,
                 limit,
-            } => expression
-                .replacen(file_name, *limit, &replacement[..])
-                .to_string(),
+                transform,
+            } => {
+                let replacer = TransformReplacer {
+                    replacement,
+                    transform: *transform,
+                };
+                expression
+                    .replacen(file_name, *limit, &replacer)
+                    .to_string()
+            }
             ReplaceMode::ToASCII => any_ascii(file_name),
         };
 
@@ -171,6 +179,56 @@ impl Renamer {
     }
 }
 
+/// Text tranformation type.
+#[derive(Debug, Copy, Clone)]
+pub enum TextTransformation {
+    /// To uppercase.
+    Upper,
+    /// To lowercase.
+    Lower,
+    /// To ASCII representation.
+    ASCII,
+    /// Leave text as it is.
+    None,
+}
+
+impl From<&str> for TextTransformation {
+    fn from(value: &str) -> Self {
+        match value {
+            "upper" => Self::Upper,
+            "lower" => Self::Lower,
+            "ascii" => Self::ASCII,
+            _ => Self::None,
+        }
+    }
+}
+
+impl TextTransformation {
+    pub fn transform(&self, text: String) -> String {
+        match self {
+            TextTransformation::Upper => text.to_uppercase(),
+            TextTransformation::Lower => text.to_lowercase(),
+            TextTransformation::ASCII => any_ascii(&text),
+            TextTransformation::None => text,
+        }
+    }
+}
+
+/// Replacer for Regex usage that is able to transform the replacement.
+struct TransformReplacer<'h> {
+    replacement: &'h str,
+    transform: TextTransformation,
+}
+
+impl Replacer for &TransformReplacer<'_> {
+    fn replace_append(&mut self, caps: &regex::Captures<'_>, dst: &mut String) {
+        let mut replaced = String::default();
+        caps.expand(self.replacement, &mut replaced);
+        replaced = self.transform.transform(replaced);
+        dst.push_str(&replaced);
+    }
+}
+
 #[cfg(test)]
 mod test {
     extern crate tempfile;
@@ -228,6 +286,7 @@ mod test {
                 expression: Regex::new("test").unwrap(),
                 replacement: "passed".to_string(),
                 limit: 1,
+                transform: TextTransformation::None,
             },
             printer: Printer::color(),
         });
@@ -286,6 +345,7 @@ mod test {
                 expression: Regex::new("a").unwrap(),
                 replacement: "b".to_string(),
                 limit: 0,
+                transform: TextTransformation::None,
             },
             printer: Printer::color(),
         });
@@ -359,5 +419,33 @@ mod test {
         // Check renamed files
         assert!(Path::new(&format!("{}/non-ascii-lower.txt", temp_path)).exists());
         assert!(Path::new(&format!("{}/NON-ASCII-UPPER.txt", temp_path)).exists());
+    }
+
+    #[test]
+    fn captures_transform() {
+        let hay = "Thïs-Îs-my-fîle.txt";
+        let expression = Regex::new(r"(\w+)-(\w+)-my-fîle").unwrap();
+        let replacement = "${1}.${2}-a-Fïle";
+
+        let mut replacer = TransformReplacer {
+            replacement,
+            transform: TextTransformation::None,
+        };
+
+        // Without any transformation.
+        let result = expression.replace(hay, &replacer);
+        assert_eq!(result, "Thïs.Îs-a-Fïle.txt");
+        // To uppercase.
+        replacer.transform = TextTransformation::Upper;
+        let result = expression.replace(hay, &replacer);
+        assert_eq!(result, "THÏS.ÎS-A-FÏLE.txt");
+        // To lowercase.
+        replacer.transform = TextTransformation::Lower;
+        let result = expression.replace(hay, &replacer);
+        assert_eq!(result, "thïs.îs-a-fïle.txt");
+        // To ASCII.
+        replacer.transform = TextTransformation::ASCII;
+        let result = expression.replace(hay, &replacer);
+        assert_eq!(result, "This.Is-a-File.txt");
     }
 }

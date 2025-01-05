@@ -16,6 +16,7 @@ pub struct Printer {
     mode: PrinterMode,
 }
 
+#[allow(dead_code)]
 pub struct Colors {
     pub info: Style,
     pub warn: Style,

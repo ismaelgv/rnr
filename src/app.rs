@@ -74,6 +74,26 @@ pub fn create_app<'a>() -> App<'a, 'a> {
             .help("Include hidden files and directories"),
     ];
 
+    // Replacement related arguments.
+    let replace_args = [
+        Arg::with_name("replace-limit")
+            .long("replace-limit")
+            .short("l")
+            .takes_value(true)
+            .value_name("LIMIT")
+            .default_value("1")
+            .validator(is_integer)
+            .help("Limit of replacements, all matches if set to 0"),
+        Arg::with_name("replace-transform")
+            .long("replace-transform")
+            .short("t")
+            .takes_value(true)
+            .value_name("TRANSFORM")
+            .default_value("none")
+            .possible_values(&["upper", "lower", "ascii", "none"])
+            .help("Apply a transformation to replacements including captured groups"),
+    ];
+
     App::new(crate_name!())
         .setting(AppSettings::SubcommandsNegateReqs)
         .version(crate_version!())
@@ -93,18 +113,9 @@ pub fn create_app<'a>() -> App<'a, 'a> {
                 .validator_os(is_valid_string)
                 .index(2),
         )
-        .arg(
-            Arg::with_name("replace-limit")
-                .long("replace-limit")
-                .short("l")
-                .takes_value(true)
-                .value_name("LIMIT")
-                .default_value("1")
-                .validator(is_integer)
-                .help("Limit of replacements, all matches if set to 0"),
-        )
         .args(&common_args)
         .args(&path_args)
+        .args(&replace_args)
         .subcommand(
             SubCommand::with_name(FROM_FILE_SUBCOMMAND)
                 .args(&common_args)
