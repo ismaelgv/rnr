@@ -28,6 +28,7 @@
 * Linux, Mac and Windows support, including terminal coloring.
 * Extensive unit testing.
 * Select limit of replacements.
+* Apply text transformations to the replacements including capture groups.
 * Convert UTF-8 file names to ASCII representation.
 
 # Install
@@ -65,40 +66,9 @@ cargo install
 cargo install rnr
 ```
 # Usage
+
 ## Options
-```
-USAGE:
-    rnr [FLAGS] [OPTIONS] <EXPRESSION> <REPLACEMENT> <PATH(S)>...
-    rnr [FLAGS] [OPTIONS] <SUBCOMMAND>
-
-FLAGS:
-    -b, --backup          Generate file backups before renaming
-    -n, --dry-run         Only show what would be done (default mode)
-        --dump            Force dumping operations into a file even in dry-run mode
-    -f, --force           Make actual changes to files
-    -h, --help            Prints help information
-    -x, --hidden          Include hidden files and directories
-    -D, --include-dirs    Rename matching directories
-        --no-dump         Do not dump operations into a file
-    -r, --recursive       Recursive mode
-    -s, --silent          Do not print any information
-    -V, --version         Prints version information
-
-OPTIONS:
-        --color <color>            Set color output mode [default: auto]  [possible values: always, auto, never]
-    -d, --max-depth <LEVEL>        Set max depth in recursive mode
-    -l, --replace-limit <LIMIT>    Limit of replacements, all matches if set to 0 [default: 1]
-
-ARGS:
-    <EXPRESSION>     Expression to match (can be a regex)
-    <REPLACEMENT>    Expression replacement
-    <PATH(S)>...     Target paths
-
-SUBCOMMANDS:
-    from-file    Read operations from a dump file
-    help         Prints this message or the help of the given subcommand(s)
-    to-ascii     Replace all file name chars with ASCII chars. This operation is extremely lossy.
-```
+Check a detailed description of the application usage and all its options using: `rnr help`.
 
 ## Default behavior
 * Checks all operations to avoid overwriting existing files.
@@ -134,6 +104,7 @@ SUBCOMMANDS:
     * [Replace numbers](#replace-numbers)
     * [Capture groups](#capture-groups)
     * [Capture several named groups and swap them](#capture-several-named-groups-and-swap-them)
+    * [Capture several groups and apply a transformation](#capture-several-groups-and-apply-a-transformation)
 
 
 __NOTE:__ If the `EXPRESSION` contains `-` as initial character, the
@@ -181,14 +152,14 @@ rnr -f -D foo bar ./*
 ```
 .
 ├── foo
-│   └── foo.txt
+│   └── foo.txt
 └── foo.txt
 ```
 *Renamed tree*
 ```
 .
 ├── bar
-│   └── foo.txt
+│   └── foo.txt
 └── bar.txt
 ```
 
@@ -509,4 +480,28 @@ rnr -f '(?P<number>\d{2})\.(?P<ext>\w{3})' '${ext}.${number}' ./*
 ├── file-txt.01
 ├── file-txt.02
 └── file-txt.03
+```
+
+#### Capture several groups and apply a transformation
+
+1. Capture three unnamed groups [`name(1)-number(2).extension(3)`].
+2. Swap group 1 (name) and group 2 (number).
+3. Transform replacement to uppercase.
+
+```sh
+rnr -f -t upper '(\w+)-(\d+)' '${2}-${1}' ./*
+```
+*Original tree*
+```
+.
+├── file-01.txt
+├── file-02.txt
+└── file-03.txt
+```
+*Renamed tree*
+```
+.
+├── 01-FILE.txt
+├── 02-FILE.txt
+└── 03-FILE.txt
 ```
