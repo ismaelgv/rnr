@@ -1,9 +1,8 @@
 use app::{create_app, FROM_FILE_SUBCOMMAND, TO_ASCII_SUBCOMMAND};
-use atty;
 use clap::ArgMatches;
 use output::Printer;
 use regex::Regex;
-use std::sync::Arc;
+use std::{io::{self, IsTerminal}, sync::Arc};
 
 /// This module is defined Config struct to carry application configuration. This struct is created
 /// from the parsed arguments from command-line input using `clap`. Only UTF-8 valid arguments are
@@ -196,7 +195,8 @@ fn parse_arguments() -> Result<Config, String> {
 
 /// Detect if output must be colored and returns a properly configured printer.
 fn detect_output_color() -> Printer {
-    if atty::is(atty::Stream::Stdout) {
+    let stdout = io::stdout();
+    if stdout.is_terminal() {
         #[cfg(not(windows))]
         {
             Printer::color()

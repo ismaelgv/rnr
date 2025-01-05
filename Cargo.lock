@@ -311,7 +311,6 @@ version = "0.4.2"
 dependencies = [
  "ansi_term",
  "any_ascii",
- "atty",
  "chrono",
  "clap",
  "difference",

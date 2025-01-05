@@ -4,7 +4,6 @@
 //!
 extern crate ansi_term;
 extern crate any_ascii;
-extern crate atty;
 extern crate chrono;
 extern crate difference;
 extern crate path_abs;
