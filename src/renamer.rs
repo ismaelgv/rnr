@@ -192,17 +192,6 @@ pub enum TextTransformation {
     None,
 }
 
-impl From<&str> for TextTransformation {
-    fn from(value: &str) -> Self {
-        match value {
-            "upper" => Self::Upper,
-            "lower" => Self::Lower,
-            "ascii" => Self::ASCII,
-            _ => Self::None,
-        }
-    }
-}
-
 impl TextTransformation {
     pub fn transform(&self, text: String) -> String {
         match self {

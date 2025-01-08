@@ -1,5 +1,5 @@
-use app::{create_app, FROM_FILE_SUBCOMMAND, TO_ASCII_SUBCOMMAND};
-use clap::ArgMatches;
+use clap::Parser;
+use cli::Cli;
 use output::Printer;
 use regex::Regex;
 use std::{
@@ -7,7 +7,10 @@ use std::{
     sync::Arc,
 };
 
-use crate::renamer::TextTransformation;
+use crate::{
+    cli::{ReplaceTransform, SubCommands},
+    renamer::TextTransformation,
+};
 
 /// This module is defined Config struct to carry application configuration. This struct is created
 /// from the parsed arguments from command-line input using `clap`. Only UTF-8 valid arguments are
@@ -55,78 +58,38 @@ pub enum ReplaceMode {
     ToASCII,
 }
 
-/// Application commands
-#[derive(Debug, PartialEq)]
-pub enum AppCommand {
-    Root,
-    FromFile,
-    ToASCII,
-}
-
-impl AppCommand {
-    pub fn from_str(name: &str) -> Result<AppCommand, String> {
-        match name {
-            "" => Ok(AppCommand::Root),
-            FROM_FILE_SUBCOMMAND => Ok(AppCommand::FromFile),
-            TO_ASCII_SUBCOMMAND => Ok(AppCommand::ToASCII),
-            _ => Err(format!("Non-registered subcommand '{}'", name)),
-        }
-    }
-}
-
 struct ArgumentParser<'a> {
-    matches: &'a ArgMatches<'a>,
+    cli: &'a Cli,
     printer: &'a Printer,
-    command: &'a AppCommand,
 }
 
 impl ArgumentParser<'_> {
     fn parse_run_mode(&self) -> Result<RunMode, String> {
-        if let AppCommand::FromFile = self.command {
+        if let Some(SubCommands::FromFile { dumpfile, undo }) = &self.cli.command {
             return Ok(RunMode::FromFile {
-                path: String::from(self.matches.value_of("DUMPFILE").unwrap_or_default()),
-                undo: self.matches.is_present("undo"),
+                path: dumpfile.clone(),
+                undo: undo.unwrap_or(false),
             });
         }
 
-        // Detect run mode and set parameters accordingly
-        let input_paths: Vec<String> = self
-            .matches
-            .values_of("PATH(S)")
-            .unwrap_or_default()
-            .map(String::from)
-            .collect();
-
-        if self.matches.is_present("recursive") {
-            let max_depth = if self.matches.is_present("max-depth") {
-                Some(
-                    self.matches
-                        .value_of("max-depth")
-                        .unwrap_or_default()
-                        .parse::<usize>()
-                        .unwrap_or_default(),
-                )
-            } else {
-                None
-            };
-
+        if self.cli.recursive {
             Ok(RunMode::Recursive {
-                paths: input_paths,
-                max_depth,
-                hidden: self.matches.is_present("hidden"),
+                paths: self.cli.paths.clone(),
+                max_depth: self.cli.max_depth,
+                hidden: self.cli.hidden,
             })
         } else {
-            Ok(RunMode::Simple(input_paths))
+            Ok(RunMode::Simple(self.cli.paths.clone()))
         }
     }
 
     fn parse_replace_mode(&self) -> Result<ReplaceMode, String> {
-        if let AppCommand::ToASCII = self.command {
+        if let Some(SubCommands::ToASCII) = self.cli.command {
             return Ok(ReplaceMode::ToASCII);
         }
 
         // Get and validate regex expression and replacement from arguments
-        let expression = match Regex::new(self.matches.value_of("EXPRESSION").unwrap_or_default()) {
+        let expression = match Regex::new(&self.cli.expression) {
             Ok(expr) => expr,
             Err(err) => {
                 return Err(format!(
@@ -136,69 +99,45 @@ impl ArgumentParser<'_> {
                 ));
             }
         };
-        let replacement = String::from(self.matches.value_of("REPLACEMENT").unwrap_or_default());
-
-        let limit = self
-            .matches
-            .value_of("replace-limit")
-            .unwrap_or_default()
-            .parse::<usize>()
-            .unwrap_or_default();
-
-        let transform: TextTransformation = self
-            .matches
-            .value_of("replace-transform")
-            .unwrap_or_default()
-            .into();
 
         Ok(ReplaceMode::RegExp {
             expression,
-            replacement,
-            limit,
-            transform,
+            replacement: self.cli.replacement.clone(),
+            limit: self.cli.replace_limit.unwrap_or(1),
+            transform: self.cli.replace_transform.into(),
         })
     }
 }
 
 /// Parse arguments and do some checking.
 fn parse_arguments() -> Result<Config, String> {
-    let app = create_app();
-    let matches = app.get_matches();
-    let (command, matches) = match matches.subcommand() {
-        (name, Some(submatches)) => (AppCommand::from_str(name)?, submatches),
-        (_, None) => (AppCommand::Root, &matches), // Always defaults to root if no submatches found.
-    };
+    let cli = Cli::parse();
 
     // Set dump defaults: write in force mode and do not in dry-run unless it is explicitly asked
-    let dump = if matches.is_present("force") {
-        !matches.is_present("no-dump")
-    } else {
-        matches.is_present("dump")
-    };
+    let dump = if cli.force { !cli.no_dump } else { cli.dump };
 
-    let printer = if matches.is_present("silent") {
+    let printer = if cli.silent {
         Printer::silent()
     } else {
-        match matches.value_of("color").unwrap_or("auto") {
-            "always" => Printer::color(),
-            "never" => Printer::no_color(),
-            _ => detect_output_color(), // Ignore non-valid values and use auto.
+        match cli.color {
+            crate::cli::Color::Always => Printer::color(),
+            crate::cli::Color::Never => Printer::no_color(),
+            crate::cli::Color::Auto => detect_output_color(),
         }
     };
 
     let argument_parser = ArgumentParser {
+        cli: &cli,
         printer: &printer,
-        matches,
-        command: &command,
     };
 
     let run_mode = argument_parser.parse_run_mode()?;
     let replace_mode = argument_parser.parse_replace_mode()?;
 
     Ok(Config {
-        force: matches.is_present("force"),
-        backup: matches.is_present("backup"),
-        dirs: matches.is_present("include-dirs"),
+        force: cli.force,
+        backup: cli.backup,
+        dirs: cli.include_dirs,
         dump,
         run_mode,
         replace_mode,
@@ -228,26 +167,18 @@ fn detect_output_color() -> Printer {
     }
 }
 
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    #[test]
-    fn app_command_from_str() {
-        assert_eq!(AppCommand::from_str("").unwrap(), AppCommand::Root);
-        assert_eq!(
-            AppCommand::from_str(FROM_FILE_SUBCOMMAND).unwrap(),
-            AppCommand::FromFile
-        );
-        assert_eq!(
-            AppCommand::from_str(TO_ASCII_SUBCOMMAND).unwrap(),
-            AppCommand::ToASCII
-        );
-    }
-
-    #[test]
-    #[should_panic]
-    fn app_command_from_str_unknown_error() {
-        AppCommand::from_str("this-command-does-not-exists").unwrap();
+impl From<Option<ReplaceTransform>> for TextTransformation {
+    fn from(value: Option<ReplaceTransform>) -> Self {
+        match value {
+            Some(transform) => match transform {
+                ReplaceTransform::Upper => TextTransformation::Upper,
+                ReplaceTransform::Lower => TextTransformation::Lower,
+                ReplaceTransform::ASCII => TextTransformation::ASCII,
+            },
+            None => TextTransformation::None,
+        }
     }
 }
+
+#[cfg(test)]
+mod test {}

@@ -20,13 +20,13 @@ extern crate serde_derive;
 
 use renamer::Renamer;
 
-mod app;
+mod cli;
 mod config;
 mod dumpfile;
 mod error;
 mod fileutils;
 mod output;
-mod renamer;
+pub mod renamer;
 mod solver;
 
 fn main() {
