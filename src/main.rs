@@ -26,7 +26,7 @@ mod dumpfile;
 mod error;
 mod fileutils;
 mod output;
-pub mod renamer;
+mod renamer;
 mod solver;
 
 fn main() {
