@@ -1,5 +1,5 @@
-use error::*;
-use fileutils::{is_same_file, PathList};
+use crate::error::*;
+use crate::fileutils::{is_same_file, PathList};
 use path_abs::PathAbs;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -171,7 +171,7 @@ fn sort_existing_targets(
 mod test {
     extern crate tempfile;
     use super::*;
-    use fileutils::create_symlink;
+    use crate::fileutils::create_symlink;
     use std::fs;
 
     #[test]

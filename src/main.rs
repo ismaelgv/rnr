@@ -18,7 +18,7 @@ extern crate clap;
 #[macro_use]
 extern crate serde_derive;
 
-use renamer::Renamer;
+use crate::renamer::Renamer;
 
 mod cli;
 mod config;

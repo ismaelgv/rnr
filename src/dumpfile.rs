@@ -1,7 +1,7 @@
 use chrono;
-use error::*;
+use crate::error::*;
 use serde_json;
-use solver::{Operation, Operations};
+use crate::solver::{Operation, Operations};
 use std::fs::File;
 use std::path::Path;
 

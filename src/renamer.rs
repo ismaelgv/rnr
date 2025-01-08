@@ -1,11 +1,11 @@
 use any_ascii::any_ascii;
-use config::{Config, ReplaceMode, RunMode};
-use dumpfile;
-use error::*;
-use fileutils::{cleanup_paths, create_backup, get_paths};
+use crate::config::{Config, ReplaceMode, RunMode};
+use crate::dumpfile;
+use crate::error::*;
+use crate::fileutils::{cleanup_paths, create_backup, get_paths};
 use regex::Replacer;
-use solver;
-use solver::{Operation, Operations, RenameMap};
+use crate::solver;
+use crate::solver::{Operation, Operations, RenameMap};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -222,8 +222,8 @@ impl Replacer for &TransformReplacer<'_> {
 mod test {
     extern crate tempfile;
     use super::*;
-    use config::RunMode;
-    use output::Printer;
+    use crate::config::RunMode;
+    use crate::output::Printer;
     use regex::Regex;
     use std::fs;
     use std::path::Path;

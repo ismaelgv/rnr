@@ -1,5 +1,5 @@
-use config::RunMode;
-use error::*;
+use crate::config::RunMode;
+use crate::error::*;
 use path_abs::PathAbs;
 use std::collections::HashMap;
 use std::fs;

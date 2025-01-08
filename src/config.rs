@@ -1,6 +1,6 @@
 use clap::Parser;
-use cli::Cli;
-use output::Printer;
+use crate::cli::Cli;
+use crate::output::Printer;
 use regex::Regex;
 use std::{
     io::{self, IsTerminal},
