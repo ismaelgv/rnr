@@ -1,3 +1,5 @@
+use clap::{Parser, Subcommand, ValueEnum};
+
 #[derive(Parser)]
 #[command(version, about, author)]
 pub struct Cli {
@@ -93,37 +95,3 @@ pub enum ReplaceTransform {
     Lower,
     ASCII,
 }
-
-/*
-    App::new(crate_name!())
-        .setting(AppSettings::SubcommandsNegateReqs)
-        .args(&common_args)
-        .args(&path_args)
-        .args(&replace_args)
-        .subcommand(
-            SubCommand::with_name(FROM_FILE_SUBCOMMAND)
-                .args(&common_args)
-                .arg(
-                    Arg::with_name("DUMPFILE")
-                        .takes_value(true)
-                        .required(true)
-                        .value_name("DUMPFILE")
-                        .validator_os(is_valid_string)
-                        .index(1),
-                )
-                .arg(
-                    Arg::with_name("undo")
-                        .long("undo")
-                        .short("u")
-                        .help("Undo the operations from the dump file"),
-                )
-                .about("Read operations from a dump file"),
-        )
-        .subcommand(
-            SubCommand::with_name(TO_ASCII_SUBCOMMAND)
-                .args(&common_args)
-                .args(&path_args)
-                .about("Replace file name UTF-8 chars with ASCII chars representation."),
-        )
-}
-*/

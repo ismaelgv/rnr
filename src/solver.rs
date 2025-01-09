@@ -1,6 +1,7 @@
 use crate::error::*;
 use crate::fileutils::{is_same_file, PathList};
 use path_abs::PathAbs;
+use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 

@@ -6,11 +6,11 @@ description = """
 RnR is a command-line tool to rename multiple files and directories that
 supports regular expressions
 """
+edition = "2021"
 categories = ["command-line-utilities"]
 license = "MIT"
 homepage = "https://github.com/ismaelgv/rnr"
 repository = "https://github.com/ismaelgv/rnr"
-build = "build.rs"
 readme = "README.md"
 
 [dependencies]
@@ -28,5 +28,5 @@ difference = "^2.0.0"
 any_ascii = "^0.3.0"
 
 [build-dependencies]
-clap = "^4.0"
+clap = { version = "^4.0", features = ["derive"] }
 clap_complete = "^4.0"
