@@ -1,19 +1,32 @@
-extern crate clap;
+use clap::CommandFactory;
+use clap_complete::{generate_to, Shell};
+use std::io::Error;
 
-extern crate clap_complete;
+include!("src/cli.rs");
 
-use clap_complete::Shell;
+const APP_NAME: &str = "rnr";
 
-#[path = "src/cli.rs"]
-mod cli;
+fn main() -> Result<(), Error> {
+    let outdir =
+        std::path::PathBuf::from(std::env::var_os("OUT_DIR").ok_or(std::io::ErrorKind::NotFound)?);
 
-fn main() {
-    let env_dir = std::env::var_os("OUT_DIR");
-    let outdir = match env_dir {
-        None => {
-            println!("No OUT_DIR defined to store completion files.");
-            std::process::exit(1);
-        }
-        Some(outdir) => outdir,
-    };
+    let mut cmd = Cli::command();
+
+    // Completion
+    for &shell in Shell::value_variants() {
+        generate_to(shell, &mut cmd, APP_NAME, &outdir)?;
+        println!("cargo:warning={shell:?} completion file is generated.");
+    }
+
+    // Man
+    let man = clap_mangen::Man::new(cmd);
+    let mut buffer: Vec<u8> = Default::default();
+    man.render(&mut buffer)?;
+
+    let mut man_file = outdir.join(APP_NAME);
+    man_file.set_extension("1");
+    std::fs::write(man_file, buffer)?;
+    println!("cargo:warning=man file is generated.");
+
+    Ok(())
 }

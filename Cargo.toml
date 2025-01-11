@@ -31,3 +31,4 @@ anyhow = "1.0.95"
 [build-dependencies]
 clap = { version = "^4.0", features = ["derive"] }
 clap_complete = "^4.0"
+clap_mangen = "*"

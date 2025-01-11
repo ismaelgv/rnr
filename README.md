@@ -307,9 +307,9 @@ rnr regex -f -r -D -x foo bar ./
 ├── .foo_hidden_file.txt
 ├── foo.txt
 ├── foo
-│   ├── foo.txt
-│   └── foo
-│       └── foo.txt
+│   ├── foo.txt
+│   └── foo
+│       └── foo.txt
 └── .foo_hidden_dir
     └── foo.txt
 ```
@@ -319,9 +319,9 @@ rnr regex -f -r -D -x foo bar ./
 ├── .bar_hidden_file.txt
 ├── bar.txt
 ├── bar
-│   ├── bar.txt
-│   └── bar
-│       └── bar.txt
+│   ├── bar.txt
+│   └── bar
+│       └── bar.txt
 └── .bar_hidden_dir
     └── bar.txt
 ```
