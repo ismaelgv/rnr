@@ -96,13 +96,8 @@ pub fn cleanup_paths(paths: &mut PathList, keep_dirs: bool) {
         }
     });
 
-    // Deduplicate paths generating their absolute path and inserting them in a Hashmap. Replace
-    // the PathList original content with the deduplicated data.
-    let abs_path_map: HashMap<PathAbs, PathBuf> = paths
-        .drain(..)
-        .map(|p| (PathAbs::new(&p).unwrap(), p))
-        .collect();
-    paths.append(&mut abs_path_map.values().cloned().collect());
+    paths.sort_unstable();
+    paths.dedup();
 }
 
 /// Wrapper to create symlink files without considering the OS explicitly
