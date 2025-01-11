@@ -1,3 +1,13 @@
+## [Unrealeased]
+### Added
+* New `--transform` option to apply text transformation to replacement in
+  `regex` command, including captured groups.
+* Generate `man` pages files.
+### Changed
+* **BREAKING** Move root command to `regex` subcommand.
+* Update project dependencies.
+* Migrate to `clap` v4 and derive CLI configuration.
+
 # v0.4.2 (2023-02-26)
 ### Fixed
 * Upgrade dependencies to fix some possible security issues.
