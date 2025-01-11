@@ -19,39 +19,35 @@ pub type Operations = Vec<Operation>;
 /// Solve renaming order to avoid file overwrite. Solver will order the operations considering
 /// existing targets to avoid conflicts.
 pub fn solve_rename_order(rename_map: &RenameMap) -> Result<Operations> {
-    // Get a list of path levels
-    let mut level_list: Vec<usize> = rename_map
-        .values()
-        .map(|p| p.components().count())
-        .collect();
-    level_list.sort_unstable();
-    level_list.dedup();
-    level_list.reverse();
+    // Get a map of path levels
+    let mut level_map: HashMap<usize, PathList> = HashMap::new();
+    rename_map.keys().for_each(|p| {
+        let level = p.components().count();
+        if let Some(targets) = level_map.get_mut(&level) {
+            targets.push(p.clone());
+        } else {
+            level_map.insert(level, vec![p.clone()]);
+        };
+    });
+    let mut levels: Vec<usize> = level_map.keys().map(|k| k.clone()).collect();
+    levels.sort_unstable();
 
     // Sort from deeper to higher path level
     let mut rename_order = PathList::new();
-    for level in level_list {
+    for level in levels {
         // Get all targets of this level
-        let level_targets: Vec<PathBuf> = rename_map
-            .keys()
-            .filter_map(|p| {
-                if p.components().count() == level {
-                    Some(p.clone())
-                } else {
-                    None
-                }
-            })
-            .collect();
+        let level_targets: Vec<PathBuf> = level_map.remove(&level).unwrap();
+
         // Return existing targets in the list of original filenames
         let mut existing_targets = get_existing_targets(&level_targets, rename_map)?;
 
         // Store first all non conflicting entries
         rename_order.append(
             &mut level_targets
-                .iter()
+                .into_iter()
                 .filter_map(|p| {
-                    if !existing_targets.contains(p) {
-                        Some(p.clone())
+                    if !existing_targets.contains(&p) {
+                        Some(p)
                     } else {
                         None
                     }
@@ -66,7 +62,7 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<Operations> {
     }
 
     // Construct a vector with the ordered operations
-    let mut operations = Operations::new();
+    let mut operations = Operations::with_capacity(rename_order.len());
     for target in rename_order {
         operations.push(Operation {
             source: rename_map[&target].clone(),
