@@ -107,18 +107,19 @@ Check a detailed description of the application usage and all its options using:
     * [Capture several groups and apply a transformation](#capture-several-groups-and-apply-a-transformation)
 
 
-__NOTE:__ If the `EXPRESSION` contains `-` as initial character, the
-application with parse it as an argument. You need to use `--` after flags and
-before the arguments, for example `rnr -f -- '-foo' '-bar' [...]`.
+__NOTE:__ If the regular expression `EXPRESSION` contains `-` as initial
+character, the application with parse it as an argument. You need to use `--`
+after flags and before the arguments, for example `rnr regex -f -- '-foo' '-bar'
+[...]`.
 
 __WINDOWS NOTE:__ In the examples that use `*`, you need to expand the wildcard
-in PowerShell, for example: `rnr a b (Get-Item ./*)`. This is not supported in
+in PowerShell, for example: `rnr regex a b (Get-Item ./*)`. This is not supported in
 `cmd.exe`.
 
 ### Rename a list of files
 You can pass a list of files to be renamed as arguments:
 ```sh
-rnr -f file renamed ./file-01.txt ./one/file-02.txt ./one/file-03.txt
+rnr regex -f file renamed ./file-01.txt ./one/file-02.txt ./one/file-03.txt
 ```
 *Original tree*
 ```
@@ -146,7 +147,7 @@ rnr -f file renamed ./file-01.txt ./one/file-02.txt ./one/file-03.txt
 #### Include directories
 Directories are ignored by default but you can also include them to be renamed using the option `-D`.
 ```sh
-rnr -f -D foo bar ./*
+rnr regex -f -D foo bar ./*
 ```
 *Original tree*
 ```
@@ -169,7 +170,7 @@ to replace multiple non-overlapping matches. All matches will be replaced if
 this option is set to 0.
 
 ```sh
-rnr -f -l 0 o u ./*
+rnr regex -f -l 0 o u ./*
 ```
 *Original tree*
 ```
@@ -193,12 +194,12 @@ You can combine `rnr` with other UNIX tools using pipes to pass arguments.
 
 ##### Find files older than 1 day and rename them
 ```sh
-find . -type f +mtime 1 | xargs rnr -f file renamed
+find . -type f +mtime 1 | xargs rnr regex -f file renamed
 ```
 
 ##### Read list of files from a file
 ```sh
-cat file_list.txt | xargs rnr -f file rename
+cat file_list.txt | xargs rnr regex -f file rename
 ```
 
 `file_list.txt` content:
@@ -211,7 +212,7 @@ one/file-03.txt
 ### Recursive rename
 If recursive (`-r`) option is passed, `rnr` will look for al files in the path recursively without depth limit.
 ```sh
-rnr -f -r file renamed ./
+rnr regex -f -r file renamed ./
 ```
 *Original tree*
 ```
@@ -254,7 +255,7 @@ rnr -f -r file renamed ./
 #### Recursive rename with max directory depth
 Similarly, you can set a maximum directory depth in combination with recursive operations.
 ```sh
-rnr -f -r -d 2 file renamed ./
+rnr regex -f -r -d 2 file renamed ./
 ```
 *Original tree*
 ```
@@ -298,7 +299,7 @@ rnr -f -r -d 2 file renamed ./
 #### Recursive rename including directories and hidden files
 `rnr` ignore hidden files by default to speed up the operations and avoid problems with some particular directories like `.git/` or `.local/`. You can include hidden files passing `-x` option. Also, you can use include directories `-D` option with `-r` too.
 ```sh
-rnr -f -r -D -x foo bar ./
+rnr regex -f -r -D -x foo bar ./
 ```
 *Original tree*
 ```
@@ -330,7 +331,7 @@ When you perform a renaming operation, `rnr` will create by default a dump file 
 
 *Rename operation*
 ```sh
-rnr -f foo bar ./*
+rnr regex -f foo bar ./*
 ```
 *Undo previous operation*
 ```sh
@@ -347,7 +348,7 @@ rnr from-file -f rnr-[timestamp].json
 `rnr` can create backup files before renaming for any operation passing `-b` option. The backup files names are ensured to be unique and won't be overwritten if another backup is created. If you are working with many large files, take into account that files will be duplicated.
 
 ```sh
-rnr -f -b file renamed ./*
+rnr regex -f -b file renamed ./*
 ```
 
 *Original tree*
@@ -401,7 +402,7 @@ rnr to-ascii -r .
 More info about regex used [in the `regex` package](https://docs.rs/regex).
 #### Replace extensions
 ```
-rnr -f '\..*$' '.txt' ./*
+rnr regex -f '\..*$' '.txt' ./*
 ```
 *Original tree*
 ```
@@ -420,7 +421,7 @@ rnr -f '\..*$' '.txt' ./*
 
 #### Replace numbers
 ```
-rnr -f '\d' '1' ./*
+rnr regex -f '\d' '1' ./*
 ```
 *Original tree*
 ```
@@ -440,7 +441,7 @@ rnr -f '\d' '1' ./*
 1. Capture three unnamed groups [`name(1)-number(2).extension(3)`].
 2. Swap group 1 (name) and group 2 (number).
 ```sh
-rnr -f '(\w+)-(\d+).(\w+)' '${2}-${1}.${3}' ./*
+rnr regex -f '(\w+)-(\d+).(\w+)' '${2}-${1}.${3}' ./*
 ```
 *Original tree*
 ```
@@ -465,7 +466,7 @@ expanded shell variables.
 2. Capture extension as `ext`.
 3. Swap groups.
 ```sh
-rnr -f '(?P<number>\d{2})\.(?P<ext>\w{3})' '${ext}.${number}' ./*
+rnr regex -f '(?P<number>\d{2})\.(?P<ext>\w{3})' '${ext}.${number}' ./*
 ```
 *Original tree*
 ```
@@ -489,7 +490,7 @@ rnr -f '(?P<number>\d{2})\.(?P<ext>\w{3})' '${ext}.${number}' ./*
 3. Transform replacement to uppercase.
 
 ```sh
-rnr -f -t upper '(\w+)-(\d+)' '${2}-${1}' ./*
+rnr regex -f -t upper '(\w+)-(\d+)' '${2}-${1}' ./*
 ```
 *Original tree*
 ```

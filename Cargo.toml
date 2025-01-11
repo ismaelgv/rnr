@@ -1,12 +1,12 @@
 [package]
 name = "rnr"
 version = "0.4.2"
+edition = "2021"
 authors = ["Ismael González Valverde <ismgonval@gmail.com>"]
 description = """
 RnR is a command-line tool to rename multiple files and directories that
 supports regular expressions
 """
-edition = "2021"
 categories = ["command-line-utilities"]
 license = "MIT"
 homepage = "https://github.com/ismaelgv/rnr"
@@ -26,6 +26,7 @@ tempfile = "^3"
 walkdir= "^2"
 difference = "^2.0.0"
 any_ascii = "^0.3.0"
+anyhow = "1.0.95"
 
 [build-dependencies]
 clap = { version = "^4.0", features = ["derive"] }

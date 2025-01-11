@@ -1,6 +1,7 @@
-use clap::Parser;
-use crate::cli::Cli;
+use crate::cli::{Cli, RegexArgs};
 use crate::output::Printer;
+use anyhow::{bail, Result};
+use clap::Parser;
 use regex::Regex;
 use std::{
     io::{self, IsTerminal},
@@ -26,10 +27,10 @@ pub struct Config {
 }
 
 impl Config {
-    pub fn new() -> Result<Arc<Config>, String> {
+    pub fn new() -> Result<Arc<Config>> {
         let config = match parse_arguments() {
             Ok(config) => config,
-            Err(err) => return Err(err),
+            Err(err) => bail!("{}", err),
         };
         Ok(Arc::new(config))
     }
@@ -56,6 +57,7 @@ pub enum ReplaceMode {
         transform: TextTransformation,
     },
     ToASCII,
+    None,
 }
 
 struct ArgumentParser<'a> {
@@ -64,62 +66,78 @@ struct ArgumentParser<'a> {
 }
 
 impl ArgumentParser<'_> {
-    fn parse_run_mode(&self) -> Result<RunMode, String> {
-        if let Some(SubCommands::FromFile { dumpfile, undo }) = &self.cli.command {
-            return Ok(RunMode::FromFile {
-                path: dumpfile.clone(),
-                undo: undo.unwrap_or(false),
-            });
-        }
+    fn parse_run_mode(&self) -> Result<RunMode> {
+        let path = match &self.cli.command {
+            SubCommands::FromFile { dumpfile, undo, .. } => {
+                return Ok(RunMode::FromFile {
+                    path: dumpfile.clone(),
+                    undo: *undo,
+                });
+            }
+            SubCommands::Regex(RegexArgs { path, .. }) => path,
+            SubCommands::ToASCII { path, .. } => path,
+        };
 
-        if self.cli.recursive {
+        if path.recursive {
             Ok(RunMode::Recursive {
-                paths: self.cli.paths.clone(),
-                max_depth: self.cli.max_depth,
-                hidden: self.cli.hidden,
+                paths: path.paths.clone(),
+                max_depth: path.max_depth,
+                hidden: path.hidden,
             })
         } else {
-            Ok(RunMode::Simple(self.cli.paths.clone()))
+            Ok(RunMode::Simple(path.paths.clone()))
         }
     }
 
-    fn parse_replace_mode(&self) -> Result<ReplaceMode, String> {
-        if let Some(SubCommands::ToASCII) = self.cli.command {
-            return Ok(ReplaceMode::ToASCII);
-        }
+    fn parse_replace_mode(&self) -> Result<ReplaceMode> {
+        let regex = match &self.cli.command {
+            SubCommands::ToASCII { .. } => return Ok(ReplaceMode::ToASCII),
+            SubCommands::FromFile { .. } => return Ok(ReplaceMode::None),
+            SubCommands::Regex(regex) => regex,
+        };
 
         // Get and validate regex expression and replacement from arguments
-        let expression = match Regex::new(&self.cli.expression) {
+        let expression = match Regex::new(&regex.expression) {
             Ok(expr) => expr,
             Err(err) => {
-                return Err(format!(
+                bail!(
                     "{}Bad expression provided\n\n{}",
                     self.printer.colors.error.paint("Error: "),
                     self.printer.colors.error.paint(err.to_string())
-                ));
+                );
             }
         };
 
         Ok(ReplaceMode::RegExp {
             expression,
-            replacement: self.cli.replacement.clone(),
-            limit: self.cli.replace_limit.unwrap_or(1),
-            transform: self.cli.replace_transform.into(),
+            replacement: regex.replacement.clone(),
+            limit: regex.replace.replace_limit.unwrap_or(1),
+            transform: regex.replace.replace_transform.into(),
         })
     }
 }
 
 /// Parse arguments and do some checking.
-fn parse_arguments() -> Result<Config, String> {
+fn parse_arguments() -> Result<Config> {
     let cli = Cli::parse();
 
-    // Set dump defaults: write in force mode and do not in dry-run unless it is explicitly asked
-    let dump = if cli.force { !cli.no_dump } else { cli.dump };
+    let (common, path) = match &cli.command {
+        SubCommands::Regex(RegexArgs { common, path, .. }) => (common, Some(path)),
+        SubCommands::ToASCII { common, path } => (common, Some(path)),
+        SubCommands::FromFile { common, .. } => (common, None),
+    };
 
-    let printer = if cli.silent {
+    // Set dump defaults: write in force mode and do not in dry-run unless it is explicitly asked
+    let dump = if common.force {
+        !common.no_dump
+    } else {
+        common.dump
+    };
+
+    let printer = if common.silent {
         Printer::silent()
     } else {
-        match cli.color {
+        match common.color {
             crate::cli::Color::Always => Printer::color(),
             crate::cli::Color::Never => Printer::no_color(),
             crate::cli::Color::Auto => detect_output_color(),
@@ -135,9 +153,9 @@ fn parse_arguments() -> Result<Config, String> {
     let replace_mode = argument_parser.parse_replace_mode()?;
 
     Ok(Config {
-        force: cli.force,
-        backup: cli.backup,
-        dirs: cli.include_dirs,
+        force: common.force,
+        backup: common.backup,
+        dirs: path.map_or(false, |p| p.include_dirs),
         dump,
         run_mode,
         replace_mode,

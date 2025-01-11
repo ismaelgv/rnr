@@ -1,11 +1,11 @@
-use any_ascii::any_ascii;
 use crate::config::{Config, ReplaceMode, RunMode};
 use crate::dumpfile;
 use crate::error::*;
 use crate::fileutils::{cleanup_paths, create_backup, get_paths};
-use regex::Replacer;
 use crate::solver;
 use crate::solver::{Operation, Operations, RenameMap};
+use any_ascii::any_ascii;
+use regex::Replacer;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -85,6 +85,7 @@ impl Renamer {
                     .to_string()
             }
             ReplaceMode::ToASCII => any_ascii(file_name),
+            ReplaceMode::None => file_name.to_string(),
         };
 
         match parent {

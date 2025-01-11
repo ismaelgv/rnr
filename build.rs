@@ -1,4 +1,3 @@
-#[macro_use]
 extern crate clap;
 
 extern crate clap_complete;
