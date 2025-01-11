@@ -83,12 +83,14 @@ jobs:
           # Create deployment directory
           mkdir -p "${deploy_dir}"
           mkdir -p "${deploy_dir}/completion"
+          mkdir -p "${deploy_dir}/man1"
 
           # Copy files
           cp README.md "${deploy_dir}"
           cp LICENSE "${deploy_dir}"
           cp "target/${TARGET}/release/${PROJECT_NAME}"             "${deploy_dir}/"
-          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr.1"     "${deploy_dir}/"
+          ## Man
+          cp "target/${TARGET}/release/build/rnr"-*/out/"*.1"     "${deploy_dir}/man1/"
           ## Completion
           cp "target/${TARGET}/release/build/rnr"-*/out/"_rnr"      "${deploy_dir}/completion/"
           cp "target/${TARGET}/release/build/rnr"-*/out/"rnr.bash"  "${deploy_dir}/completion/"
