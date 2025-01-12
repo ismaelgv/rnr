@@ -26,13 +26,13 @@ impl Renamer {
         let operations = match self.config.run_mode {
             RunMode::Simple(_) | RunMode::Recursive { .. } => {
                 // Get paths
-                let mut input_paths = get_paths(&self.config.run_mode);
+                let input_paths = get_paths(&self.config.run_mode);
 
                 // Remove directories and on existing paths from the list
-                cleanup_paths(&mut input_paths, self.config.dirs);
+                let clean_paths = cleanup_paths(input_paths, self.config.dirs);
 
                 // Relate original names with their targets
-                let rename_map = self.get_rename_map(&input_paths)?;
+                let rename_map = self.get_rename_map(&clean_paths)?;
 
                 // Solve renaming operation ordering to avoid conflicts
                 solver::solve_rename_order(&rename_map)?

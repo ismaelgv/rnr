@@ -81,7 +81,7 @@ pub fn create_backup(path: &Path) -> Result<PathBuf> {
 
 /// Clean paths that does not exists and duplicated entries. It remove directories too if dirs
 /// parameters is set to false.
-pub fn cleanup_paths(paths: &mut PathList, keep_dirs: bool) {
+pub fn cleanup_paths(paths: PathList, keep_dirs: bool) -> PathList {
     // PERF: Run costly checks in parallel.
     let mut paths: PathList = paths
         .into_par_iter()
@@ -98,6 +98,8 @@ pub fn cleanup_paths(paths: &mut PathList, keep_dirs: bool) {
 
     paths.par_sort_unstable();
     paths.dedup();
+
+    paths
 }
 
 /// Wrapper to create symlink files without considering the OS explicitly
@@ -508,7 +510,7 @@ mod test {
         mock_paths.append(&mut mock_files.clone());
         mock_paths.append(&mut mock_files.clone());
 
-        cleanup_paths(&mut mock_paths, false);
+        let mock_paths = cleanup_paths(mock_paths, false);
 
         // Must contain these the files
         let mut listed_files = PathList::new();
