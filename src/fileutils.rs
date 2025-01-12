@@ -1,5 +1,6 @@
 use crate::config::RunMode;
 use crate::error::*;
+use rayon::prelude::*;
 use std::fs;
 use std::path::Path;
 use std::path::PathBuf;
@@ -81,20 +82,21 @@ pub fn create_backup(path: &Path) -> Result<PathBuf> {
 /// Clean paths that does not exists and duplicated entries. It remove directories too if dirs
 /// parameters is set to false.
 pub fn cleanup_paths(paths: &mut PathList, keep_dirs: bool) {
-    paths.retain(|path| {
-        // Path must exists before performing other checks
-        if path.symlink_metadata().is_err() {
-            return false;
-        }
+    // PERF: Run costly checks in parallel.
+    let mut paths: PathList = paths
+        .into_par_iter()
+        .filter(|p| p.symlink_metadata().is_ok())
+        .filter(|p| {
+            if p.is_dir() {
+                keep_dirs && p.file_name().is_some()
+            } else {
+                true
+            }
+        })
+        .map(|p| p.clone())
+        .collect();
 
-        if path.is_dir() {
-            keep_dirs && path.file_name().is_some()
-        } else {
-            true
-        }
-    });
-
-    paths.sort_unstable();
+    paths.par_sort_unstable();
     paths.dedup();
 }
 
