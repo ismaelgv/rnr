@@ -5,6 +5,7 @@ use crate::fileutils::{cleanup_paths, create_backup, get_paths};
 use crate::solver;
 use crate::solver::{Operation, Operations, RenameMap};
 use any_ascii::any_ascii;
+use rayon::prelude::*;
 use regex::Replacer;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -102,34 +103,46 @@ impl Renamer {
         let mut rename_map = RenameMap::new();
         let mut error_string = String::new();
 
-        for path in paths {
-            let target = self.replace_match(path);
-            // Discard paths with no changes
-            if target != *path {
-                if let Some(old_path) = rename_map.insert(target.clone(), path.clone()) {
-                    // Targets cannot be duplicated by any reason
-                    error_string.push_str(
-                        &colors
-                            .error
-                            .paint(format!(
-                                "\n{0}->{2}\n{1}->{2}\n",
-                                old_path.display(),
-                                path.display(),
-                                target.display()
-                            ))
-                            .to_string(),
-                    );
+        let targets: Vec<(PathBuf, PathBuf)> = paths
+            .into_par_iter()
+            .filter_map(|p| {
+                let target = self.replace_match(p);
+                // Discard paths with no changes
+                if *p != target {
+                    Some((p.clone(), target))
+                } else {
+                    None
                 }
+            })
+            .collect();
+
+        for (source, target) in targets {
+            // Targets cannot be duplicated by any reason
+            if let Some(previous_source) = rename_map.get(&target) {
+                error_string.push_str(
+                    &colors
+                        .error
+                        .paint(format!(
+                            "\n{0}->{2}\n{1}->{2}\n",
+                            previous_source.display(),
+                            source.display(),
+                            target.display()
+                        ))
+                        .to_string(),
+                );
+            } else {
+                rename_map.insert(target, source);
             }
         }
-        if error_string.is_empty() {
-            Ok(rename_map)
-        } else {
-            Err(Error {
+
+        if !error_string.is_empty() {
+            return Err(Error {
                 kind: ErrorKind::SameFilename,
                 value: Some(error_string),
-            })
+            });
         }
+
+        Ok(rename_map)
     }
 
     /// Rename path in the filesystem or simply print renaming information. Checks if target
