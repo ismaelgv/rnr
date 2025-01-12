@@ -1,4 +1,4 @@
-## [Unrealeased]
+## V0.5.0 (2025-01-12)
 ### Added
 * New `--transform` option to apply text transformation to replacement in
   `regex` command, including captured groups.
