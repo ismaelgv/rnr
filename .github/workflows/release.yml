@@ -48,7 +48,7 @@ jobs:
       USE_CROSS: ${{ matrix.build.cross }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Get version
         id: version
@@ -110,7 +110,7 @@ jobs:
           echo ::set-output name=name::${package_name}
 
       - name: Store artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: artifacts
           path: ${{ steps.package.outputs.name }}
@@ -127,13 +127,13 @@ jobs:
           echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
 
       - name: Fetch artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: ${{ env.ARTIFACT_NAME }}/
 
       - name: Publish new release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v2
         with:
           name: "Release ${{ steps.version.outputs.version }}"
           files: "${{ env.ARTIFACT_NAME }}/*"
