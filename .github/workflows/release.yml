@@ -133,6 +133,7 @@ jobs:
       - name: Fetch artifacts
         uses: actions/download-artifact@v4
         with:
+          path: ${{ env.ARTIFACT_NAME }}
           pattern: ${{ env.ARTIFACT_NAME }}-*
           merge-multiple: true
 
