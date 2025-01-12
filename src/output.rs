@@ -1,7 +1,7 @@
+use crate::error::*;
 use ansi_term::Colour::*;
 use ansi_term::Style;
 use difference::{Changeset, Difference};
-use crate::error::*;
 use std::path::Path;
 
 #[derive(PartialEq)]
