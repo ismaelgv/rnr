@@ -5,6 +5,8 @@ use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::PathBuf;
 
+use rayon::prelude::*;
+
 pub type RenameMap = HashMap<PathBuf, PathBuf>;
 
 // This struct stores required information about a single renaming operation
@@ -91,30 +93,33 @@ pub fn revert_operations(operations: &[Operation]) -> Result<Operations> {
 /// Check if targets exist in the filesystem and return a list of them. If they exist, these
 /// targets must be contained in the original file list for the renaming problem to be solvable.
 fn get_existing_targets(targets: &[PathBuf], rename_map: &RenameMap) -> Result<PathList> {
-    let mut existing_targets: PathList = Vec::new();
+    // PERF: Handle check in the filesystem in parallel.
+    let files_in_fs: Vec<PathBuf> = targets
+        .into_par_iter()
+        .filter(|t| t.symlink_metadata().is_ok())
+        .map(|t| t.clone())
+        .collect();
 
-    for target in targets {
-        if target.symlink_metadata().is_err() {
-            continue;
-        }
-
-        if !rename_map.values().any(|x| x == target) {
-            let source = rename_map.get(target).cloned().unwrap();
-
+    let mut existing_targets = Vec::new();
+    for target in files_in_fs {
+        if !rename_map.values().any(|x| x == &target) {
             // The source and the target may be the same file in some conditions like case
-            // insensitive but case-preserving file systems.
-            if is_same_file(&source, target) {
+            // insensitive but case-preserving file systems. In that case exclude that file without
+            // any error.
+            let source = rename_map.get(&target).unwrap();
+            if is_same_file(source, &target) {
                 continue;
             }
 
             return Err(Error {
                 kind: ErrorKind::ExistingPath,
-                value: Some(format!("{} -> {}", source.display(), target.display())),
+                value: Some(format!("{} -> {}", source.display(), &target.display())),
             });
         }
 
-        existing_targets.push(target.clone());
+        existing_targets.push(target);
     }
+
     Ok(existing_targets)
 }
 

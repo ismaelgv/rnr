@@ -27,6 +27,7 @@ walkdir= "^2"
 difference = "^2.0.0"
 any_ascii = "^0.3.0"
 anyhow = "1.0.95"
+rayon = "1.10.0"
 
 [build-dependencies]
 clap = { version = "^4.0", features = ["derive"] }
