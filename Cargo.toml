@@ -32,4 +32,4 @@ rayon = "1.10.0"
 [build-dependencies]
 clap = { version = "^4.0", features = ["derive"] }
 clap_complete = "^4.0"
-clap_mangen = "^2.0"
+clap_mangen = "^0.2"
