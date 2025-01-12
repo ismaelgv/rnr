@@ -7,6 +7,8 @@
 * **BREAKING** Move root command to `regex` subcommand.
 * Update project dependencies.
 * Migrate to `clap` v4 and derive CLI configuration.
+* Optimize and run part of the code in parallel. There is noticiable improvement
+  in very large file sets (up to x3 faster).
 
 # v0.4.2 (2023-02-26)
 ### Fixed
