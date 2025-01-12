@@ -116,7 +116,7 @@ jobs:
       - name: Store artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: artifacts
+          name: ${{ env.ARTIFACT_NAME }}-${{ strategy.job-index }}
           path: ${{ steps.package.outputs.name }}
 
   publish-release:
@@ -133,8 +133,8 @@ jobs:
       - name: Fetch artifacts
         uses: actions/download-artifact@v4
         with:
-          name: ${{ env.ARTIFACT_NAME }}
-          path: ${{ env.ARTIFACT_NAME }}/
+          pattern: ${{ env.ARTIFACT_NAME }}-*
+          merge-multiple: true
 
       - name: Publish new release
         uses: softprops/action-gh-release@v2
