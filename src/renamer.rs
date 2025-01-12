@@ -51,7 +51,7 @@ impl Renamer {
 
         // Dump operations into a file if required
         if self.config.dump {
-            dumpfile::dump_to_file(&operations)?;
+            dumpfile::dump_to_file(self.config.dump_prefix.clone(), &operations)?;
         }
 
         Ok(operations)
@@ -244,6 +244,21 @@ mod test {
     use std::process;
     use std::sync::Arc;
 
+    impl Default for Config {
+        fn default() -> Self {
+            Config {
+                force: true,
+                backup: false,
+                dirs: false,
+                dump: false,
+                dump_prefix: "rnr-".to_string(),
+                run_mode: RunMode::Simple(vec![]),
+                replace_mode: ReplaceMode::None,
+                printer: Printer::color(),
+            }
+        }
+    }
+
     #[test]
     fn renamer() {
         let tempdir = tempfile::tempdir().expect("Error creating temp directory");
@@ -280,10 +295,7 @@ mod test {
 
         // Create config
         let mock_config = Arc::new(Config {
-            force: true,
             backup: true,
-            dirs: false,
-            dump: false,
             run_mode: RunMode::Simple(mock_files),
             replace_mode: ReplaceMode::RegExp {
                 expression: Regex::new("test").unwrap(),
@@ -291,7 +303,7 @@ mod test {
                 limit: 1,
                 transform: TextTransformation::None,
             },
-            printer: Printer::color(),
+            ..Config::default()
         });
 
         // Run renamer
@@ -339,10 +351,6 @@ mod test {
         }
 
         let mock_config = Arc::new(Config {
-            force: true,
-            backup: false,
-            dirs: false,
-            dump: false,
             run_mode: RunMode::Simple(mock_files),
             replace_mode: ReplaceMode::RegExp {
                 expression: Regex::new("a").unwrap(),
@@ -350,7 +358,7 @@ mod test {
                 limit: 0,
                 transform: TextTransformation::None,
             },
-            printer: Printer::color(),
+            ..Config::default()
         });
 
         let renamer = match Renamer::new(&mock_config) {
@@ -391,13 +399,9 @@ mod test {
         }
 
         let mock_config = Arc::new(Config {
-            force: true,
-            backup: false,
-            dirs: false,
-            dump: false,
             run_mode: RunMode::Simple(mock_files),
             replace_mode: ReplaceMode::ToASCII,
-            printer: Printer::color(),
+            ..Config::default()
         });
 
         let renamer = match Renamer::new(&mock_config) {

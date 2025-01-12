@@ -45,6 +45,9 @@ pub struct CommonArgs {
     /// Force dumping operations into a file even in dry-run mode.
     #[arg(long, conflicts_with = "no_dump")]
     pub dump: bool,
+    /// Set the dump file prefix.
+    #[arg(long, conflicts_with = "no_dump", default_value = "rnr-")]
+    pub dump_prefix: String,
     /// Do not dump operations into a file.
     #[arg(long)]
     pub no_dump: bool,

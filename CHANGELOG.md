@@ -3,6 +3,7 @@
 * New `--transform` option to apply text transformation to replacement in
   `regex` command, including captured groups.
 * Generate `man` pages files.
+* New `--dump-prefix` option to configure dump file prefix.
 ### Changed
 * **BREAKING** Move root command to `regex` subcommand.
 * Update project dependencies.

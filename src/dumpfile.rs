@@ -7,7 +7,7 @@ use std::fs::File;
 use std::path::Path;
 
 /// Dump operations intto file in JSON format
-pub fn dump_to_file(operations: &[Operation]) -> Result<()> {
+pub fn dump_to_file(prefix: String, operations: &[Operation]) -> Result<()> {
     let now = chrono::Local::now();
     let dump = DumpFormat {
         date: now.format("%Y-%m-%d %H:%M:%S").to_string(),
@@ -15,7 +15,12 @@ pub fn dump_to_file(operations: &[Operation]) -> Result<()> {
     };
 
     // Create filename with the following syntax: "rnr-<DATE>.json"
-    let filename = "rnr-".to_string() + &now.format("%Y-%m-%d_%H%M%S").to_string() + ".json";
+    let filename = format!(
+        "{}{}{}",
+        prefix,
+        now.format("%Y-%m-%d_%H%M%S").to_string(),
+        ".json"
+    );
 
     // Dump info to a file
     let file = match File::create(&filename) {
