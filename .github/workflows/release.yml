@@ -88,15 +88,19 @@ jobs:
           # Copy files
           cp README.md "${deploy_dir}"
           cp LICENSE "${deploy_dir}"
-          cp "target/${TARGET}/release/${PROJECT_NAME}"             "${deploy_dir}/"
+          cp "target/${TARGET}/release/${PROJECT_NAME}"                   "${deploy_dir}/"
           ## Man
-          cp "target/${TARGET}/release/build/rnr"-*/out/"*.1"     "${deploy_dir}/man1/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr.1"           "${deploy_dir}/man1/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr-help.1"      "${deploy_dir}/man1/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr-regex.1"     "${deploy_dir}/man1/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr-from-file.1" "${deploy_dir}/man1/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr-to-ascii.1"  "${deploy_dir}/man1/"
           ## Completion
-          cp "target/${TARGET}/release/build/rnr"-*/out/"_rnr"      "${deploy_dir}/completion/"
-          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr.bash"  "${deploy_dir}/completion/"
-          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr.fish"  "${deploy_dir}/completion/"
-          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr.elv"   "${deploy_dir}/completion/"
-          cp "target/${TARGET}/release/build/rnr"-*/out/"_rnr.ps1"  "${deploy_dir}/completion/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"_rnr"            "${deploy_dir}/completion/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr.bash"        "${deploy_dir}/completion/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr.fish"        "${deploy_dir}/completion/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"rnr.elv"         "${deploy_dir}/completion/"
+          cp "target/${TARGET}/release/build/rnr"-*/out/"_rnr.ps1"        "${deploy_dir}/completion/"
 
           # Archive
           if [[ "${TARGET}" == *"-windows-"* ]]; then
