@@ -1,6 +1,6 @@
 use clap::{Command, CommandFactory};
 use clap_complete::{generate_to, Shell};
-use std::{io::Error, path::PathBuf};
+use std::{io::Error, path::Path};
 
 include!("src/cli.rs");
 
@@ -15,7 +15,7 @@ fn main() -> Result<(), Error> {
     // Completion
     for &shell in Shell::value_variants() {
         generate_to(shell, &mut cmd, APP_NAME, &outdir)?;
-        println!("cargo:warning={shell:?} completion file is generated.");
+        println!("{shell:?} completion file is generated.");
     }
 
     // Man
@@ -28,7 +28,7 @@ fn main() -> Result<(), Error> {
     Ok(())
 }
 
-fn generate_man(cmd: Command, outdir: &PathBuf, name: &str) -> Result<(), Error> {
+fn generate_man(cmd: Command, outdir: &Path, name: &str) -> Result<(), Error> {
     let man = clap_mangen::Man::new(cmd);
     let mut buffer: Vec<u8> = Default::default();
     man.render(&mut buffer)?;
@@ -36,7 +36,7 @@ fn generate_man(cmd: Command, outdir: &PathBuf, name: &str) -> Result<(), Error>
     let mut man_file = outdir.join(name);
     man_file.set_extension("1");
     std::fs::write(man_file, buffer)?;
-    println!("cargo:warning={name} man file is generated.");
+    println!("{name} man file is generated.");
 
     Ok(())
 }

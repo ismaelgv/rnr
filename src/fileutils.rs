@@ -164,7 +164,7 @@ mod test {
         ];
 
         for file in &mock_files {
-            fs::File::create(&file).expect("Error creating mock file...");
+            fs::File::create(file).expect("Error creating mock file...");
             create_backup(file).expect("Error generating backup file...");
         }
 
@@ -193,7 +193,7 @@ mod test {
         ];
 
         for file in &mock_files {
-            fs::File::create(&file).expect("Error creating mock file...");
+            fs::File::create(file).expect("Error creating mock file...");
         }
 
         let symlink = PathBuf::from(format!("{}/test_file_1.3", temp_path));
@@ -258,7 +258,7 @@ mod test {
         let other_file = PathBuf::from(format!("{}/other_file", temp_path));
 
         for file in &mock_files {
-            fs::File::create(&file)
+            fs::File::create(file)
                 .expect("Error creating mock file...")
                 .write_all(b"Hello, world!")
                 .expect("Error writting in the mock file...");
@@ -336,10 +336,10 @@ mod test {
 
         // Create directory tree and files in the filesystem
         for mock_dir in &mock_dirs {
-            fs::create_dir(&mock_dir).expect("Error creating mock directory...");
+            fs::create_dir(mock_dir).expect("Error creating mock directory...");
         }
         for file in &mock_files {
-            fs::File::create(&file).expect("Error creating mock file...");
+            fs::File::create(file).expect("Error creating mock file...");
         }
 
         // Return tempdir data
@@ -477,10 +477,10 @@ mod test {
 
         // Create directory tree, files and symlinks in the filesystem
         for mock_dir in &mock_dirs {
-            fs::create_dir(&mock_dir).expect("Error creating mock directory...");
+            fs::create_dir(mock_dir).expect("Error creating mock directory...");
         }
         for file in &mock_files {
-            fs::File::create(&file).expect("Error creating mock file...");
+            fs::File::create(file).expect("Error creating mock file...");
         }
         let symlink: PathBuf = [temp_path, "test_link"].iter().collect();
         let broken_symlink: PathBuf = [temp_path, "test_broken_link"].iter().collect();

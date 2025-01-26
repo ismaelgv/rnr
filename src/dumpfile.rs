@@ -1,8 +1,6 @@
 use crate::error::*;
 use crate::solver::{Operation, Operations};
-use chrono;
 use serde_derive::{Deserialize, Serialize};
-use serde_json;
 use std::fs::File;
 use std::path::Path;
 
@@ -15,12 +13,7 @@ pub fn dump_to_file(prefix: String, operations: &[Operation]) -> Result<()> {
     };
 
     // Create filename with the following syntax: "rnr-<DATE>.json"
-    let filename = format!(
-        "{}{}{}",
-        prefix,
-        now.format("%Y-%m-%d_%H%M%S").to_string(),
-        ".json"
-    );
+    let filename = format!("{}{}{}", prefix, now.format("%Y-%m-%d_%H%M%S"), ".json");
 
     // Dump info to a file
     let file = match File::create(&filename) {
@@ -43,7 +36,7 @@ pub fn dump_to_file(prefix: String, operations: &[Operation]) -> Result<()> {
 
 /// Read operations from a dump file and generate a Operations vector
 pub fn read_from_file(filepath: &Path) -> Result<Operations> {
-    let file = match File::open(&filepath) {
+    let file = match File::open(filepath) {
         Ok(file) => file,
         Err(_) => {
             return Err(Error {

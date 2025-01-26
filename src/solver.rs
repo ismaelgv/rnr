@@ -31,7 +31,7 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<Operations> {
             level_map.insert(level, vec![p.clone()]);
         };
     });
-    let mut levels: Vec<usize> = level_map.keys().map(|k| k.clone()).collect();
+    let mut levels: Vec<usize> = level_map.keys().copied().collect();
     levels.sort_unstable();
 
     // Sort from deeper to higher path level
@@ -192,7 +192,7 @@ mod test {
         ];
         // Create files in the filesystem
         for file in &mock_sources {
-            fs::File::create(&file).expect("Error creating mock file...");
+            fs::File::create(file).expect("Error creating mock file...");
         }
 
         // Add one 'a' to the beginning of the filename
@@ -207,7 +207,7 @@ mod test {
         let mock_rename_map: RenameMap = mock_targets
             .clone()
             .into_iter()
-            .zip(mock_sources.into_iter())
+            .zip(mock_sources)
             .collect();
         let existing_targets = get_existing_targets(&mock_targets, &mock_rename_map)
             .expect("Error getting existing targets.");
@@ -247,7 +247,7 @@ mod test {
         let mock_rename_map: RenameMap = mock_targets
             .clone()
             .into_iter()
-            .zip(mock_sources.into_iter())
+            .zip(mock_sources)
             .collect();
         let existing_targets = get_existing_targets(&mock_targets, &mock_rename_map)
             .expect("Error getting existing targets.");
@@ -271,7 +271,7 @@ mod test {
         ];
         // Create files in the filesystem
         for file in &mock_sources {
-            fs::File::create(&file).expect("Error creating mock file...");
+            fs::File::create(file).expect("Error creating mock file...");
         }
 
         // Add one 'a' to the beginning of the filename
@@ -284,7 +284,7 @@ mod test {
         let mock_rename_map: RenameMap = mock_targets
             .clone()
             .into_iter()
-            .zip(mock_sources.into_iter())
+            .zip(mock_sources)
             .collect();
 
         let mut mock_existing_targets: PathList = vec![
@@ -324,7 +324,7 @@ mod test {
         ];
         // Create directory tree and files in the filesystem
         for file in &mock_sources {
-            fs::File::create(&file).expect("Error creating mock file...");
+            fs::File::create(file).expect("Error creating mock file...");
         }
 
         // Add one 'a' to the beginning of the filename
@@ -338,7 +338,7 @@ mod test {
         let mock_rename_map: RenameMap = mock_targets
             .clone()
             .into_iter()
-            .zip(mock_sources.into_iter())
+            .zip(mock_sources)
             .collect();
 
         let operations =

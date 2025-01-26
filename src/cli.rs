@@ -122,7 +122,7 @@ pub enum Color {
 pub enum ReplaceTransform {
     Upper,
     Lower,
-    ASCII,
+    Ascii,
 }
 
 #[cfg(test)]

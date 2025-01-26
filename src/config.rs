@@ -156,7 +156,7 @@ fn parse_arguments() -> Result<Config> {
     Ok(Config {
         force: common.force,
         backup: common.backup,
-        dirs: path.map_or(false, |p| p.include_dirs),
+        dirs: path.is_some_and(|p| p.include_dirs),
         dump,
         dump_prefix: common.dump_prefix.clone(),
         run_mode,
@@ -193,7 +193,7 @@ impl From<Option<ReplaceTransform>> for TextTransformation {
             Some(transform) => match transform {
                 ReplaceTransform::Upper => TextTransformation::Upper,
                 ReplaceTransform::Lower => TextTransformation::Lower,
-                ReplaceTransform::ASCII => TextTransformation::ASCII,
+                ReplaceTransform::Ascii => TextTransformation::Ascii,
             },
             None => TextTransformation::None,
         }

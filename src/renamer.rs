@@ -201,7 +201,7 @@ pub enum TextTransformation {
     /// To lowercase.
     Lower,
     /// To ASCII representation.
-    ASCII,
+    Ascii,
     /// Leave text as it is.
     None,
 }
@@ -211,7 +211,7 @@ impl TextTransformation {
         match self {
             TextTransformation::Upper => text.to_uppercase(),
             TextTransformation::Lower => text.to_lowercase(),
-            TextTransformation::ASCII => any_ascii(&text),
+            TextTransformation::Ascii => any_ascii(&text),
             TextTransformation::None => text,
         }
     }
@@ -290,7 +290,7 @@ mod test {
         // Create directory tree and files in the filesystem
         fs::create_dir(&mock_dir).expect("Error creating mock directory...");
         for file in &mock_files {
-            fs::File::create(&file).expect("Error creating mock file...");
+            fs::File::create(file).expect("Error creating mock file...");
         }
 
         // Create config
@@ -347,7 +347,7 @@ mod test {
 
         let mock_files: Vec<String> = vec![format!("{}/replace_all_aaaaa.txt", temp_path)];
         for file in &mock_files {
-            fs::File::create(&file).expect("Error creating mock file...");
+            fs::File::create(file).expect("Error creating mock file...");
         }
 
         let mock_config = Arc::new(Config {
@@ -395,7 +395,7 @@ mod test {
             format!("{}/ǸÖN-ÂŚCÎI-UPPER.txt", temp_path),
         ];
         for file in &mock_files {
-            fs::File::create(&file).expect("Error creating mock file...");
+            fs::File::create(file).expect("Error creating mock file...");
         }
 
         let mock_config = Arc::new(Config {
@@ -451,7 +451,7 @@ mod test {
         let result = expression.replace(hay, &replacer);
         assert_eq!(result, "thïs.îs-a-fïle.txt");
         // To ASCII.
-        replacer.transform = TextTransformation::ASCII;
+        replacer.transform = TextTransformation::Ascii;
         let result = expression.replace(hay, &replacer);
         assert_eq!(result, "This.Is-a-File.txt");
     }
