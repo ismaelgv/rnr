@@ -204,11 +204,8 @@ mod test {
             [temp_path, "aaaaaa.txt"].iter().collect(),
             [temp_path, "atest.txt"].iter().collect(),
         ];
-        let mock_rename_map: RenameMap = mock_targets
-            .clone()
-            .into_iter()
-            .zip(mock_sources)
-            .collect();
+        let mock_rename_map: RenameMap =
+            mock_targets.clone().into_iter().zip(mock_sources).collect();
         let existing_targets = get_existing_targets(&mock_targets, &mock_rename_map)
             .expect("Error getting existing targets.");
 
@@ -244,11 +241,8 @@ mod test {
             [temp_path, "aaa.txt"].iter().collect(),
             [temp_path, "aaaa.txt"].iter().collect(),
         ];
-        let mock_rename_map: RenameMap = mock_targets
-            .clone()
-            .into_iter()
-            .zip(mock_sources)
-            .collect();
+        let mock_rename_map: RenameMap =
+            mock_targets.clone().into_iter().zip(mock_sources).collect();
         let existing_targets = get_existing_targets(&mock_targets, &mock_rename_map)
             .expect("Error getting existing targets.");
 
@@ -281,11 +275,8 @@ mod test {
             [temp_path, "aaaa.txt"].iter().collect(),
             [temp_path, "aaaaa.txt"].iter().collect(),
         ];
-        let mock_rename_map: RenameMap = mock_targets
-            .clone()
-            .into_iter()
-            .zip(mock_sources)
-            .collect();
+        let mock_rename_map: RenameMap =
+            mock_targets.clone().into_iter().zip(mock_sources).collect();
 
         let mut mock_existing_targets: PathList = vec![
             [temp_path, "aa.txt"].iter().collect(),
@@ -335,11 +326,8 @@ mod test {
             [temp_path, "aaaaa.txt"].iter().collect(),
             [temp_path, "aaaaaa.txt"].iter().collect(),
         ];
-        let mock_rename_map: RenameMap = mock_targets
-            .clone()
-            .into_iter()
-            .zip(mock_sources)
-            .collect();
+        let mock_rename_map: RenameMap =
+            mock_targets.clone().into_iter().zip(mock_sources).collect();
 
         let operations =
             solve_rename_order(&mock_rename_map).expect("Failed to solve rename order.");
