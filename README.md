@@ -372,7 +372,8 @@ rnr regex -f -b file renamed ./*
 ### Convert UTF-8 file names to ASCII
 `rnr`can convert UTF-8 file names to their ASCII representation. This feature uses
 [AnyAscii library](https://github.com/anyascii/anyascii) to perform the
-transliteration.
+transliteration. To avoid conflicts with paths, the characters that would be translated
+to `/` are changed to `_` instead.
 
 You can run:
 ```sh

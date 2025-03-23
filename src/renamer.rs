@@ -85,7 +85,7 @@ impl Renamer {
                     .replacen(file_name, *limit, &replacer)
                     .to_string()
             }
-            ReplaceMode::ToASCII => any_ascii(file_name),
+            ReplaceMode::ToASCII => to_ascii(file_name),
             ReplaceMode::None => file_name.to_string(),
         };
 
@@ -211,7 +211,7 @@ impl TextTransformation {
         match self {
             TextTransformation::Upper => text.to_uppercase(),
             TextTransformation::Lower => text.to_lowercase(),
-            TextTransformation::Ascii => any_ascii(&text),
+            TextTransformation::Ascii => to_ascii(&text),
             TextTransformation::None => text,
         }
     }
@@ -221,6 +221,12 @@ impl TextTransformation {
 struct TransformReplacer<'h> {
     replacement: &'h str,
     transform: TextTransformation,
+}
+
+/// Replace with ASCII characters using `anyascii` table. It handles characters that conflict with
+/// path routes (p.e. `╱` -> `/`).
+fn to_ascii(text: &str) -> String {
+    any_ascii(text).replace("/", "_")
 }
 
 impl Replacer for &TransformReplacer<'_> {
@@ -393,6 +399,7 @@ mod test {
         let mock_files: Vec<String> = vec![
             format!("{}/ǹön-âścîı-lower.txt", temp_path),
             format!("{}/ǸÖN-ÂŚCÎI-UPPER.txt", temp_path),
+            format!("{}/with-slashes-╱.txt", temp_path),
         ];
         for file in &mock_files {
             fs::File::create(file).expect("Error creating mock file...");
@@ -426,6 +433,7 @@ mod test {
         // Check renamed files
         assert!(Path::new(&format!("{}/non-ascii-lower.txt", temp_path)).exists());
         assert!(Path::new(&format!("{}/NON-ASCII-UPPER.txt", temp_path)).exists());
+        assert!(Path::new(&format!("{}/with-slashes-_.txt", temp_path)).exists());
     }
 
     #[test]
