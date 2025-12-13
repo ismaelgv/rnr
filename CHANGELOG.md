@@ -1,3 +1,10 @@
+## V0.5.1 (2025-12-13)
+### Fixed
+* Order of rename operations when renaming directories
+### Other
+* Updated dependencies.
+* Migrate to Rust Edition 2024.
+
 ## V0.5.0 (2025-01-12)
 ### Added
 * New `--transform` option to apply text transformation to replacement in
