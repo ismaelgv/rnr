@@ -265,6 +265,28 @@ mod test {
         }
     }
 
+    /// Run renamer batch with provided config.
+    fn run_with_config(mock_config: &Arc<Config>) {
+        let renamer = match Renamer::new(&mock_config) {
+            Ok(renamer) => renamer,
+            Err(err) => {
+                mock_config.printer.print_error(&err);
+                process::exit(1);
+            }
+        };
+        let operations = match renamer.process() {
+            Ok(operations) => operations,
+            Err(err) => {
+                mock_config.printer.print_error(&err);
+                process::exit(1);
+            }
+        };
+        if let Err(err) = renamer.batch_rename(operations) {
+            mock_config.printer.print_error(&err);
+            process::exit(1);
+        }
+    }
+
     #[test]
     fn renamer() {
         let tempdir = tempfile::tempdir().expect("Error creating temp directory");
@@ -312,25 +334,7 @@ mod test {
             ..Config::default()
         });
 
-        // Run renamer
-        let renamer = match Renamer::new(&mock_config) {
-            Ok(renamer) => renamer,
-            Err(err) => {
-                mock_config.printer.print_error(&err);
-                process::exit(1);
-            }
-        };
-        let operations = match renamer.process() {
-            Ok(operations) => operations,
-            Err(err) => {
-                mock_config.printer.print_error(&err);
-                process::exit(1);
-            }
-        };
-        if let Err(err) = renamer.batch_rename(operations) {
-            mock_config.printer.print_error(&err);
-            process::exit(1);
-        }
+        run_with_config(&mock_config);
 
         // Check renamed files
         assert!(Path::new(&format!("{}/passed_file_1.txt", temp_path)).exists());
@@ -367,24 +371,7 @@ mod test {
             ..Config::default()
         });
 
-        let renamer = match Renamer::new(&mock_config) {
-            Ok(renamer) => renamer,
-            Err(err) => {
-                mock_config.printer.print_error(&err);
-                process::exit(1);
-            }
-        };
-        let operations = match renamer.process() {
-            Ok(operations) => operations,
-            Err(err) => {
-                mock_config.printer.print_error(&err);
-                process::exit(1);
-            }
-        };
-        if let Err(err) = renamer.batch_rename(operations) {
-            mock_config.printer.print_error(&err);
-            process::exit(1);
-        }
+        run_with_config(&mock_config);
 
         // Check renamed files
         assert!(Path::new(&format!("{}/replbce_bll_bbbbb.txt", temp_path)).exists());
@@ -411,24 +398,7 @@ mod test {
             ..Config::default()
         });
 
-        let renamer = match Renamer::new(&mock_config) {
-            Ok(renamer) => renamer,
-            Err(err) => {
-                mock_config.printer.print_error(&err);
-                process::exit(1);
-            }
-        };
-        let operations = match renamer.process() {
-            Ok(operations) => operations,
-            Err(err) => {
-                mock_config.printer.print_error(&err);
-                process::exit(1);
-            }
-        };
-        if let Err(err) = renamer.batch_rename(operations) {
-            mock_config.printer.print_error(&err);
-            process::exit(1);
-        }
+        run_with_config(&mock_config);
 
         // Check renamed files
         assert!(Path::new(&format!("{}/non-ascii-lower.txt", temp_path)).exists());
