@@ -33,6 +33,7 @@ pub fn solve_rename_order(rename_map: &RenameMap) -> Result<Operations> {
     });
     let mut levels: Vec<usize> = level_map.keys().copied().collect();
     levels.sort_unstable();
+    levels.reverse();
 
     // Sort from deeper to higher path level
     let mut rename_order = PathList::new();

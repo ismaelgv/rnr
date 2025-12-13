@@ -153,7 +153,7 @@ impl Renamer {
 
         if self.config.force {
             // Create a backup before actual renaming
-            if self.config.backup {
+            if self.config.backup && !&operation.source.is_dir() {
                 match create_backup(&operation.source) {
                     Ok(backup) => printer.print(&format!(
                         "{} Backup created - {}",
@@ -247,8 +247,8 @@ mod test {
     use regex::Regex;
     use std::fs;
     use std::path::Path;
-    use std::process;
     use std::sync::Arc;
+    use tempfile::TempDir;
 
     impl Default for Config {
         fn default() -> Self {
@@ -266,48 +266,46 @@ mod test {
     }
 
     /// Run renamer batch with provided config.
-    fn run_with_config(mock_config: &Arc<Config>) {
+    fn run_with_config(mock_config: Arc<Config>) {
         let renamer = match Renamer::new(&mock_config) {
             Ok(renamer) => renamer,
             Err(err) => {
                 mock_config.printer.print_error(&err);
-                process::exit(1);
+                panic!("Error initializing renamer");
             }
         };
         let operations = match renamer.process() {
             Ok(operations) => operations,
             Err(err) => {
                 mock_config.printer.print_error(&err);
-                process::exit(1);
+                panic!("Error processing");
             }
         };
         if let Err(err) = renamer.batch_rename(operations) {
             mock_config.printer.print_error(&err);
-            process::exit(1);
+            panic!("Error renaming");
         }
     }
 
-    #[test]
-    fn renamer() {
-        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
-        println!("Running test in '{:?}'", tempdir);
-        let temp_path = tempdir.path().to_str().unwrap();
+    /// Generate a mock directory tree and files.
+    /// ```
+    /// - temp_path
+    ///     |
+    ///     - test_file_1.txt
+    ///     |
+    ///     - test_file_2.txt
+    ///     |
+    ///     - test_dir
+    ///         |
+    ///         - test_file_1.txt
+    ///         |
+    ///         - test_file_2.txt
+    /// ```
+    fn generate_file_tree() -> (TempDir, String, Vec<String>) {
+        let temp_dir = tempfile::tempdir().expect("Error creating temp directory");
+        let temp_path = temp_dir.path().to_str().unwrap().to_string();
 
-        // Generate a mock directory tree and files
-        //
-        // - temp_path
-        //     |
-        //     - test_file_1.txt
-        //     |
-        //     - test_file_2.txt
-        //     |
-        //     - mock_dir
-        //         |
-        //         - test_file_1.txt
-        //         |
-        //         - test_file_2.txt
-        //
-        let mock_dir = format!("{}/mock_dir", temp_path);
+        let mock_dir = format!("{}/test_dir", temp_path);
         let mock_files: Vec<String> = vec![
             format!("{}/test_file_1.txt", temp_path),
             format!("{}/test_file_2.txt", temp_path),
@@ -320,6 +318,14 @@ mod test {
         for file in &mock_files {
             fs::File::create(file).expect("Error creating mock file...");
         }
+
+        (temp_dir, temp_path, mock_files)
+    }
+
+    #[test]
+    fn rename_files_with_backup() {
+        let (_temp_dir, temp_path, mock_files) = generate_file_tree();
+        println!("Running test in '{}'", temp_path);
 
         // Create config
         let mock_config = Arc::new(Config {
@@ -334,19 +340,61 @@ mod test {
             ..Config::default()
         });
 
-        run_with_config(&mock_config);
+        run_with_config(mock_config);
 
         // Check renamed files
         assert!(Path::new(&format!("{}/passed_file_1.txt", temp_path)).exists());
         assert!(Path::new(&format!("{}/passed_file_2.txt", temp_path)).exists());
-        assert!(Path::new(&format!("{}/passed_file_1.txt", mock_dir)).exists());
-        assert!(Path::new(&format!("{}/passed_file_2.txt", mock_dir)).exists());
+        assert!(Path::new(&format!("{}/test_dir/passed_file_1.txt", temp_path)).exists());
+        assert!(Path::new(&format!("{}/test_dir/passed_file_2.txt", temp_path)).exists());
 
         // Check backup files
         assert!(Path::new(&format!("{}/test_file_1.txt.bk", temp_path)).exists());
         assert!(Path::new(&format!("{}/test_file_2.txt.bk", temp_path)).exists());
-        assert!(Path::new(&format!("{}/test_file_1.txt.bk", mock_dir)).exists());
-        assert!(Path::new(&format!("{}/test_file_2.txt.bk", mock_dir)).exists());
+        assert!(Path::new(&format!("{}/test_dir/test_file_1.txt.bk", temp_path)).exists());
+        assert!(Path::new(&format!("{}/test_dir/test_file_2.txt.bk", temp_path)).exists());
+    }
+
+    #[test]
+    fn rename_files_and_directories_recursively_with_backup() {
+        let (_temp_dir, temp_path, _) = generate_file_tree();
+        println!("Running test in '{}'", temp_path);
+
+        // Create config
+        let mock_config = Arc::new(Config {
+            dirs: true,
+            backup: true,
+            run_mode: RunMode::Recursive {
+                paths: vec![temp_path.clone()],
+                max_depth: None,
+                hidden: false,
+            },
+            replace_mode: ReplaceMode::RegExp {
+                expression: Regex::new("test").unwrap(),
+                replacement: "passed".to_string(),
+                limit: 1,
+                transform: TextTransformation::None,
+            },
+            ..Config::default()
+        });
+
+        run_with_config(mock_config);
+
+        // Check renamed files
+        assert!(Path::new(&format!("{}/passed_file_1.txt", temp_path)).exists());
+        assert!(Path::new(&format!("{}/passed_file_2.txt", temp_path)).exists());
+        assert!(Path::new(&format!("{}/passed_dir/passed_file_1.txt", temp_path)).exists());
+        assert!(Path::new(&format!("{}/passed_dir/passed_file_2.txt", temp_path)).exists());
+
+        // Check backup files
+        assert!(Path::new(&format!("{}/test_file_1.txt.bk", temp_path)).exists());
+        assert!(Path::new(&format!("{}/test_file_2.txt.bk", temp_path)).exists());
+        assert!(Path::new(&format!("{}/passed_dir/test_file_1.txt.bk", temp_path)).exists());
+        assert!(Path::new(&format!("{}/passed_dir/test_file_2.txt.bk", temp_path)).exists());
+
+        // Directory backup must not be created.
+        let directory_backup = &format!("{}/test_dir.bk", temp_path);
+        assert!(!Path::new(directory_backup).exists());
     }
 
     #[test]
@@ -371,7 +419,7 @@ mod test {
             ..Config::default()
         });
 
-        run_with_config(&mock_config);
+        run_with_config(mock_config);
 
         // Check renamed files
         assert!(Path::new(&format!("{}/replbce_bll_bbbbb.txt", temp_path)).exists());
@@ -398,7 +446,7 @@ mod test {
             ..Config::default()
         });
 
-        run_with_config(&mock_config);
+        run_with_config(mock_config);
 
         // Check renamed files
         assert!(Path::new(&format!("{}/non-ascii-lower.txt", temp_path)).exists());
