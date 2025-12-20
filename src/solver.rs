@@ -1,5 +1,5 @@
 use crate::error::*;
-use crate::fileutils::{is_same_file, PathList};
+use crate::fileutils::{PathList, is_same_file};
 use path_abs::PathAbs;
 use serde_derive::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -162,7 +162,7 @@ fn sort_existing_targets(
                 return Err(Error {
                     kind: ErrorKind::SolveOrder,
                     value: None,
-                })
+                });
             }
         }
     }

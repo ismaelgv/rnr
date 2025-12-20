@@ -22,7 +22,7 @@ pub fn dump_to_file(prefix: String, operations: &[Operation]) -> Result<()> {
             return Err(Error {
                 kind: ErrorKind::CreateFile,
                 value: Some(filename),
-            })
+            });
         }
     };
     match serde_json::to_writer_pretty(file, &dump) {
@@ -42,7 +42,7 @@ pub fn read_from_file(filepath: &Path) -> Result<Operations> {
             return Err(Error {
                 kind: ErrorKind::ReadFile,
                 value: Some(filepath.to_string_lossy().to_string()),
-            })
+            });
         }
     };
     let dump: DumpFormat = match serde_json::from_reader(file) {
@@ -51,7 +51,7 @@ pub fn read_from_file(filepath: &Path) -> Result<Operations> {
             return Err(Error {
                 kind: ErrorKind::JsonParse,
                 value: Some(filepath.to_string_lossy().to_string()),
-            })
+            });
         }
     };
     Ok(dump.operations)

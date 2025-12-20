@@ -1,6 +1,6 @@
 use crate::cli::{Cli, RegexArgs};
 use crate::output::Printer;
-use anyhow::{bail, Result};
+use anyhow::{Result, bail};
 use clap::Parser;
 use regex::Regex;
 use std::{
