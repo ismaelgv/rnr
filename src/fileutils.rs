@@ -129,8 +129,8 @@ pub fn is_same_file(source: &Path, target: &Path) -> bool {
     // preserving file systems by default.
     #[cfg(any(windows, target_os = "macos"))]
     {
-        let source_metadata = fs::File::open(&source).unwrap().metadata().unwrap();
-        let target_metadata = fs::File::open(&target).unwrap().metadata().unwrap();
+        let source_metadata = fs::symlink_metadata(&source).expect("Source symlink metadata error");
+        let target_metadata = fs::symlink_metadata(&target).expect("Target symlink metadata error");
         let low_source = source.to_string_lossy().to_string().to_lowercase();
         let low_target = target.to_string_lossy().to_string().to_lowercase();
 
@@ -285,6 +285,40 @@ mod test {
             assert!(!is_same_file(&mock_files[1], &mock_files[2]));
             assert!(!is_same_file(&mock_files[0], &other_file));
         }
+    }
+
+    #[test]
+    fn test_same_file_broken_symlinks() {
+        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
+        println!("Running test in '{:?}'", tempdir);
+        let temp_path = tempdir.path().to_str().unwrap();
+
+        let existing_file = PathBuf::from(format!("{}/{}", temp_path, "test_file"));
+        fs::File::create(&existing_file).expect("Error creating mock file...");
+
+        let broken_symlink = PathBuf::from(format!("{}/test_broken_link", temp_path));
+        create_symlink(&PathBuf::from("broken_link"), &broken_symlink)
+            .expect("Error creating broken symlink.");
+
+        assert!(!is_same_file(&existing_file, &broken_symlink));
+    }
+
+    #[test]
+    fn test_same_file_circular_symlinks() {
+        let tempdir = tempfile::tempdir().expect("Error creating temp directory");
+        println!("Running test in '{:?}'", tempdir);
+        let temp_path = tempdir.path().to_str().unwrap();
+
+        let existing_file = PathBuf::from(format!("{}/{}", temp_path, "test_file"));
+        fs::File::create(&existing_file).expect("Error creating mock file...");
+
+        let symlink_a = PathBuf::from(format!("{}/test_symlink_a", temp_path));
+        let symlink_b = PathBuf::from(format!("{}/test_symlink_b", temp_path));
+        create_symlink(&symlink_a, &symlink_b).expect("Error creating circular symlink.");
+        create_symlink(&symlink_b, &symlink_a).expect("Error creating circular symlink.");
+
+        assert!(!is_same_file(&existing_file, symlink_a.as_path()));
+        assert!(!is_same_file(&existing_file, symlink_b.as_path()));
     }
 
     // Generate directory tree and files for recursive tests
