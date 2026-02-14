@@ -8,7 +8,7 @@ use std::path::Path;
 enum PrinterMode {
     Silent,
     NoColor,
-    Color,
+    Color { diff: bool },
 }
 
 pub struct Printer {
@@ -28,7 +28,7 @@ pub struct Colors {
 
 impl Printer {
     /// Return a printer configured to colorize output
-    pub fn color() -> Printer {
+    pub fn color(diff: bool) -> Printer {
         let colors = Colors {
             info: Style::default().bold(),
             warn: Style::from(Yellow),
@@ -40,7 +40,7 @@ impl Printer {
 
         Printer {
             colors,
-            mode: PrinterMode::Color,
+            mode: PrinterMode::Color { diff },
         }
     }
 
@@ -81,7 +81,7 @@ impl Printer {
     /// Print string to Stdout when printer is not in silent mode
     pub fn print(&self, message: &str) {
         match self.mode {
-            PrinterMode::Color | PrinterMode::NoColor => {
+            PrinterMode::Color { diff: _ } | PrinterMode::NoColor => {
                 println!("{}", message);
             }
             PrinterMode::Silent => {}
@@ -91,7 +91,7 @@ impl Printer {
     /// Print string to Stderr when printer is not in silent mode
     pub fn eprint(&self, message: &str) {
         match self.mode {
-            PrinterMode::Color | PrinterMode::NoColor => {
+            PrinterMode::Color { diff: _ } | PrinterMode::NoColor => {
                 eprintln!("{}", message);
             }
             PrinterMode::Silent => {}
@@ -122,14 +122,20 @@ impl Printer {
         let mut target_parent = target.parent().unwrap().to_string_lossy().to_string();
         let mut target_name = target.file_name().unwrap().to_string_lossy().to_string();
 
-        // Avoid diffing if not coloring output
-        if self.mode == PrinterMode::Color {
-            target_name = self.string_diff(
-                &source_name,
-                &target_name,
-                self.colors.target,
-                self.colors.highlight,
-            )
+        // Avoid diffing if not coloring output or disabled
+        match self.mode {
+            PrinterMode::Color { diff: true } => {
+                target_name = self.string_diff(
+                    &source_name,
+                    &target_name,
+                    self.colors.target,
+                    self.colors.highlight,
+                )
+            }
+            PrinterMode::Color { diff: false } => {
+                target_name = self.colors.target.paint(&target_name).to_string();
+            }
+            _ => {}
         }
 
         source_name = self.colors.source.paint(&source_name).to_string();

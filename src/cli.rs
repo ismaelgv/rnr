@@ -114,6 +114,7 @@ pub enum SubCommands {
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]
 pub enum Color {
     Always,
+    NoDiff,
     Never,
     Auto,
 }

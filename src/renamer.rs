@@ -260,7 +260,7 @@ mod test {
                 dump_prefix: "rnr-".to_string(),
                 run_mode: RunMode::Simple(vec![]),
                 replace_mode: ReplaceMode::None,
-                printer: Printer::color(),
+                printer: Printer::color(true),
             }
         }
     }

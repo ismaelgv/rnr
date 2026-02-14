@@ -139,7 +139,8 @@ fn parse_arguments() -> Result<Config> {
         Printer::silent()
     } else {
         match common.color {
-            crate::cli::Color::Always => Printer::color(),
+            crate::cli::Color::Always => Printer::color(true),
+            crate::cli::Color::NoDiff => Printer::color(false),
             crate::cli::Color::Never => Printer::no_color(),
             crate::cli::Color::Auto => detect_output_color(),
         }
@@ -171,7 +172,7 @@ fn detect_output_color() -> Printer {
     if stdout.is_terminal() {
         #[cfg(not(windows))]
         {
-            Printer::color()
+            Printer::color(true)
         }
         // Enable color support for Windows 10
         #[cfg(windows)]
