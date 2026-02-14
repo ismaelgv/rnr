@@ -179,7 +179,7 @@ fn detect_output_color() -> Printer {
         {
             use ansi_term;
             match ansi_term::enable_ansi_support() {
-                Ok(_) => Printer::color(),
+                Ok(_) => Printer::color(true),
                 Err(_) => Printer::no_color(),
             }
         }
