@@ -15,8 +15,11 @@ pub struct Error {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ErrorKind {
     CreateBackup,
+    CreateDir,
     CreateFile,
     CreateSymlink,
+    EditorCommand,
+    EditorLineCount,
     ExistingPath,
     JsonParse,
     ReadFile,
@@ -30,8 +33,11 @@ impl Error {
         use self::ErrorKind::*;
         match self.kind {
             CreateBackup => "Cannot create a backup of ",
+            CreateDir => "Cannot create directory ",
             CreateFile => "Cannot create file ",
             CreateSymlink => "Cannot create symlink ",
+            EditorCommand => "Failed to run editor ",
+            EditorLineCount => "Unexpected line count in editor output: ",
             ExistingPath => "Conflict with existing path ",
             JsonParse => "Cannot parse JSON file ",
             ReadFile => "Cannot open/read file ",

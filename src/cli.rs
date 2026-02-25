@@ -109,6 +109,22 @@ pub enum SubCommands {
         #[command(flatten)]
         path: PathArgs,
     },
+    /// Edit file names in an interactive text editor (similar to vidir).
+    #[command(arg_required_else_help = true)]
+    Editor {
+        #[command(flatten)]
+        common: CommonArgs,
+
+        #[command(flatten)]
+        path: PathArgs,
+
+        /// Enable file deletion by removing lines in the editor.
+        #[arg(long)]
+        delete: bool,
+        /// Editor command to use. Defaults to $VISUAL, then $EDITOR, then 'vi'.
+        #[arg(long, value_name = "CMD")]
+        editor: Option<String>,
+    },
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, ValueEnum)]

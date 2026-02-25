@@ -20,6 +20,7 @@ use crate::renamer::Renamer;
 mod cli;
 mod config;
 mod dumpfile;
+mod editor;
 mod error;
 mod fileutils;
 mod output;
@@ -53,8 +54,8 @@ fn main() {
     };
 
     // Generate operations
-    let operations = match renamer.process() {
-        Ok(operations) => operations,
+    let (operations, deletions) = match renamer.process() {
+        Ok(result) => result,
         Err(err) => {
             config.printer.print_error(&err);
             std::process::exit(1);
@@ -63,6 +64,12 @@ fn main() {
 
     // Batch rename operations
     if let Err(err) = renamer.batch_rename(operations) {
+        config.printer.print_error(&err);
+        std::process::exit(1);
+    }
+
+    // Batch delete operations (only populated for editor mode with --delete)
+    if let Err(err) = renamer.batch_delete(deletions) {
         config.printer.print_error(&err);
         std::process::exit(1);
     }

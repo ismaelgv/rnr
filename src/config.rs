@@ -48,6 +48,14 @@ pub enum RunMode {
         path: String,
         undo: bool,
     },
+    Editor {
+        paths: Vec<String>,
+        recursive: bool,
+        max_depth: Option<usize>,
+        hidden: bool,
+        editor: String,
+        allow_delete: bool,
+    },
 }
 
 pub enum ReplaceMode {
@@ -75,6 +83,26 @@ impl ArgumentParser<'_> {
                     undo: *undo,
                 });
             }
+            SubCommands::Editor {
+                path,
+                delete,
+                editor,
+                ..
+            } => {
+                let editor_cmd = editor
+                    .clone()
+                    .or_else(|| std::env::var("VISUAL").ok())
+                    .or_else(|| std::env::var("EDITOR").ok())
+                    .unwrap_or_else(|| "vi".to_string());
+                return Ok(RunMode::Editor {
+                    paths: path.paths.clone(),
+                    recursive: path.recursive,
+                    max_depth: path.max_depth,
+                    hidden: path.hidden,
+                    editor: editor_cmd,
+                    allow_delete: *delete,
+                });
+            }
             SubCommands::Regex(RegexArgs { path, .. }) => path,
             SubCommands::ToASCII { path, .. } => path,
         };
@@ -94,6 +122,7 @@ impl ArgumentParser<'_> {
         let regex = match &self.cli.command {
             SubCommands::ToASCII { .. } => return Ok(ReplaceMode::ToASCII),
             SubCommands::FromFile { .. } => return Ok(ReplaceMode::None),
+            SubCommands::Editor { .. } => return Ok(ReplaceMode::None),
             SubCommands::Regex(regex) => regex,
         };
 
@@ -125,6 +154,7 @@ fn parse_arguments() -> Result<Config> {
     let (common, path) = match &cli.command {
         SubCommands::Regex(RegexArgs { common, path, .. }) => (common, Some(path)),
         SubCommands::ToASCII { common, path } => (common, Some(path)),
+        SubCommands::Editor { common, path, .. } => (common, Some(path)),
         SubCommands::FromFile { common, .. } => (common, None),
     };
 

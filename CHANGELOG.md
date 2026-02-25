@@ -1,3 +1,21 @@
+## Unreleased
+### Added
+* Automatically create missing parent directories when the target path of a
+  rename operation requires them (e.g. renaming `file.txt` to
+  `archive/2024/file.txt` creates `archive/2024/` on the fly).
+* New `editor` subcommand: interactive rename (and optional delete) of files
+  using your preferred text editor, similar to `vidir`.
+  * Opens a temporary file (in the OS temp directory) containing one path per
+    line and waits for the editor to exit.
+  * Without `--delete`: line count must be preserved; each edited line renames
+    the corresponding source path.
+  * With `--delete`: lines are prefixed with a 1-based index and a tab
+    (`INDEX<TAB>PATH`); removing a line deletes the file.
+  * Editor is selected via `--editor <CMD>`, then `$VISUAL`, then `$EDITOR`,
+    defaulting to `vi`.
+  * Supports `-r` / `--recursive`, `-d` / `--max-depth`, `-x` / `--hidden`,
+    and `-D` / `--include-dirs` just like the `regex` subcommand.
+
 ## V0.5.1 (2025-12-13)
 ### Fixed
 * Order of rename operations when renaming directories
