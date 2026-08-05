@@ -59,7 +59,7 @@ brew install rnr
 ### From git repository
 ```sh
 git clone https://github.com/ismaelgv/rnr .
-cargo install
+cargo install --path .
 ```
 ### From Crates.io
 ```sh
