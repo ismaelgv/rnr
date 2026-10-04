@@ -34,6 +34,9 @@ jobs:
           - os: "macos-latest"
             target: "x86_64-apple-darwin"
             cross: false
+          - os: "macos-latest"
+            target: "aarch64-apple-darwin"
+            cross: false
           # Windows
           - os: "windows-latest"
             target: "x86_64-pc-windows-msvc"
