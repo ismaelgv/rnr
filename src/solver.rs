@@ -7,6 +7,7 @@ use std::path::PathBuf;
 
 use rayon::prelude::*;
 
+/// Rename map that contains target path as key and source path as value.
 pub type RenameMap = HashMap<PathBuf, PathBuf>;
 
 // This struct stores required information about a single renaming operation
@@ -17,6 +18,14 @@ pub struct Operation {
 }
 
 pub type Operations = Vec<Operation>;
+
+/// Generate a RenameMap from a list of operations.
+pub fn to_rename_map(operations: Operations) -> RenameMap {
+    operations
+        .into_iter()
+        .map(|o| (o.target, o.source))
+        .collect()
+}
 
 /// Solve renaming order to avoid file overwrite. Solver will order the operations considering
 /// existing targets to avoid conflicts.

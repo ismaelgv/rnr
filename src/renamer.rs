@@ -2,7 +2,7 @@ use crate::config::{Config, ReplaceMode, RunMode};
 use crate::dumpfile;
 use crate::error::*;
 use crate::fileutils::{cleanup_paths, create_backup, get_paths};
-use crate::solver;
+use crate::solver::{self, to_rename_map};
 use crate::solver::{Operation, Operations, RenameMap};
 use any_ascii::any_ascii;
 use rayon::prelude::*;
@@ -24,32 +24,25 @@ impl Renamer {
 
     /// Process path batch
     pub fn process(&self) -> Result<Operations> {
-        let operations = match self.config.run_mode {
+        let rename_map = match self.config.run_mode {
             RunMode::Simple(_) | RunMode::Recursive { .. } => {
-                // Get paths
                 let input_paths = get_paths(&self.config.run_mode);
-
-                // Remove directories and on existing paths from the list
                 let clean_paths = cleanup_paths(input_paths, self.config.dirs);
 
-                // Relate original names with their targets
-                let rename_map = self.get_rename_map(&clean_paths)?;
-
-                // Solve renaming operation ordering to avoid conflicts
-                solver::solve_rename_order(&rename_map)?
+                self.get_rename_map(&clean_paths)?
             }
             RunMode::FromFile { ref path, undo } => {
-                // Read operations from file
-                let operations = dumpfile::read_from_file(&PathBuf::from(path))?;
+                let mut operations = dumpfile::read_from_file(&PathBuf::from(path))?;
                 if undo {
-                    solver::revert_operations(&operations)?
-                } else {
-                    operations
+                    operations = solver::revert_operations(&operations)?;
                 }
+
+                to_rename_map(operations)
             }
         };
 
-        // Dump operations into a file if required
+        let operations = solver::solve_rename_order(&rename_map)?;
+
         if self.config.dump {
             dumpfile::dump_to_file(self.config.dump_prefix.clone(), &operations)?;
         }
